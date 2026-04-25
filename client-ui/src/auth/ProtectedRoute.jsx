@@ -1,11 +1,11 @@
 // components/ProtectedRoute.jsx
 import { useEffect, useState } from 'react';
-import { Outlet, useSearchParams } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 
 const ProtectedRoute = () => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [searchParams] = useSearchParams();
+  const [checkAttempt, setCheckAttempt] = useState(0);
 
   // Helper function to get cookie value by name
   const getCookie = (name) => {
@@ -13,7 +13,8 @@ const ProtectedRoute = () => {
     for (let cookie of cookies) {
       cookie = cookie.trim();
       if (cookie.startsWith(name + '=')) {
-        return cookie.substring(name.length + 1);
+        const value = cookie.substring(name.length + 1);
+        return value ? decodeURIComponent(value) : value;
       }
     }
     return null;
@@ -22,25 +23,27 @@ const ProtectedRoute = () => {
   // Function to check authentication status
   const checkAuth = () => {
     try {
-      // 1. Check if auth_token exists in cookies
       const authToken = getCookie('auth_token');
       const loginTimestamp = getCookie('login_timestamp');
+
+      console.log('Auth check - auth_token:', !!authToken, 'login_timestamp:', loginTimestamp);
 
       if (!authToken) {
         return false;
       }
 
-      // 2. Check 3-day expiry
+      // Check 3-day expiry
       const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
-
-      if (loginTimestamp && (Date.now() - parseInt(loginTimestamp) > THREE_DAYS_MS)) {
-        // Token expired - clear cookies
-        document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-        document.cookie = 'login_timestamp=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-        return false;
+      if (loginTimestamp) {
+        const timestamp = parseInt(loginTimestamp);
+        if (Date.now() - timestamp > THREE_DAYS_MS) {
+          // Token expired - clear cookies
+          document.cookie = 'auth_token=; path=/; domain=.edupractice.vercel.app; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+          document.cookie = 'login_timestamp=; path=/; domain=.edupractice.vercel.app; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+          return false;
+        }
       }
 
-      // Token is valid
       return true;
     } catch (error) {
       console.error('Auth check failed:', error);
@@ -56,23 +59,32 @@ const ProtectedRoute = () => {
     setLoading(false);
   }, []);
 
-  // Re-check auth when returning from login (check for return parameter)
+  // Re-check auth periodically - this catches when external login sets cookies
   useEffect(() => {
-    const isReturningFromLogin = searchParams.has('return');
-    if (isReturningFromLogin) {
-      console.log('Returning from login, re-checking auth...');
-      const isAuth = checkAuth();
-      setIsAuthenticated(isAuth);
-    }
-  }, [searchParams]);
+    if (loading || isAuthenticated) return;
 
-  // Listen for visibility changes - re-check when tab becomes visible (user switched back from login)
+    const checkInterval = setInterval(() => {
+      console.log('Periodic auth check...');
+      const isAuth = checkAuth();
+      if (isAuth) {
+        setIsAuthenticated(true);
+        clearInterval(checkInterval);
+      }
+      setCheckAttempt(prev => prev + 1);
+    }, 500); // Check every 500ms for cookies
+
+    return () => clearInterval(checkInterval);
+  }, [loading, isAuthenticated]);
+
+  // Listen for visibility changes - immediately re-check when tab becomes visible
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         console.log('Tab is now visible, re-checking auth...');
         const isAuth = checkAuth();
-        setIsAuthenticated(isAuth);
+        if (isAuth) {
+          setIsAuthenticated(true);
+        }
       }
     };
 
@@ -83,7 +95,6 @@ const ProtectedRoute = () => {
   // Handle redirect for unauthenticated users
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      // Redirect to external login with return URL
       const returnUrl = window.location.href;
       window.location.href = `https://edupractice.vercel.app/login?return=${encodeURIComponent(returnUrl)}`;
     }
