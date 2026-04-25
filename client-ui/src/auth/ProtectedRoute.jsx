@@ -1,10 +1,11 @@
 // components/ProtectedRoute.jsx
 import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useSearchParams } from 'react-router-dom';
 
 const ProtectedRoute = () => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [searchParams] = useSearchParams();
 
   // Helper function to get cookie value by name
   const getCookie = (name) => {
@@ -18,68 +19,73 @@ const ProtectedRoute = () => {
     return null;
   };
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      setLoading(true);
-
-      try {
-        // 1. Check if auth_token exists in cookies
-        const authToken = getCookie('auth_token');
-        const loginTimestamp = getCookie('login_timestamp');
-
-        if (!authToken) {
-          setIsAuthenticated(false);
-        } else {
-          // 2. Check 3-day expiry
-          const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
-
-          if (loginTimestamp && (Date.now() - parseInt(loginTimestamp) > THREE_DAYS_MS)) {
-            // Token expired based on 3-day rule
-            // Clear cookies by setting them to expire
-            document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-            document.cookie = 'login_timestamp=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-            setIsAuthenticated(false);
-          } else {
-            // Token is valid
-            setIsAuthenticated(true);
-          }
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        setIsAuthenticated(false);
-      }
-      
-      setLoading(false);
-    };
-
-    checkAuth();
-
-    // Listen for cookie changes (when user logs in from external site)
-    const cookieCheckInterval = setInterval(() => {
+  // Function to check authentication status
+  const checkAuth = () => {
+    try {
+      // 1. Check if auth_token exists in cookies
       const authToken = getCookie('auth_token');
-      if (authToken && !isAuthenticated) {
-        setIsAuthenticated(true);
-      } else if (!authToken && isAuthenticated) {
-        setIsAuthenticated(false);
-      }
-    }, 1000);
+      const loginTimestamp = getCookie('login_timestamp');
 
-    return () => clearInterval(cookieCheckInterval);
+      if (!authToken) {
+        return false;
+      }
+
+      // 2. Check 3-day expiry
+      const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+
+      if (loginTimestamp && (Date.now() - parseInt(loginTimestamp) > THREE_DAYS_MS)) {
+        // Token expired - clear cookies
+        document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+        document.cookie = 'login_timestamp=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+        return false;
+      }
+
+      // Token is valid
+      return true;
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      return false;
+    }
+  };
+
+  // Initial auth check on mount
+  useEffect(() => {
+    setLoading(true);
+    const isAuth = checkAuth();
+    setIsAuthenticated(isAuth);
+    setLoading(false);
   }, []);
 
-  // Handle redirect for unauthorized users - prevent infinite redirects
+  // Re-check auth when returning from login (check for return parameter)
+  useEffect(() => {
+    const isReturningFromLogin = searchParams.has('return');
+    if (isReturningFromLogin) {
+      console.log('Returning from login, re-checking auth...');
+      const isAuth = checkAuth();
+      setIsAuthenticated(isAuth);
+    }
+  }, [searchParams]);
+
+  // Listen for visibility changes - re-check when tab becomes visible (user switched back from login)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Tab is now visible, re-checking auth...');
+        const isAuth = checkAuth();
+        setIsAuthenticated(isAuth);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  // Handle redirect for unauthenticated users
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      // Only redirect if not already redirecting (check sessionStorage flag)
-      if (!sessionStorage.getItem('auth_redirecting')) {
-        sessionStorage.setItem('auth_redirecting', 'true');
-        // Redirect to external login with return URL
-        const returnUrl = window.location.href;
-        window.location.href = `https://edupractice.vercel.app/login?return=${encodeURIComponent(returnUrl)}`;
-      }
-    } else if (isAuthenticated) {
-      // Clear redirect flag when authenticated
-      sessionStorage.removeItem('auth_redirecting');
+      // Redirect to external login with return URL
+      const returnUrl = window.location.href;
+      window.location.href = `https://edupractice.vercel.app/login?return=${encodeURIComponent(returnUrl)}`;
     }
   }, [loading, isAuthenticated]);
 
@@ -87,11 +93,7 @@ const ProtectedRoute = () => {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
-  if (!isAuthenticated) {
-    return <div className="flex justify-center items-center h-screen">Redirecting to login...</div>;
-  }
-
-  return <Outlet />;
+  return isAuthenticated ? <Outlet /> : null;
 };
 
 export default ProtectedRoute;
