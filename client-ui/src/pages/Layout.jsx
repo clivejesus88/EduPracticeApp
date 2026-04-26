@@ -102,11 +102,6 @@ export default function Layout() {
               </div>
             </Link>
           </div>
-          <Link to="/" className="hidden md:flex items-center gap-2 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-200 rounded-lg flex items-center justify-center text-[#0B1120] group-hover:scale-110 transition-all">
-              <Icon icon="lucide:graduation-cap" width="24" height="24" style={{ strokeWidth: 1 }} />
-            </div>
-          </Link>
 
           <div className="hidden md:block relative w-96">
             <Icon icon="solar:magnifier-linear" width="20" height="20" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" style={{ strokeWidth: 1 }} />
