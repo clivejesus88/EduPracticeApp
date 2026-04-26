@@ -127,27 +127,6 @@ export default function Practice() {
   ]);
   const messagesEndRef = useRef(null);
 
-<<<<<<< HEAD
-  // Available topics
-  const topics = [
-    {
-      id: 'physics',
-      name: 'Physics',
-      description: 'Mechanics, Thermodynamics, Waves, and more',
-      icon: 'lucide:atom',
-      color: 'from-blue-500 to-cyan-500',
-      questions: 24,
-      difficulty: 'All Levels'
-    },
-    {
-      id: 'mathematics',
-      name: 'Mathematics',
-      description: 'Algebra, Geometry, Calculus, Statistics',
-      icon: 'solar:calculator-bold',
-      color: 'from-rose-500 to-pink-500',
-      questions: 18,
-      difficulty: 'All Levels'
-=======
   // Get topics based on selected exam level
   const getTopics = () => {
     if (!selectedExamLevel) return [];
@@ -167,7 +146,6 @@ export default function Practice() {
         subtopics: physicsTopics[levelKey],
         difficulty: levelKey === 'OLEVEL' ? 'Beginner to Intermediate' : 'Intermediate to Advanced'
       });
->>>>>>> 84d3f1143f89e7881a7c311f8527c5c89d867a32
     }
     
     // Add Mathematics topics if available
@@ -542,17 +520,10 @@ export default function Practice() {
                     <button onClick={() => setAiState('idle')} className="px-6 py-3 rounded-lg border border-white/10 hover:border-white/20 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all w-full sm:w-auto active:scale-95">
                       {t('practice.tryAgain')}
                     </button>
-<<<<<<< HEAD
-                    <button onClick={() => setIsChatOpen(true)} className="px-6 py-3 rounded-lg bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] text-sm font-bold transition-all flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg shadow-[#f99c00]/20">
-                      <Icon icon="solar:chat-line-linear" width="20" />
-                      <span className="hidden xs:inline">Follow up with Maestro</span>
-                      <span className="xs:hidden">Ask Maestro</span>
-=======
                     <button onClick={() => setIsChatOpen(true)} className="px-6 py-3 rounded-lg bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] text-sm font-bold transition-all flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg shadow-[#f99c00]/20 active:scale-95">
                       <Icon icon="solar:chat-line-linear" width="20" />
                       <span className="hidden xs:inline">{t('practice.askMaestro')}</span>
                       <span className="xs:hidden">{t('practice.askMaestro')}</span>
->>>>>>> 84d3f1143f89e7881a7c311f8527c5c89d867a32
                     </button>
                   </div>
                 </div>
