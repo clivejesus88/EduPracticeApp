@@ -16,65 +16,66 @@ export default function dashboardUI() {
         </div>
 
         {/* Welcome Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-2">{translate('dashboard.welcomeBack', { name: 'Sarah' })}</h1>
-            <p className="text-sm text-slate-400">{t('dashboard.keepingMomentum')}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 md:mb-8">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-white mb-1 sm:mb-2 break-words">{translate('dashboard.welcomeBack', { name: 'Sarah' })}</h1>
+            <p className="text-xs sm:text-sm text-slate-400">{t('dashboard.keepingMomentum')}</p>
           </div>
-          <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] px-6 py-3 rounded-lg text-sm font-medium transition-all hover:shadow-lg hover:shadow-[#f99c00]/20 active:scale-95">
-            <Icon icon="solar:play-circle-linear" width="22" height="22" style={{ strokeWidth: 1 }} />
-            {t('dashboard.resumePractice')}
+          <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all hover:shadow-lg hover:shadow-[#f99c00]/20 active:scale-95 min-h-[44px] sm:min-h-[40px] shrink-0">
+            <Icon icon="solar:play-circle-linear" width="18" style={{ strokeWidth: 1 }} />
+            <span className="hidden sm:inline">{t('dashboard.resumePractice')}</span>
+            <span className="sm:hidden">Practice</span>
           </button>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 mb-6 md:mb-8">
           {/* Stat 1 */}
-          <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-5 hover:border-blue-500/20 hover:shadow-lg hover:shadow-blue-500/10 transition-all group cursor-pointer hover:scale-105">
-            <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
-                <Icon icon="solar:checklist-minimalistic-linear" width="24" style={{ strokeWidth: 1 }} />
+          <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-lg sm:rounded-xl p-4 sm:p-5 hover:border-blue-500/20 hover:shadow-lg hover:shadow-blue-500/10 transition-all group cursor-pointer hover:scale-105">
+            <div className="flex items-start justify-between mb-3 sm:mb-4">
+              <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform shrink-0">
+                <Icon icon="solar:checklist-minimalistic-linear" width="20" style={{ strokeWidth: 1 }} />
               </div>
-              <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full">+12%</span>
+              <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full whitespace-nowrap">+12%</span>
             </div>
-            <p className="text-sm text-slate-400 mb-2">{t('dashboard.questionsSolved')}</p>
-            <h3 className="text-2xl font-semibold text-white">1,248</h3>
+            <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-2">{t('dashboard.questionsSolved')}</p>
+            <h3 className="text-xl sm:text-2xl font-semibold text-white">1,248</h3>
           </div>
 
           {/* Stat 2 */}
-          <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-5 hover:border-purple-500/20 hover:shadow-lg hover:shadow-purple-500/10 transition-all group cursor-pointer hover:scale-105">
-            <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
-                <Icon icon="solar:target-linear" width="24" style={{ strokeWidth: 1 }} />
+          <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-lg sm:rounded-xl p-4 sm:p-5 hover:border-purple-500/20 hover:shadow-lg hover:shadow-purple-500/10 transition-all group cursor-pointer hover:scale-105">
+            <div className="flex items-start justify-between mb-3 sm:mb-4">
+              <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform shrink-0">
+                <Icon icon="solar:target-linear" width="20" style={{ strokeWidth: 1 }} />
               </div>
-              <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full">+2.4%</span>
+              <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full whitespace-nowrap">+2.4%</span>
             </div>
-            <p className="text-sm text-slate-400 mb-2">{t('dashboard.averageAccuracy')}</p>
-            <h3 className="text-2xl font-semibold text-white">86.5%</h3>
+            <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-2">{t('dashboard.averageAccuracy')}</p>
+            <h3 className="text-xl sm:text-2xl font-semibold text-white">86.5%</h3>
           </div>
 
           {/* Stat 3 */}
-          <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-5 hover:border-rose-500/20 hover:shadow-lg hover:shadow-rose-500/10 transition-all group cursor-pointer hover:scale-105">
-            <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform">
-                <Icon icon="solar:clock-circle-linear" width="24" style={{ strokeWidth: 1 }} />
+          <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-lg sm:rounded-xl p-4 sm:p-5 hover:border-rose-500/20 hover:shadow-lg hover:shadow-rose-500/10 transition-all group cursor-pointer hover:scale-105">
+            <div className="flex items-start justify-between mb-3 sm:mb-4">
+              <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform shrink-0">
+                <Icon icon="solar:clock-circle-linear" width="20" style={{ strokeWidth: 1 }} />
               </div>
-              <span className="text-xs font-medium text-slate-500 bg-white/5 px-2.5 py-1 rounded-full">{t('dashboard.studyTimeLabel')}</span>
+              <span className="text-xs font-medium text-slate-500 bg-white/5 px-2 py-1 rounded-full whitespace-nowrap">{t('dashboard.studyTimeLabel')}</span>
             </div>
-            <p className="text-sm text-slate-400 mb-2">{t('dashboard.studyTime')}</p>
-            <h3 className="text-2xl font-semibold text-white">42h 15m</h3>
+            <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-2">{t('dashboard.studyTime')}</p>
+            <h3 className="text-xl sm:text-2xl font-semibold text-white">42h 15m</h3>
           </div>
 
           {/* Stat 4 */}
-          <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-5 hover:border-[#f99c00]/20 hover:shadow-lg hover:shadow-[#f99c00]/10 transition-all group cursor-pointer hover:scale-105">
-            <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] group-hover:scale-110 transition-transform">
-                <Icon icon="solar:cup-star-linear" width="24" style={{ strokeWidth: 1 }} />
+          <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-lg sm:rounded-xl p-4 sm:p-5 hover:border-[#f99c00]/20 hover:shadow-lg hover:shadow-[#f99c00]/10 transition-all group cursor-pointer hover:scale-105">
+            <div className="flex items-start justify-between mb-3 sm:mb-4">
+              <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] group-hover:scale-110 transition-transform shrink-0">
+                <Icon icon="solar:cup-star-linear" width="20" style={{ strokeWidth: 1 }} />
               </div>
-              <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full">{t('dashboard.topPercentage')}</span>
+              <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full whitespace-nowrap">{t('dashboard.topPercentage')}</span>
             </div>
-            <p className="text-sm text-slate-400 mb-2">{t('dashboard.globalRank')}</p>
-            <h3 className="text-2xl font-semibold text-white">#4,291</h3>
+            <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-2">{t('dashboard.globalRank')}</p>
+            <h3 className="text-xl sm:text-2xl font-semibold text-white">#4,291</h3>
           </div>
         </div>
 
@@ -83,13 +84,13 @@ export default function dashboardUI() {
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Activity Chart Area */}
-            <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-white/10 transition-all">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold tracking-tight text-white">{t('dashboard.learningActivity')}</h3>
-                  <p className="text-sm text-slate-400 mt-1">{t('dashboard.questionsAnsweredWeek')}</p>
+            <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-lg md:rounded-xl p-4 sm:p-5 md:p-6 hover:border-white/10 transition-all">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
+                <div className="min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold tracking-tight text-white">{t('dashboard.learningActivity')}</h3>
+                  <p className="text-xs sm:text-sm text-slate-400 mt-0.5 sm:mt-1">{t('dashboard.questionsAnsweredWeek')}</p>
                 </div>
-                <select className="bg-white/5 border border-white/10 hover:border-white/20 rounded-lg px-4 py-2 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#f99c00]/50 appearance-none pr-10 relative custom-select transition-all">
+                <select className="w-full sm:w-auto bg-white/5 border border-white/10 hover:border-white/20 rounded-lg px-3 sm:px-4 py-2 text-xs sm:text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#f99c00]/50 appearance-none pr-8 sm:pr-10 relative custom-select transition-all min-h-[44px] sm:min-h-[40px]">
                   <option value="7" className="bg-[#111827]">{t('dashboard.lastSevenDays')}</option>
                   <option value="30" className="bg-[#111827]">{t('dashboard.lastThirtyDays')}</option>
                 </select>

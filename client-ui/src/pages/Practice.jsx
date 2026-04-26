@@ -231,7 +231,7 @@ export default function Practice() {
   };
 
   return (
-    <div className="flex-1 flex flex-col lg:flex-row h-full relative overflow-hidden bg-[#0B1120] gap-4 lg:gap-0">
+    <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-[#0B1120]">
       
       {/* EXAM LEVEL SELECTION SCREEN */}
       {step === 'selectLevel' ? (
@@ -239,35 +239,35 @@ export default function Practice() {
           <div className="max-w-5xl mx-auto">
             
             {/* Header */}
-            <div className="mb-10">
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-3">{t('practice.chooseATopic')}</h1>
-              <p className="text-slate-400 text-lg">{t('examLevels.selectLevel')}</p>
+            <div className="mb-8 md:mb-10">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-2 md:mb-3">{t('practice.chooseATopic')}</h1>
+              <p className="text-sm md:text-base text-slate-400">{t('examLevels.selectLevel')}</p>
             </div>
 
             {/* Exam Level Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 md:gap-6 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-8 md:mb-10">
               {Object.values(examLevels).map((level) => (
                 <button
                   key={level.id}
                   onClick={() => handleExamLevelSelect(level.id)}
-                  className="group relative p-6 sm:p-7 md:p-8 rounded-2xl border border-white/5 bg-gradient-to-br from-[#111827] to-[#0D0F1B] hover:border-white/10 hover:shadow-lg hover:shadow-white/5 transition-all duration-300 text-left overflow-hidden active:scale-95"
+                  className="group relative p-4 sm:p-5 md:p-6 lg:p-8 rounded-lg sm:rounded-2xl border border-white/5 bg-gradient-to-br from-[#111827] to-[#0D0F1B] hover:border-white/10 hover:shadow-lg hover:shadow-white/5 transition-all duration-300 text-left overflow-hidden active:scale-95 min-h-[180px] flex flex-col justify-between"
                 >
                   {/* Background glow on hover */}
                   <div className={`absolute -inset-96 bg-gradient-to-br ${level.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300 blur-3xl pointer-events-none`}></div>
                   
-                  <div className="relative z-10 space-y-4">
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${level.color} flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300`}>
-                      <Icon icon="solar:book-2-bold" width="24" />
+                  <div className="relative z-10 space-y-2 sm:space-y-3 md:space-y-4">
+                    <div className={`w-10 sm:w-12 h-10 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br ${level.color} flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300`}>
+                      <Icon icon="solar:book-2-bold" width="20" />
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-2xl font-bold text-white group-hover:text-[#f99c00] transition-colors duration-300">{level.name}</h3>
+                    <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white group-hover:text-[#f99c00] transition-colors duration-300 break-words">{level.name}</h3>
                     
                     {/* Description */}
-                    <p className="text-sm text-slate-400 leading-relaxed">{level.description}</p>
+                    <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">{level.description}</p>
 
                     {/* Difficulty Badge */}
-                    <div className="pt-4 border-t border-white/5 group-hover:border-white/10 transition-colors duration-300">
+                    <div className="pt-2 sm:pt-3 md:pt-4 border-t border-white/5 group-hover:border-white/10 transition-colors duration-300">
                       <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{level.difficulty}</span>
                     </div>
                   </div>
@@ -284,60 +284,60 @@ export default function Practice() {
             {/* Back Button */}
             <button
               onClick={handleBackToExamLevel}
-              className="flex items-center gap-2 text-slate-400 hover:text-[#f99c00] transition-colors mb-8 text-sm font-medium group"
+              className="flex items-center gap-1.5 sm:gap-2 text-slate-400 hover:text-[#f99c00] transition-colors mb-6 md:mb-8 text-xs sm:text-sm font-medium group"
             >
-              <Icon icon="solar:alt-arrow-left-linear" width="20" className="group-hover:scale-110 transition-transform" />
+              <Icon icon="solar:alt-arrow-left-linear" width="18" className="group-hover:scale-110 transition-transform shrink-0" />
               <span>{t('practice.backToTopics')}</span>
             </button>
             
             {/* Header */}
-            <div className="mb-10">
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-3">{t('practice.chooseATopic')}</h1>
-              <p className="text-slate-400 text-lg">{t('practice.selectSubject')}</p>
+            <div className="mb-8 md:mb-10">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-2 md:mb-3">{t('practice.chooseATopic')}</h1>
+              <p className="text-sm md:text-base text-slate-400">{t('practice.selectSubject')}</p>
               <p className="text-xs text-[#f99c00] font-semibold mt-2 uppercase tracking-widest">{selectedExamLevel?.toUpperCase().replace('-', ' ')}</p>
             </div>
 
             {/* Topics Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-8 md:mb-10">
               {topics.map((topic) => (
                 <button
                   key={topic.id}
                   onClick={() => handleTopicSelect(topic)}
-                  className="group relative p-6 sm:p-7 md:p-8 rounded-2xl border border-white/5 bg-gradient-to-br from-[#111827] to-[#0D0F1B] hover:border-white/10 hover:shadow-lg hover:shadow-white/5 transition-all duration-300 text-left overflow-hidden active:scale-95"
+                  className="group relative p-4 sm:p-5 md:p-6 lg:p-8 rounded-lg sm:rounded-2xl border border-white/5 bg-gradient-to-br from-[#111827] to-[#0D0F1B] hover:border-white/10 hover:shadow-lg hover:shadow-white/5 transition-all duration-300 text-left overflow-hidden active:scale-95 flex flex-col"
                 >
                   {/* Background glow on hover */}
                   <div className={`absolute -inset-96 bg-gradient-to-br ${topic.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300 blur-3xl pointer-events-none`}></div>
                   
-                  <div className="relative z-10">
+                  <div className="relative z-10 flex flex-col flex-1">
                     {/* Icon and Stats Row */}
-                    <div className="flex items-start justify-between mb-5">
-                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${topic.color} flex items-center justify-center text-white shadow-lg shadow-current/20 group-hover:scale-110 transition-transform duration-300`}>
-                        <Icon icon={topic.icon} width="28" />
+                    <div className="flex items-start justify-between mb-3 sm:mb-4 md:mb-5">
+                      <div className={`w-10 sm:w-12 md:w-14 h-10 sm:h-12 md:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br ${topic.color} flex items-center justify-center text-white shadow-lg shadow-current/20 group-hover:scale-110 transition-transform duration-300`}>
+                        <Icon icon={topic.icon} width="20" />
                       </div>
                       <div className="text-right">
                         <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{topic.questions} {t('practice.questions')}</p>
-                        <p className="text-xs text-slate-500 mt-1">{topic.difficulty}</p>
+                        <p className="text-xs text-slate-500 mt-0.5 sm:mt-1">{topic.difficulty}</p>
                       </div>
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-[#f99c00] transition-colors duration-300">{topic.name}</h3>
+                    <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 sm:mb-2 group-hover:text-[#f99c00] transition-colors duration-300 break-words">{topic.name}</h3>
                     
                     {/* Description */}
-                    <p className="text-sm text-slate-400 leading-relaxed mb-4">{topic.description}</p>
+                    <p className="text-xs sm:text-sm text-slate-400 leading-relaxed mb-3 sm:mb-4 flex-1">{topic.description}</p>
 
                     {/* Subtopics (if available) */}
                     {topic.subtopics && topic.subtopics.length > 0 && (
-                      <div className="mb-5">
-                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">Subtopics</p>
-                        <div className="flex flex-wrap gap-2">
+                      <div className="mb-3 sm:mb-4 md:mb-5">
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5 sm:mb-2">Subtopics</p>
+                        <div className="flex flex-wrap gap-1.5 sm:gap-2">
                           {topic.subtopics.slice(0, 3).map((sub, i) => (
-                            <span key={i} className="text-xs px-2.5 py-1.5 rounded-full bg-white/5 text-slate-300 group-hover:bg-white/10 transition-all">
+                            <span key={i} className="text-xs px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full bg-white/5 text-slate-300 group-hover:bg-white/10 transition-all">
                               {sub.name}
                             </span>
                           ))}
                           {topic.subtopics.length > 3 && (
-                            <span className="text-xs px-2.5 py-1.5 rounded-full bg-[#f99c00]/10 text-[#f99c00]">
+                            <span className="text-xs px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full bg-[#f99c00]/10 text-[#f99c00]">
                               +{topic.subtopics.length - 3} more
                             </span>
                           )}
@@ -346,10 +346,10 @@ export default function Practice() {
                     )}
 
                     {/* Footer with CTA */}
-                    <div className="flex items-center justify-between pt-5 border-t border-white/5 group-hover:border-white/10 transition-colors duration-300">
+                    <div className="flex items-center justify-between pt-2 sm:pt-3 md:pt-5 mt-auto border-t border-white/5 group-hover:border-white/10 transition-colors duration-300">
                       <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('practice.startNow')}</span>
-                      <div className="w-8 h-8 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] group-hover:bg-[#f99c00] group-hover:text-[#0B1120] transition-all duration-300">
-                        <Icon icon="solar:alt-arrow-right-linear" width="18" />
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] group-hover:bg-[#f99c00] group-hover:text-[#0B1120] transition-all duration-300 shrink-0">
+                        <Icon icon="solar:alt-arrow-right-linear" width="16" />
                       </div>
                     </div>
                   </div>
@@ -359,24 +359,24 @@ export default function Practice() {
 
             {/* Features Section */}
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-white mb-5">{t('practice.whyPractice')}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-5 rounded-xl bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 flex items-start gap-4 hover:border-[#f99c00]/20 hover:shadow-lg hover:shadow-[#f99c00]/5 transition-all group cursor-pointer">
-                  <div className="w-10 h-10 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] shrink-0 group-hover:scale-110 transition-transform">
-                    <Icon icon="solar:star-bold" width="20" />
+              <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-5">{t('practice.whyPractice')}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="p-3 sm:p-4 md:p-5 rounded-lg md:rounded-xl bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 flex items-start gap-3 sm:gap-4 hover:border-[#f99c00]/20 hover:shadow-lg hover:shadow-[#f99c00]/5 transition-all group cursor-pointer">
+                  <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] shrink-0 group-hover:scale-110 transition-transform">
+                    <Icon icon="solar:star-bold" width="18" />
                   </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-white mb-1">{t('practice.instantAiFeedback')}</h4>
-                    <p className="text-xs text-slate-400">{t('practice.getInstantAnalysis')}</p>
+                  <div className="min-w-0">
+                    <h4 className="text-xs sm:text-sm font-semibold text-white mb-0.5 sm:mb-1">{t('practice.instantAiFeedback')}</h4>
+                    <p className="text-xs text-slate-400 leading-snug">{t('practice.getInstantAnalysis')}</p>
                   </div>
                 </div>
-                <div className="p-5 rounded-xl bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 flex items-start gap-4 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5 transition-all group cursor-pointer">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0 group-hover:scale-110 transition-transform">
-                    <Icon icon="solar:target-bold" width="20" />
+                <div className="p-3 sm:p-4 md:p-5 rounded-lg md:rounded-xl bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 flex items-start gap-3 sm:gap-4 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5 transition-all group cursor-pointer">
+                  <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0 group-hover:scale-110 transition-transform">
+                    <Icon icon="solar:target-bold" width="18" />
                   </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-white mb-1">{t('practice.trackProgress')}</h4>
-                    <p className="text-xs text-slate-400">{t('practice.monitorGrowth')}</p>
+                  <div className="min-w-0">
+                    <h4 className="text-xs sm:text-sm font-semibold text-white mb-0.5 sm:mb-1">{t('practice.trackProgress')}</h4>
+                    <p className="text-xs text-slate-400 leading-snug">{t('practice.monitorGrowth')}</p>
                   </div>
                 </div>
               </div>
@@ -392,9 +392,9 @@ export default function Practice() {
             <div>
               <button
                 onClick={handleBackToTopics}
-                className="flex items-center gap-2 text-slate-400 hover:text-[#f99c00] transition-colors mb-5 text-sm font-medium"
+                className="flex items-center gap-1.5 sm:gap-2 text-slate-400 hover:text-[#f99c00] transition-colors mb-4 sm:mb-5 text-xs sm:text-sm font-medium group"
               >
-                <Icon icon="solar:alt-arrow-left-linear" width="20" />
+                <Icon icon="solar:alt-arrow-left-linear" width="18" className="group-hover:scale-110 transition-transform shrink-0" />
                 <span>Back to Topics</span>
               </button>
               <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">

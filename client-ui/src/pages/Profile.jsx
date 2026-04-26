@@ -62,58 +62,59 @@ export default function Profile() {
       <div className="max-w-4xl mx-auto">
         
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">{t('profile.myProfile')}</h1>
-            <p className="text-slate-400">Manage your account settings and learning preferences</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 md:mb-8">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white mb-1 sm:mb-2 break-words">{t('profile.myProfile')}</h1>
+            <p className="text-xs sm:text-sm text-slate-400">Manage your account settings and learning preferences</p>
           </div>
           {!isEditing && (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center justify-center gap-2 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] px-6 py-3 rounded-lg text-sm font-bold transition-all active:scale-95"
+              className="w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all active:scale-95 min-h-[44px] sm:min-h-[40px] shrink-0"
             >
-              <Icon icon="solar:pen-linear" width="18" style={{ strokeWidth: 1 }} />
-              {t('profile.editProfile')}
+              <Icon icon="solar:pen-linear" width="16" style={{ strokeWidth: 1 }} />
+              <span className="hidden sm:inline">{t('profile.editProfile')}</span>
+              <span className="sm:hidden">Edit</span>
             </button>
           )}
         </div>
 
         {/* Profile Header Card */}
-        <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-2xl p-6 sm:p-8 mb-8 hover:border-white/10 transition-all">
-          <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
+        <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-lg md:rounded-2xl p-4 sm:p-6 md:p-8 mb-6 md:mb-8 hover:border-white/10 transition-all">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 md:gap-8">
             {/* Avatar */}
             <div className="flex-shrink-0 relative">
               <img
                 src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/user-files/fd86d650-37a4-4a87-a832-38f8d246494a/a14eeb81-d59e-4bcb-a228-5249b5a17192-pp.png?v=1776510809689"
                 alt="Profile"
-                className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-[#f99c00]/30"
+                className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-lg md:rounded-2xl object-cover border-2 border-[#f99c00]/30"
               />
-              <div className="absolute bottom-2 right-2 w-4 h-4 bg-emerald-500 rounded-full border-2 border-[#0B1120]"></div>
+              <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 w-3 sm:w-4 h-3 sm:h-4 bg-emerald-500 rounded-full border-2 border-[#0B1120]"></div>
             </div>
 
             {/* User Info */}
             <div className="flex-1">
               {isEditing ? (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <input
                     type="text"
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#f99c00]/50"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#f99c00]/50 min-h-[44px] sm:min-h-[40px]"
                   />
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#f99c00]/50"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#f99c00]/50 min-h-[44px] sm:min-h-[40px]"
                   />
                 </div>
               ) : (
                 <>
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">{formData.fullName}</h2>
-                  <p className="text-slate-400 mb-4">{formData.email}</p>
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-0.5 sm:mb-1 break-words">{formData.fullName}</h2>
+                  <p className="text-xs sm:text-sm text-slate-400 mb-3 sm:mb-4 break-all">{formData.email}</p>
                 </>
               )}
               <div className="flex flex-wrap gap-3">
