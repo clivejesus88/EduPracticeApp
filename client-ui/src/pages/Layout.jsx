@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
@@ -9,6 +9,41 @@ export default function Layout() {
   const { t } = useLocalization();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
+  // ── Auto-hide bottom nav on scroll ──────────────────────────────────────────
+  const [navVisible, setNavVisible] = useState(true);
+  const lastScrollY = useRef(0);
+  const scrollContainerRef = useRef(null);
+
+  useEffect(() => {
+    // We watch the main scroll container, not window, since overflow is on the inner div
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const currentY = container.scrollTop;
+      const delta = currentY - lastScrollY.current;
+
+      if (delta > 6 && currentY > 40) {
+        // Scrolling down — hide nav
+        setNavVisible(false);
+      } else if (delta < -6) {
+        // Scrolling up — show nav
+        setNavVisible(true);
+      }
+
+      lastScrollY.current = currentY;
+    };
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Always show nav on route change
+  useEffect(() => {
+    setNavVisible(true);
+    lastScrollY.current = 0;
+  }, [location.pathname]);
+
   const navItems = [
     { name: t('nav.dashboard'), path: '/dashboard', icon: 'solar:home-2-linear' },
     { name: t('nav.practice'), path: '/practice', icon: 'solar:book-bookmark-linear' },
@@ -18,6 +53,7 @@ export default function Layout() {
 
   return (
     <div className="antialiased h-[100dvh] w-full overflow-hidden flex flex-col md:flex-row bg-[#0B1120]">
+
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 h-full border-r border-white/5 bg-gradient-to-b from-[#0B1120] to-[#0D0F1B] flex-col flex-shrink-0 z-20">
         {/* Logo */}
@@ -39,23 +75,22 @@ export default function Layout() {
                 key={item.name}
                 to={item.path}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all group font-medium ${
-                  isActive 
-                    ? 'bg-[#f99c00]/15 text-[#f99c00] shadow-lg shadow-[#f99c00]/10' 
+                  isActive
+                    ? 'bg-[#f99c00]/15 text-[#f99c00] shadow-lg shadow-[#f99c00]/10'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <Icon 
-                  icon={item.icon} 
-                  width="24" 
-                  height="24" 
-                  className={isActive ? '' : 'group-hover:text-white transition-colors'} 
+                <Icon
+                  icon={item.icon}
+                  width="24" height="24"
+                  className={isActive ? '' : 'group-hover:text-white transition-colors'}
                   style={{ strokeWidth: 1 }}
                 />
                 <span className="text-sm">{item.name}</span>
               </Link>
             );
           })}
-          
+
           <div className="pt-6 pb-2 px-3">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('sidebar.subjects')}</p>
           </div>
@@ -112,38 +147,42 @@ export default function Layout() {
               <Icon icon="solar:fire-linear" width="18" height="18" className="text-[#f99c00]" style={{ strokeWidth: 1 }} />
               <span className="text-xs md:text-sm font-bold text-slate-300">12<span className="hidden sm:inline"> Days</span></span>
             </div>
-            
+
             <button className="relative w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
               <Icon icon="solar:bell-linear" width="24" height="24" style={{ strokeWidth: 1 }} />
               <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#f99c00] border border-[#0B1120]"></span>
             </button>
-            
+
             <button className="hidden md:flex w-11 h-11 items-center justify-center rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
               <Icon icon="solar:settings-linear" width="24" height="24" style={{ strokeWidth: 1 }} />
             </button>
 
-            <a href="#" className="md:hidden w-10 h-10 rounded-full border border-white/10 overflow-hidden block hover:border-[#f99c00]/50 transition-all">
-            </a>
+            <a href="#" className="md:hidden w-10 h-10 rounded-full border border-white/10 overflow-hidden block hover:border-[#f99c00]/50 transition-all"></a>
           </div>
         </header>
 
-        {/* Dynamic Route Content container */}
-        <div className="flex-1 overflow-hidden z-10 flex flex-col relative">
+        {/* Dynamic Route Content — scroll container ref lives here */}
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto overflow-x-hidden z-10 flex flex-col relative"
+        >
           <Outlet />
+
+          {/* Spacer so content isn't permanently hidden behind the nav when visible */}
+          <div className="md:hidden h-[60px] shrink-0" />
         </div>
       </main>
 
       {/* Mobile Sidebar Overlay */}
       {isMobileSidebarOpen && (
-        <div 
+        <div
           className="md:hidden fixed inset-0 bg-black/40 z-30"
           onClick={() => setIsMobileSidebarOpen(false)}
-        ></div>
+        />
       )}
 
       {/* Mobile Sidebar */}
-      <aside className={`md:hidden fixed top-0 left-0 w-64 h-[100dvh] bg-gradient-to-b from-[#0B1120] to-[#0D0F1B] border-r border-white/5 flex flex-col z-40 transform transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto`}>
-        {/* Logo */}
+      <aside className={`md:hidden fixed top-0 left-0 w-64 h-[100dvh] pb-[60px] bg-gradient-to-b from-[#0B1120] to-[#0D0F1B] border-r border-white/5 flex flex-col z-40 transform transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto`}>
         <div className="h-20 px-6 flex items-center border-b border-white/5 sticky top-0 bg-[#0B1120]/95 backdrop-blur">
           <Link to="/" className="flex items-center gap-3 group w-full" onClick={() => setIsMobileSidebarOpen(false)}>
             <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-200 rounded-lg flex items-center justify-center text-[#0B1120] transition-all group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-white/20">
@@ -153,7 +192,6 @@ export default function Layout() {
           </Link>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 px-3 py-6 space-y-1">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -163,23 +201,22 @@ export default function Layout() {
                 to={item.path}
                 onClick={() => setIsMobileSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all group font-medium ${
-                  isActive 
-                    ? 'bg-[#f99c00]/15 text-[#f99c00] shadow-lg shadow-[#f99c00]/10' 
+                  isActive
+                    ? 'bg-[#f99c00]/15 text-[#f99c00] shadow-lg shadow-[#f99c00]/10'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <Icon 
-                  icon={item.icon} 
-                  width="24" 
-                  height="24" 
-                  className={isActive ? '' : 'group-hover:text-white transition-colors'} 
+                <Icon
+                  icon={item.icon}
+                  width="24" height="24"
+                  className={isActive ? '' : 'group-hover:text-white transition-colors'}
                   style={{ strokeWidth: 1 }}
                 />
                 <span className="text-sm">{item.name}</span>
               </Link>
             );
           })}
-          
+
           <div className="pt-6 pb-2 px-3">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('sidebar.subjects')}</p>
           </div>
@@ -193,7 +230,6 @@ export default function Layout() {
           </a>
         </nav>
 
-        {/* Bottom User Profile */}
         <div className="p-4 border-t border-white/5 sticky bottom-0 bg-[#0B1120]/95 backdrop-blur">
           <Link to="/profile" onClick={() => setIsMobileSidebarOpen(false)} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-all group">
             <Avatar name="Sarah K." size={40} />
@@ -206,14 +242,20 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation Bar (Icons Only) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] bg-gradient-to-t from-[#0B1120] via-[#0B1120] to-[#0B1120]/80 backdrop-blur-xl border-t border-white/5 flex items-center justify-around px-2 z-50 pb-safe">
+      {/* ── Mobile Bottom Nav — auto-hide on scroll down ── */}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] bg-gradient-to-t from-[#0B1120] via-[#0B1120] to-[#0B1120]/80 backdrop-blur-xl border-t border-white/5 flex items-center justify-around px-2 z-50"
+        style={{
+          transform: navVisible ? 'translateY(0)' : 'translateY(100%)',
+          transition: 'transform 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
-            <Link 
-              key={item.name} 
-              to={item.path} 
+            <Link
+              key={item.name}
+              to={item.path}
               className={`flex items-center justify-center w-16 h-full transition-all ${
                 isActive ? 'text-[#f99c00]' : 'text-slate-500 hover:text-white'
               }`}
@@ -221,11 +263,10 @@ export default function Layout() {
             >
               <Icon icon={item.icon} width="24" height="24" style={{ strokeWidth: 1.5 }} />
             </Link>
-          )
+          );
         })}
-        {/* Profile Icon */}
-        <Link 
-          to="/profile" 
+        <Link
+          to="/profile"
           className={`flex items-center justify-center w-16 h-full transition-all ${
             location.pathname === '/profile' ? 'text-[#f99c00]' : 'text-slate-500 hover:text-white'
           }`}
