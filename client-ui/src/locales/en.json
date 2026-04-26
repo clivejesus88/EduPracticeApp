@@ -1,0 +1,76 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "practice": "Practice",
+    "analytics": "Analytics",
+    "mockExams": "Mock Exams"
+  },
+  "sidebar": {
+    "subjects": "Subjects",
+    "physics": "Physics",
+    "mathematics": "Mathematics",
+    "freeplan": "Free Plan"
+  },
+  "dashboard": {
+    "welcomeBack": "Welcome back, {name}",
+    "keepingMomentum": "You're making great progress. Keep up the momentum!",
+    "resumePractice": "Resume Practice",
+    "questionsSolved": "Questions Solved",
+    "averageAccuracy": "Average Accuracy",
+    "studyTime": "Study Time",
+    "studyTimeLabel": "Month",
+    "globalRank": "Global Rank",
+    "topPercentage": "Top 5%",
+    "learningActivity": "Learning Activity",
+    "questionsAnsweredWeek": "Questions answered over the last 7 days",
+    "lastSevenDays": "Last 7 days",
+    "lastThirtyDays": "Last 30 days",
+    "recentSessions": "Recent Sessions",
+    "viewAll": "View all",
+    "dailyGoal": "Daily Goal",
+    "completeDailyQuestions": "Complete 50 questions daily to keep your streak alive.",
+    "questionsRemaining": "questions remaining",
+    "subjectMastery": "Subject Mastery",
+    "viewDetailedSyllabus": "View Detailed Syllabus",
+    "studyReminders": "Study Reminders",
+    "dailyPracticeAlerts": "Daily practice alerts"
+  },
+  "practice": {
+    "chooseATopic": "Choose a Topic",
+    "selectSubject": "Select a subject to practice and improve your skills",
+    "questions": "Questions",
+    "allLevels": "All Levels",
+    "startNow": "Start Now",
+    "whyPractice": "Why Practice with EduPractice?",
+    "instantAiFeedback": "Instant AI Feedback",
+    "getInstantAnalysis": "Get real-time analysis from Maestro AI on your solutions",
+    "trackProgress": "Track Progress",
+    "monitorGrowth": "Monitor your growth across all topics in detail",
+    "backToTopics": "Back to Topics",
+    "kinematics": "Kinematics",
+    "projectileMotion": "Projectile Motion Scenario",
+    "yourSolution": "Your Solution",
+    "draw": "Draw",
+    "upload": "Upload",
+    "clickToUpload": "Click to upload or drag and drop",
+    "uploadDescription": "Upload a clear photo of your written solution. (PNG, JPG, PDF up to 10MB)",
+    "submitForEvaluation": "Submit for Evaluation",
+    "analyzing": "Analyzing...",
+    "solutionEvaluated": "Solution Evaluated",
+    "score": "Score",
+    "tryAgain": "Try Again",
+    "askMaestro": "Ask Maestro"
+  },
+  "subjects": {
+    "physics": "Physics",
+    "physicsDescription": "Mechanics, Thermodynamics, Waves, and more",
+    "mathematics": "Mathematics",
+    "mathematicsDescription": "Algebra, Geometry, Calculus, Statistics"
+  },
+  "examLevels": {
+    "oLevel": "O-Level",
+    "aLevel": "A-Level",
+    "uace": "UACE",
+    "selectLevel": "Select exam level"
+  }
+}

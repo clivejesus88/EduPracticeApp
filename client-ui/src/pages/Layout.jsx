@@ -1,15 +1,17 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
+import { useLocalization } from '../contexts/LocalizationContext';
 
 export default function Layout() {
   const location = useLocation();
+  const { t, language, toggleLanguage } = useLocalization();
 
   const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: 'solar:home-2-linear' },
-    { name: 'Practice', path: '/practice', icon: 'solar:book-bookmark-linear' },
-    { name: 'Analytics', path: '#', icon: 'solar:chart-square-linear' },
-    { name: 'Mock Exams', path: '#', icon: 'solar:target-linear' },
+    { name: t('nav.dashboard'), path: '/dashboard', icon: 'solar:home-2-linear' },
+    { name: t('nav.practice'), path: '/practice', icon: 'solar:book-bookmark-linear' },
+    { name: t('nav.analytics'), path: '#', icon: 'solar:chart-square-linear' },
+    { name: t('nav.mockExams'), path: '#', icon: 'solar:target-linear' },
   ];
 
   return (
@@ -53,25 +55,39 @@ export default function Layout() {
           })}
           
           <div className="pt-6 pb-2 px-3">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Subjects</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('sidebar.subjects')}</p>
           </div>
           <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
             <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
-            <span className="text-sm">Physics</span>
+            <span className="text-sm">{t('subjects.physics')}</span>
           </a>
           <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
             <div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
-            <span className="text-sm">Mathematics</span>
+            <span className="text-sm">{t('subjects.mathematics')}</span>
           </a>
         </nav>
 
-        {/* Bottom User Profile */}
-        <div className="p-4 border-t border-white/5">
+        {/* Bottom User Profile and Language Switcher */}
+        <div className="p-4 border-t border-white/5 space-y-3">
+          {/* Language Switcher */}
+          <button 
+            onClick={toggleLanguage}
+            className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 hover:border-[#f99c00]/30 hover:bg-white/10 transition-all group"
+            title={language === 'en' ? 'Switch to Luganda' : 'Switch to English'}
+          >
+            <div className="flex items-center gap-2">
+              <Icon icon="solar:global-linear" width="18" height="18" className="text-slate-400 group-hover:text-[#f99c00]" style={{ strokeWidth: 1 }} />
+              <span className="text-xs font-medium text-slate-400 group-hover:text-white">{language.toUpperCase()}</span>
+            </div>
+            <Icon icon="solar:alt-arrow-right-linear" width="16" height="16" className="text-slate-500 group-hover:text-[#f99c00]" style={{ strokeWidth: 1 }} />
+          </button>
+          
+          {/* User Profile */}
           <a href="#" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-all group">
             <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/user-files/fd86d650-37a4-4a87-a832-38f8d246494a/a14eeb81-d59e-4bcb-a228-5249b5a17192-pp.png?v=1776510809689" alt="Sarah K." className="w-10 h-10 rounded-full object-cover border border-white/10 group-hover:border-[#f99c00]/50 transition-all" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate">Sarah K.</p>
-              <p className="text-xs text-slate-500 truncate">Free Plan</p>
+              <p className="text-xs text-slate-500 truncate">{t('sidebar.freeplan')}</p>
             </div>
             <Icon icon="solar:alt-arrow-right-linear" width="20" height="20" className="text-slate-500 group-hover:text-[#f99c00] transition-colors" style={{ strokeWidth: 1 }} />
           </a>

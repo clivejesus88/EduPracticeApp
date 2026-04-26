@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
+import { useLocalization } from '../contexts/LocalizationContext';
+import { examLevels, physicsTopics, mathematicsTopics } from '../data/examStructure';
 
 
 // Custom Canvas Component for Drawing
@@ -110,7 +112,10 @@ const DrawingCanvas = ({ isReadOnly }) => {
 };
 
 export default function Practice() {
-  const [step, setStep] = useState('topics'); // topics | workboard
+  const { t } = useLocalization();
+  const [step, setStep] = useState('selectLevel'); // selectLevel | topics | workboard
+  const [selectedExamLevel, setSelectedExamLevel] = useState(null);
+  const [selectedSubject, setSelectedSubject] = useState(null);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [activeTab, setActiveTab] = useState('canvas');
   const [aiState, setAiState] = useState('idle'); // idle | analyzing | feedback
@@ -121,36 +126,69 @@ export default function Practice() {
   ]);
   const messagesEndRef = useRef(null);
 
-  // Available topics
-  const topics = [
-    {
-      id: 'physics',
-      name: 'Physics',
-      description: 'Mechanics, Thermodynamics, Waves, and more',
-      icon: 'solar:flash-bold',
-      color: 'from-blue-500 to-cyan-500',
-      questions: 24,
-      difficulty: 'All Levels'
-    },
-    {
-      id: 'mathematics',
-      name: 'Mathematics',
-      description: 'Algebra, Geometry, Calculus, Statistics',
-      icon: 'solar:calculator-bold',
-      color: 'from-rose-500 to-pink-500',
-      questions: 18,
-      difficulty: 'All Levels'
+  // Get topics based on selected exam level
+  const getTopics = () => {
+    if (!selectedExamLevel) return [];
+    
+    const levelKey = selectedExamLevel.toUpperCase().replace('-', '');
+    const topics = [];
+    
+    // Add Physics topics if available
+    if (physicsTopics[levelKey]) {
+      topics.push({
+        id: 'physics',
+        name: t('subjects.physics'),
+        description: t('subjects.physicsDescription'),
+        icon: 'solar:flash-bold',
+        color: 'from-blue-500 to-cyan-500',
+        questions: physicsTopics[levelKey].reduce((sum, t) => sum + t.questions, 0),
+        subtopics: physicsTopics[levelKey],
+        difficulty: levelKey === 'OLEVEL' ? 'Beginner to Intermediate' : 'Intermediate to Advanced'
+      });
     }
-  ];
+    
+    // Add Mathematics topics if available
+    if (mathematicsTopics[levelKey]) {
+      topics.push({
+        id: 'mathematics',
+        name: t('subjects.mathematics'),
+        description: t('subjects.mathematicsDescription'),
+        icon: 'solar:calculator-bold',
+        color: 'from-rose-500 to-pink-500',
+        questions: mathematicsTopics[levelKey].reduce((sum, t) => sum + t.questions, 0),
+        subtopics: mathematicsTopics[levelKey],
+        difficulty: levelKey === 'OLEVEL' ? 'Beginner to Intermediate' : 'Intermediate to Advanced'
+      });
+    }
+    
+    return topics;
+  };
+
+  const topics = getTopics();
+
+  const handleExamLevelSelect = (levelId) => {
+    setSelectedExamLevel(levelId);
+    setSelectedSubject(null);
+    setSelectedTopic(null);
+    setStep('topics');
+  };
 
   const handleTopicSelect = (topic) => {
     setSelectedTopic(topic);
+    setSelectedSubject(topic.id);
     setStep('workboard');
   };
 
   const handleBackToTopics = () => {
     setStep('topics');
     setSelectedTopic(null);
+    setAiState('idle');
+  };
+
+  const handleBackToExamLevel = () => {
+    setStep('selectLevel');
+    setSelectedExamLevel(null);
+    setSelectedSubject(null);
     setAiState('idle');
   };
 
@@ -194,16 +232,68 @@ export default function Practice() {
   return (
     <div className="flex-1 flex flex-col lg:flex-row h-full relative overflow-hidden bg-[#0B1120] gap-4 lg:gap-0">
       
-      {/* Show Topics Selection or Workboard based on step */}
-      {step === 'topics' ? (
-        // TOPICS SELECTION SCREEN
+      {/* EXAM LEVEL SELECTION SCREEN */}
+      {step === 'selectLevel' ? (
         <div className="flex-1 overflow-y-auto w-full p-4 sm:p-6 md:p-8 h-full">
           <div className="max-w-5xl mx-auto">
             
             {/* Header */}
             <div className="mb-10">
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-3">Choose a Topic</h1>
-              <p className="text-slate-400 text-lg">Select a subject to practice and improve your skills</p>
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-3">{t('practice.chooseATopic')}</h1>
+              <p className="text-slate-400 text-lg">{t('examLevels.selectLevel')}</p>
+            </div>
+
+            {/* Exam Level Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 md:gap-6 mb-10">
+              {Object.values(examLevels).map((level) => (
+                <button
+                  key={level.id}
+                  onClick={() => handleExamLevelSelect(level.id)}
+                  className="group relative p-6 sm:p-7 md:p-8 rounded-2xl border border-white/5 bg-gradient-to-br from-[#111827] to-[#0D0F1B] hover:border-white/10 hover:shadow-lg hover:shadow-white/5 transition-all duration-300 text-left overflow-hidden active:scale-95"
+                >
+                  {/* Background glow on hover */}
+                  <div className={`absolute -inset-96 bg-gradient-to-br ${level.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300 blur-3xl pointer-events-none`}></div>
+                  
+                  <div className="relative z-10 space-y-4">
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${level.color} flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300`}>
+                      <Icon icon="solar:book-2-bold" width="24" />
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-2xl font-bold text-white group-hover:text-[#f99c00] transition-colors duration-300">{level.name}</h3>
+                    
+                    {/* Description */}
+                    <p className="text-sm text-slate-400 leading-relaxed">{level.description}</p>
+
+                    {/* Difficulty Badge */}
+                    <div className="pt-4 border-t border-white/5 group-hover:border-white/10 transition-colors duration-300">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{level.difficulty}</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : step === 'topics' ? (
+        // TOPICS SELECTION SCREEN
+        <div className="flex-1 overflow-y-auto w-full p-4 sm:p-6 md:p-8 h-full">
+          <div className="max-w-5xl mx-auto">
+            
+            {/* Back Button */}
+            <button
+              onClick={handleBackToExamLevel}
+              className="flex items-center gap-2 text-slate-400 hover:text-[#f99c00] transition-colors mb-8 text-sm font-medium group"
+            >
+              <Icon icon="solar:alt-arrow-left-linear" width="20" className="group-hover:scale-110 transition-transform" />
+              <span>{t('practice.backToTopics')}</span>
+            </button>
+            
+            {/* Header */}
+            <div className="mb-10">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-3">{t('practice.chooseATopic')}</h1>
+              <p className="text-slate-400 text-lg">{t('practice.selectSubject')}</p>
+              <p className="text-xs text-[#f99c00] font-semibold mt-2 uppercase tracking-widest">{selectedExamLevel?.toUpperCase().replace('-', ' ')}</p>
             </div>
 
             {/* Topics Grid */}
@@ -212,7 +302,7 @@ export default function Practice() {
                 <button
                   key={topic.id}
                   onClick={() => handleTopicSelect(topic)}
-                  className="group relative p-6 sm:p-7 md:p-8 rounded-2xl border border-white/5 bg-gradient-to-br from-[#111827] to-[#0D0F1B] hover:border-white/10 hover:shadow-lg hover:shadow-white/5 transition-all duration-300 text-left overflow-hidden"
+                  className="group relative p-6 sm:p-7 md:p-8 rounded-2xl border border-white/5 bg-gradient-to-br from-[#111827] to-[#0D0F1B] hover:border-white/10 hover:shadow-lg hover:shadow-white/5 transition-all duration-300 text-left overflow-hidden active:scale-95"
                 >
                   {/* Background glow on hover */}
                   <div className={`absolute -inset-96 bg-gradient-to-br ${topic.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300 blur-3xl pointer-events-none`}></div>
@@ -224,7 +314,7 @@ export default function Practice() {
                         <Icon icon={topic.icon} width="28" />
                       </div>
                       <div className="text-right">
-                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{topic.questions} Questions</p>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{topic.questions} {t('practice.questions')}</p>
                         <p className="text-xs text-slate-500 mt-1">{topic.difficulty}</p>
                       </div>
                     </div>
@@ -233,11 +323,30 @@ export default function Practice() {
                     <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-[#f99c00] transition-colors duration-300">{topic.name}</h3>
                     
                     {/* Description */}
-                    <p className="text-sm text-slate-400 leading-relaxed mb-6">{topic.description}</p>
+                    <p className="text-sm text-slate-400 leading-relaxed mb-4">{topic.description}</p>
+
+                    {/* Subtopics (if available) */}
+                    {topic.subtopics && topic.subtopics.length > 0 && (
+                      <div className="mb-5">
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">Subtopics</p>
+                        <div className="flex flex-wrap gap-2">
+                          {topic.subtopics.slice(0, 3).map((sub, i) => (
+                            <span key={i} className="text-xs px-2.5 py-1.5 rounded-full bg-white/5 text-slate-300 group-hover:bg-white/10 transition-all">
+                              {sub.name}
+                            </span>
+                          ))}
+                          {topic.subtopics.length > 3 && (
+                            <span className="text-xs px-2.5 py-1.5 rounded-full bg-[#f99c00]/10 text-[#f99c00]">
+                              +{topic.subtopics.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Footer with CTA */}
                     <div className="flex items-center justify-between pt-5 border-t border-white/5 group-hover:border-white/10 transition-colors duration-300">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Start Now</span>
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('practice.startNow')}</span>
                       <div className="w-8 h-8 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] group-hover:bg-[#f99c00] group-hover:text-[#0B1120] transition-all duration-300">
                         <Icon icon="solar:alt-arrow-right-linear" width="18" />
                       </div>
@@ -249,24 +358,24 @@ export default function Practice() {
 
             {/* Features Section */}
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-white mb-5">Why Practice with EduPractice?</h2>
+              <h2 className="text-lg font-semibold text-white mb-5">{t('practice.whyPractice')}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-5 rounded-xl bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 flex items-start gap-4 hover:border-[#f99c00]/20 transition-all">
-                  <div className="w-10 h-10 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] shrink-0">
+                <div className="p-5 rounded-xl bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 flex items-start gap-4 hover:border-[#f99c00]/20 hover:shadow-lg hover:shadow-[#f99c00]/5 transition-all group cursor-pointer">
+                  <div className="w-10 h-10 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] shrink-0 group-hover:scale-110 transition-transform">
                     <Icon icon="solar:star-bold" width="20" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-white mb-1">Instant AI Feedback</h4>
-                    <p className="text-xs text-slate-400">Get real-time analysis from Maestro AI on your solutions</p>
+                    <h4 className="text-sm font-semibold text-white mb-1">{t('practice.instantAiFeedback')}</h4>
+                    <p className="text-xs text-slate-400">{t('practice.getInstantAnalysis')}</p>
                   </div>
                 </div>
-                <div className="p-5 rounded-xl bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 flex items-start gap-4 hover:border-emerald-500/20 transition-all">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                <div className="p-5 rounded-xl bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 flex items-start gap-4 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5 transition-all group cursor-pointer">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0 group-hover:scale-110 transition-transform">
                     <Icon icon="solar:target-bold" width="20" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-white mb-1">Track Progress</h4>
-                    <p className="text-xs text-slate-400">Monitor your growth across all topics in detail</p>
+                    <h4 className="text-sm font-semibold text-white mb-1">{t('practice.trackProgress')}</h4>
+                    <p className="text-xs text-slate-400">{t('practice.monitorGrowth')}</p>
                   </div>
                 </div>
               </div>
@@ -313,7 +422,7 @@ export default function Practice() {
             {/* Answer Section */}
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <h3 className="text-2xl font-bold text-white">Your Solution</h3>
+                <h3 className="text-2xl font-bold text-white">{t('practice.yourSolution')}</h3>
                 
                 {/* Tabs */}
                 <div className="flex bg-[#111827] p-1 rounded-xl border border-white/5 self-start w-full xs:w-auto">
@@ -322,14 +431,14 @@ export default function Practice() {
                     className={`flex-1 sm:flex-none flex justify-center items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'canvas' ? 'bg-[#f99c00] text-[#0B1120] shadow-lg shadow-[#f99c00]/20' : 'text-slate-400 hover:text-slate-200'}`}
                   >
                     <Icon icon="solar:pen-linear" width="20" style={{ strokeWidth: 1 }} />
-                    Draw
+                    {t('practice.draw')}
                   </button>
                   <button 
                     onClick={() => setActiveTab('upload')}
                     className={`flex-1 sm:flex-none flex justify-center items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'upload' ? 'bg-[#f99c00] text-[#0B1120] shadow-lg shadow-[#f99c00]/20' : 'text-slate-400 hover:text-slate-200'}`}
                   >
                     <Icon icon="solar:gallery-linear" width="20" style={{ strokeWidth: 1 }} />
-                    Upload
+                    {t('practice.upload')}
                   </button>
                 </div>
               </div>
@@ -343,8 +452,8 @@ export default function Practice() {
                     <div className="w-16 h-16 rounded-full bg-white/5 group-hover:bg-[#f99c00]/10 flex items-center justify-center text-slate-400 group-hover:text-[#f99c00] group-hover:scale-110 transition-all duration-300 mb-4">
                       <Icon icon="solar:upload-minimalistic-linear" width="28" />
                     </div>
-                    <p className="text-base font-semibold text-white mb-2">Click to upload or drag and drop</p>
-                    <p className="text-sm text-slate-500 max-w-xs">Upload a clear photo of your written solution. (PNG, JPG, PDF up to 10MB)</p>
+                    <p className="text-base font-semibold text-white mb-2">{t('practice.clickToUpload')}</p>
+                    <p className="text-sm text-slate-500 max-w-xs">{t('practice.uploadDescription')}</p>
                   </div>
                 )}
               </div>
@@ -360,13 +469,13 @@ export default function Practice() {
                     {aiState === 'analyzing' ? (
                       <>
                         <Icon icon="solar:loader-bold" width="20" className="animate-spin" />
-                        <span className="hidden xs:inline">Analyzing...</span>
+                        <span className="hidden xs:inline">{t('practice.analyzing')}</span>
                       </>
                     ) : (
                       <>
                         <Icon icon="solar:magic-stick-3-linear" width="20" />
-                        <span className="hidden xs:inline">Submit for Evaluation</span>
-                        <span className="xs:hidden">Submit</span>
+                        <span className="hidden xs:inline">{t('practice.submitForEvaluation')}</span>
+                        <span className="xs:hidden">{t('practice.submitForEvaluation')}</span>
                       </>
                     )}
                   </button>
@@ -381,7 +490,7 @@ export default function Practice() {
                     <div className="flex-1">
                       <h3 className="text-lg md:text-xl font-bold text-emerald-400 mb-4 flex items-center gap-2">
                         <Icon icon="solar:check-circle-bold" width="24" />
-                        Solution Evaluated
+                        {t('practice.solutionEvaluated')}
                       </h3>
                       <div className="text-slate-300 text-sm md:text-base leading-relaxed space-y-3">
                         <p>Your approach to breaking down the vector components is correct and your derivation for the acceleration is flawless.</p>
@@ -391,18 +500,18 @@ export default function Practice() {
                     
                     <div className="shrink-0 flex flex-col items-center justify-center p-5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 self-center sm:self-auto mt-4 md:mt-0 md:ml-6">
                       <span className="text-4xl font-bold text-emerald-400 font-mono">85%</span>
-                      <span className="text-xs font-bold text-emerald-500/80 uppercase tracking-widest mt-1">Score</span>
+                      <span className="text-xs font-bold text-emerald-500/80 uppercase tracking-widest mt-1">{t('practice.score')}</span>
                     </div>
                   </div>
 
                   <div className="mt-6 pt-5 border-t border-white/10 flex flex-col sm:flex-row gap-3">
-                    <button onClick={() => setAiState('idle')} className="px-6 py-3 rounded-lg border border-white/10 hover:border-white/20 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all w-full sm:w-auto">
-                      Try Again
+                    <button onClick={() => setAiState('idle')} className="px-6 py-3 rounded-lg border border-white/10 hover:border-white/20 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all w-full sm:w-auto active:scale-95">
+                      {t('practice.tryAgain')}
                     </button>
-                    <button onClick={() => setIsChatOpen(true)} className="px-6 py-3 rounded-lg bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] text-sm font-bold transition-all flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg shadow-[#f99c00]/20">
-                      <iconify-icon icon="solar:chat-line-linear" width="20"></iconify-icon>
-                      <span className="hidden xs:inline">Follow up with Maestro</span>
-                      <span className="xs:hidden">Ask Maestro</span>
+                    <button onClick={() => setIsChatOpen(true)} className="px-6 py-3 rounded-lg bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] text-sm font-bold transition-all flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg shadow-[#f99c00]/20 active:scale-95">
+                      <Icon icon="solar:chat-line-linear" width="20" />
+                      <span className="hidden xs:inline">{t('practice.askMaestro')}</span>
+                      <span className="xs:hidden">{t('practice.askMaestro')}</span>
                     </button>
                   </div>
                 </div>
