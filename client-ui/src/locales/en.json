@@ -59,7 +59,8 @@
     "solutionEvaluated": "Solution Evaluated",
     "score": "Score",
     "tryAgain": "Try Again",
-    "askMaestro": "Ask Maestro"
+    "askMaestro": "Ask Maestro",
+    "maximumMark": "Maximum Mark"
   },
   "subjects": {
     "physics": "Physics",

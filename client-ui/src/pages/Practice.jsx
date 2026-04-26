@@ -397,17 +397,26 @@ export default function Practice() {
                 <Icon icon="solar:alt-arrow-left-linear" width="20" />
                 <span>Back to Topics</span>
               </button>
-              <div className="flex items-center gap-2 text-[#f99c00] text-xs font-bold uppercase tracking-widest mb-3">
-                <Icon icon="solar:book-bookmark-linear" width="16" />
-                <span>{selectedTopic?.name} • Kinematics</span>
+              <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+                <div className="flex items-center gap-2 text-[#f99c00] text-xs font-bold uppercase tracking-widest">
+                  <Icon icon="solar:book-bookmark-linear" width="16" />
+                  <span className="truncate">{selectedTopic?.name} • Kinematics</span>
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 shrink-0">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span className="text-xs font-semibold text-emerald-400">Easy</span>
+                </div>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">Projectile Motion Scenario</h1>
+              <div>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white break-words mb-2">Projectile Motion Scenario</h1>
+                <p className="text-sm text-slate-400">{t('practice.maximumMark')}: <span className="font-semibold text-white">7</span></p>
+              </div>
             </div>
 
             {/* Scenario Details Card */}
-            <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-2xl p-7 md:p-8 space-y-6 hover:border-white/10 transition-all">
-              <p className="text-slate-300 leading-relaxed text-base md:text-lg">
-                A block of mass <span className="font-mono text-[#f99c00] bg-[#f99c00]/10 px-2 py-1 rounded">m</span> is sliding down a frictionless incline angled at <span className="font-mono text-[#f99c00] bg-[#f99c00]/10 px-2 py-1 rounded">θ</span> to the horizontal. Derive the equation for its acceleration and calculate its final velocity if it starts from rest and travels a distance <span className="font-mono text-[#f99c00] bg-[#f99c00]/10 px-2 py-1 rounded">d</span>.
+            <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-2xl p-4 sm:p-5 md:p-6 lg:p-8 space-y-4 sm:space-y-5 md:space-y-6 hover:border-white/10 transition-all">
+              <p className="text-slate-300 leading-relaxed text-sm sm:text-base md:text-lg">
+                A block of mass <span className="font-mono text-[#f99c00] bg-[#f99c00]/10 px-2 py-1 rounded text-xs sm:text-sm">m</span> is sliding down a frictionless incline angled at <span className="font-mono text-[#f99c00] bg-[#f99c00]/10 px-2 py-1 rounded text-xs sm:text-sm">θ</span> to the horizontal. Derive the equation for its acceleration and calculate its final velocity if it starts from rest and travels a distance <span className="font-mono text-[#f99c00] bg-[#f99c00]/10 px-2 py-1 rounded text-xs sm:text-sm">d</span>.
               </p>
               
               {/* Embedded Reference Image */}
@@ -415,31 +424,33 @@ export default function Practice() {
                 <img 
                   src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/user-files/fd86d650-37a4-4a87-a832-38f8d246494a/c1d8f4a0-dfec-4aba-8c26-7c9d7cb813e2-pr.png?v=1776510287457" 
                   alt="Scenario Reference" 
-                  className="w-full object-cover max-h-72 md:max-h-96"
+                  className="w-full object-cover max-h-48 sm:max-h-64 md:max-h-80 lg:max-h-96"
                 />
               </div>
             </div>
 
             {/* Answer Section */}
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <h3 className="text-2xl font-bold text-white">{t('practice.yourSolution')}</h3>
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                <h3 className="text-xl sm:text-2xl font-bold text-white">{t('practice.yourSolution')}</h3>
                 
                 {/* Tabs */}
-                <div className="flex bg-[#111827] p-1 rounded-xl border border-white/5 self-start w-full xs:w-auto">
+                <div className="flex bg-[#111827] p-1 rounded-lg sm:rounded-xl border border-white/5 w-full sm:w-auto gap-1 sm:gap-0">
                   <button 
                     onClick={() => setActiveTab('canvas')}
-                    className={`flex-1 sm:flex-none flex justify-center items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'canvas' ? 'bg-[#f99c00] text-[#0B1120] shadow-lg shadow-[#f99c00]/20' : 'text-slate-400 hover:text-slate-200'}`}
+                    className={`flex-1 sm:flex-none flex justify-center items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all min-h-[44px] sm:min-h-[40px] ${activeTab === 'canvas' ? 'bg-[#f99c00] text-[#0B1120] shadow-lg shadow-[#f99c00]/20' : 'text-slate-400 hover:text-slate-200'}`}
                   >
-                    <Icon icon="solar:pen-linear" width="20" style={{ strokeWidth: 1 }} />
-                    {t('practice.draw')}
+                    <Icon icon="solar:pen-linear" width="18" style={{ strokeWidth: 1.2 }} />
+                    <span className="hidden sm:inline">{t('practice.draw')}</span>
+                    <span className="sm:hidden text-xs">Draw</span>
                   </button>
                   <button 
                     onClick={() => setActiveTab('upload')}
-                    className={`flex-1 sm:flex-none flex justify-center items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'upload' ? 'bg-[#f99c00] text-[#0B1120] shadow-lg shadow-[#f99c00]/20' : 'text-slate-400 hover:text-slate-200'}`}
+                    className={`flex-1 sm:flex-none flex justify-center items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all min-h-[44px] sm:min-h-[40px] ${activeTab === 'upload' ? 'bg-[#f99c00] text-[#0B1120] shadow-lg shadow-[#f99c00]/20' : 'text-slate-400 hover:text-slate-200'}`}
                   >
-                    <Icon icon="solar:gallery-linear" width="20" style={{ strokeWidth: 1 }} />
-                    {t('practice.upload')}
+                    <Icon icon="solar:gallery-linear" width="18" style={{ strokeWidth: 1.2 }} />
+                    <span className="hidden sm:inline">{t('practice.upload')}</span>
+                    <span className="sm:hidden text-xs">Upload</span>
                   </button>
                 </div>
               </div>
@@ -449,23 +460,23 @@ export default function Practice() {
                 {activeTab === 'canvas' ? (
                   <DrawingCanvas isReadOnly={aiState === 'analyzing' || aiState === 'feedback'} />
                 ) : (
-                  <div className="w-full h-72 md:h-96 rounded-2xl border-2 border-dashed border-white/10 hover:border-[#f99c00]/40 bg-gradient-to-b from-[#111827]/50 to-[#0D0F1B]/50 flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer group">
-                    <div className="w-16 h-16 rounded-full bg-white/5 group-hover:bg-[#f99c00]/10 flex items-center justify-center text-slate-400 group-hover:text-[#f99c00] group-hover:scale-110 transition-all duration-300 mb-4">
-                      <Icon icon="solar:upload-minimalistic-linear" width="28" />
+                  <div className="w-full h-48 sm:h-64 md:h-72 lg:h-96 rounded-xl sm:rounded-2xl border-2 border-dashed border-white/10 hover:border-[#f99c00]/40 bg-gradient-to-b from-[#111827]/50 to-[#0D0F1B]/50 flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer group">
+                    <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-full bg-white/5 group-hover:bg-[#f99c00]/10 flex items-center justify-center text-slate-400 group-hover:text-[#f99c00] group-hover:scale-110 transition-all duration-300 mb-3 sm:mb-4">
+                      <Icon icon="solar:upload-minimalistic-linear" width="24" />
                     </div>
-                    <p className="text-base font-semibold text-white mb-2">{t('practice.clickToUpload')}</p>
-                    <p className="text-sm text-slate-500 max-w-xs">{t('practice.uploadDescription')}</p>
+                    <p className="text-sm sm:text-base font-semibold text-white mb-1 sm:mb-2">{t('practice.clickToUpload')}</p>
+                    <p className="text-xs sm:text-sm text-slate-500 max-w-xs px-2">{t('practice.uploadDescription')}</p>
                   </div>
                 )}
               </div>
 
               {/* Submit Action */}
               {aiState !== 'feedback' && (
-                <div className="mt-6 flex flex-col-reverse sm:flex-row gap-3 justify-between">
+                <div className="mt-4 sm:mt-6 flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 justify-between">
                   <button 
                     onClick={handleSubmit}
                     disabled={aiState !== 'idle'}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] px-7 py-3.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#f99c00]/20 hover:shadow-xl hover:shadow-[#f99c00]/30"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] px-4 sm:px-7 py-3 sm:py-3.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#f99c00]/20 hover:shadow-xl hover:shadow-[#f99c00]/30 min-h-[44px] sm:min-h-[48px]"
                   >
                     {aiState === 'analyzing' ? (
                       <>
