@@ -538,10 +538,11 @@ export default function Practice() {
       {step === 'workboard' && (
         <button
           onClick={() => setIsChatOpen(true)}
-          className={`fixed lg:absolute right-4 bottom-24 lg:bottom-8 z-30 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#f99c00] to-rose-500 rounded-full flex items-center justify-center text-[#0B1120] shadow-xl shadow-[#f99c00]/40 hover:scale-110 transition-all duration-300 font-bold text-lg ${isChatOpen ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
+          className={`fixed lg:absolute right-4 bottom-24 lg:bottom-8 z-30 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#f99c00] to-rose-500 rounded-full flex items-center justify-center text-[#0B1120] shadow-xl shadow-[#f99c00]/40 hover:scale-110 transition-all duration-300 ${isChatOpen ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
           aria-label="Open AI Tutor"
+          title="Ask Maestro AI for help"
         >
-          <iconify-icon icon="solar:magic-stick-3-bold" width="28" className="sm:w-8 sm:h-8"></iconify-icon>
+          <Icon icon="solar:magic-stick-3-bold" width="28" height="28" />
           <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-400 border-2 border-[#f99c00] rounded-full animate-pulse"></span>
         </button>
       )}
