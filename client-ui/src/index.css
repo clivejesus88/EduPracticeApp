@@ -1,6 +1,7 @@
 /* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
 
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -149,8 +150,15 @@ body {
   html {
     font-size: var(--font-size);
   }
-    h2,h3,h4,h5{
-      font-family: "JetBrains Mono", serif;
+    h1,h2,h3,h4,h5,h6 {
+      font-family: "Poppins", sans-serif;
+      letter-spacing: -0.5px;
+    }
+
+    code {
+      font-family: "Fira Code", monospace;
+      font-size: 0.9em;
+      font-weight: 400;
     }
   h1 {
     font-size: var(--text-2xl);

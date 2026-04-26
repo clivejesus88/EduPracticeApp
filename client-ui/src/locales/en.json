@@ -72,5 +72,43 @@
     "aLevel": "A-Level",
     "uace": "UACE",
     "selectLevel": "Select exam level"
+  },
+  "chat": {
+    "maestro": "Maestro",
+    "online": "Online",
+    "typeMessage": "Type your question...",
+    "send": "Send",
+    "pressEnter": "Press Enter to send, Shift+Enter for new line"
+  },
+  "profile": {
+    "myProfile": "My Profile",
+    "personalInfo": "Personal Information",
+    "editProfile": "Edit Profile",
+    "fullName": "Full Name",
+    "email": "Email",
+    "schoolName": "School Name",
+    "examLevel": "Exam Level",
+    "accountSettings": "Account Settings",
+    "changePassword": "Change Password",
+    "twoFactorAuth": "Two-Factor Authentication",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "learningStatistics": "Learning Statistics",
+    "questionsAttempted": "Questions Attempted",
+    "averageAccuracyScore": "Average Accuracy Score",
+    "totalStudyTime": "Total Study Time",
+    "achievements": "Achievements & Badges",
+    "badges": "You have earned {{count}} badges",
+    "preferences": "Study Preferences",
+    "dailyGoalTarget": "Daily Goal Target",
+    "notificationReminders": "Notification Reminders",
+    "dataPrivacy": "Data & Privacy",
+    "downloadData": "Download My Data",
+    "deleteAccount": "Delete Account",
+    "logout": "Logout",
+    "save": "Save Changes",
+    "cancel": "Cancel",
+    "success": "Changes saved successfully",
+    "error": "An error occurred. Please try again."
   }
 }

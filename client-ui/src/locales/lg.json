@@ -72,5 +72,43 @@
     "aLevel": "A-Level",
     "uace": "UACE",
     "selectLevel": "Londa mulimu gwa exam"
+  },
+  "chat": {
+    "maestro": "Maestro",
+    "online": "Online",
+    "typeMessage": "Kuba ebibuzo byo...",
+    "send": "Teekawo",
+    "pressEnter": "Kuba Enter okutekawo, Shift+Enter okutwala liniya empya"
+  },
+  "profile": {
+    "myProfile": "Profile yange",
+    "personalInfo": "Okutegeeza Ensi yange",
+    "editProfile": "Eddita Profile",
+    "fullName": "Erinnya lyange lyonna",
+    "email": "Email",
+    "schoolName": "Erinnya ly'Essomero",
+    "examLevel": "Mulimu gwa Exam",
+    "accountSettings": "Okutegeka Akawunti",
+    "changePassword": "Kyusa Password",
+    "twoFactorAuth": "Two-Factor Authentication",
+    "enabled": "Emu",
+    "disabled": "Okuwa",
+    "learningStatistics": "Okukubalirira Okuweweza",
+    "questionsAttempted": "Ebubuzo Ebigeze",
+    "averageAccuracyScore": "Emiwendo gy'Okugikuza Okwennyini",
+    "totalStudyTime": "Obudde bonna bw'Okutegeeza",
+    "achievements": "Emirimu n'Amambusi",
+    "badges": "Wano amambusi {{count}}",
+    "preferences": "Emirimu gy'Okutegeeza",
+    "dailyGoalTarget": "Injiri y'Olufumanyabi",
+    "notificationReminders": "Okumulembeza kwa Notification",
+    "dataPrivacy": "Okutegeeza n'Okugabanya",
+    "downloadData": "Kuka Data yange",
+    "deleteAccount": "Siba Akawunti",
+    "logout": "Siba mu Akawunti",
+    "save": "Tegeka Okkyusa",
+    "cancel": "Tegeza",
+    "success": "Okkyusa kwedde bulungi",
+    "error": "Ensobi yafuna. Geeza nate."
   }
 }

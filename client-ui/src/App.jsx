@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import DashboardUI from './pages/DashboardUI';
 import Practice from './pages/Practice';
+import Profile from './pages/Profile';
 import Layout from './pages/Layout';
 import ProtectedRoute from './auth/ProtectedRoute';
 import { LocalizationProvider } from './contexts/LocalizationContext';
@@ -21,6 +22,7 @@ function App() {
               <Route path="/" element={<DashboardUI />} />
               <Route path="/dashboard" element={<DashboardUI />} />
               <Route path="/practice" element={<Practice />} />
+              <Route path="/profile" element={<Profile />} />
             </Route>
           </Route>
         </Routes>

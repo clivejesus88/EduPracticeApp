@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
@@ -6,6 +6,7 @@ import { useLocalization } from '../contexts/LocalizationContext';
 export default function Layout() {
   const location = useLocation();
   const { t, language, toggleLanguage } = useLocalization();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const navItems = [
     { name: t('nav.dashboard'), path: '/dashboard', icon: 'solar:home-2-linear' },
@@ -83,14 +84,14 @@ export default function Layout() {
           </button>
           
           {/* User Profile */}
-          <a href="#" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-all group">
+          <Link to="/profile" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-all group">
             <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/user-files/fd86d650-37a4-4a87-a832-38f8d246494a/a14eeb81-d59e-4bcb-a228-5249b5a17192-pp.png?v=1776510809689" alt="Sarah K." className="w-10 h-10 rounded-full object-cover border border-white/10 group-hover:border-[#f99c00]/50 transition-all" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate">Sarah K.</p>
               <p className="text-xs text-slate-500 truncate">{t('sidebar.freeplan')}</p>
             </div>
             <Icon icon="solar:alt-arrow-right-linear" width="20" height="20" className="text-slate-500 group-hover:text-[#f99c00] transition-colors" style={{ strokeWidth: 1 }} />
-          </a>
+          </Link>
         </div>
       </aside>
 
@@ -101,7 +102,20 @@ export default function Layout() {
 
         {/* Top Header */}
         <header className="h-16 md:h-20 px-4 md:px-8 flex items-center justify-between border-b border-white/5 bg-gradient-to-r from-[#0B1120] to-[#0D0F1B] backdrop-blur-lg z-10 shrink-0">
-          <Link to="/" className="md:hidden flex items-center gap-2 group">
+          <div className="flex items-center gap-3 md:hidden">
+            <button
+              onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+              className="p-2 hover:bg-white/5 rounded-lg transition-colors text-slate-400 hover:text-white"
+            >
+              <Icon icon={isMobileSidebarOpen ? "solar:close-circle-linear" : "solar:hamburger-menu-linear"} width="24" style={{ strokeWidth: 1 }} />
+            </button>
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-200 rounded-lg flex items-center justify-center text-[#0B1120] group-hover:scale-110 transition-all">
+                <Icon icon="lucide:graduation-cap" width="24" height="24" style={{ strokeWidth: 1 }} />
+              </div>
+            </Link>
+          </div>
+          <Link to="/" className="hidden md:flex items-center gap-2 group">
             <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-200 rounded-lg flex items-center justify-center text-[#0B1120] group-hover:scale-110 transition-all">
               <Icon icon="lucide:graduation-cap" width="24" height="24" style={{ strokeWidth: 1 }} />
             </div>
@@ -142,6 +156,93 @@ export default function Layout() {
         </div>
       </main>
 
+      {/* Mobile Sidebar Overlay */}
+      {isMobileSidebarOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black/40 z-30"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        ></div>
+      )}
+
+      {/* Mobile Sidebar */}
+      <aside className={`md:hidden fixed top-0 left-0 w-64 h-[100dvh] bg-gradient-to-b from-[#0B1120] to-[#0D0F1B] border-r border-white/5 flex flex-col z-40 transform transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto`}>
+        {/* Logo */}
+        <div className="h-20 px-6 flex items-center border-b border-white/5 sticky top-0 bg-[#0B1120]/95 backdrop-blur">
+          <Link to="/" className="flex items-center gap-3 group w-full" onClick={() => setIsMobileSidebarOpen(false)}>
+            <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-200 rounded-lg flex items-center justify-center text-[#0B1120] transition-all group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-white/20">
+              <Icon icon="lucide:graduation-cap" width="28" height="28" style={{ strokeWidth: 1 }} />
+            </div>
+            <span className="text-xl font-bold tracking-tight text-white">EduPractice</span>
+          </Link>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-6 space-y-1">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.name}
+                to={item.path}
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all group font-medium ${
+                  isActive 
+                    ? 'bg-[#f99c00]/15 text-[#f99c00] shadow-lg shadow-[#f99c00]/10' 
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Icon 
+                  icon={item.icon} 
+                  width="24" 
+                  height="24" 
+                  className={isActive ? '' : 'group-hover:text-white transition-colors'} 
+                  style={{ strokeWidth: 1 }}
+                />
+                <span className="text-sm">{item.name}</span>
+              </Link>
+            );
+          })}
+          
+          <div className="pt-6 pb-2 px-3">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('sidebar.subjects')}</p>
+          </div>
+          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
+            <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
+            <span className="text-sm">{t('subjects.physics')}</span>
+          </a>
+          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
+            <div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
+            <span className="text-sm">{t('subjects.mathematics')}</span>
+          </a>
+        </nav>
+
+        {/* Bottom User Profile and Language Switcher */}
+        <div className="p-4 border-t border-white/5 space-y-3 sticky bottom-0 bg-[#0B1120]/95 backdrop-blur">
+          {/* Language Switcher */}
+          <button 
+            onClick={toggleLanguage}
+            className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 hover:border-[#f99c00]/30 hover:bg-white/10 transition-all group"
+            title={language === 'en' ? 'Switch to Luganda' : 'Switch to English'}
+          >
+            <div className="flex items-center gap-2">
+              <Icon icon="solar:global-linear" width="18" height="18" className="text-slate-400 group-hover:text-[#f99c00]" style={{ strokeWidth: 1 }} />
+              <span className="text-xs font-medium text-slate-400 group-hover:text-white">{language.toUpperCase()}</span>
+            </div>
+            <Icon icon="solar:alt-arrow-right-linear" width="16" height="16" className="text-slate-500 group-hover:text-[#f99c00]" style={{ strokeWidth: 1 }} />
+          </button>
+          
+          {/* User Profile */}
+          <Link to="/profile" onClick={() => setIsMobileSidebarOpen(false)} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-all group">
+            <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/user-files/fd86d650-37a4-4a87-a832-38f8d246494a/a14eeb81-d59e-4bcb-a228-5249b5a17192-pp.png?v=1776510809689" alt="Sarah K." className="w-10 h-10 rounded-full object-cover border border-white/10 group-hover:border-[#f99c00]/50 transition-all" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white truncate">Sarah K.</p>
+              <p className="text-xs text-slate-500 truncate">{t('sidebar.freeplan')}</p>
+            </div>
+            <Icon icon="solar:alt-arrow-right-linear" width="20" height="20" className="text-slate-500 group-hover:text-[#f99c00] transition-colors" style={{ strokeWidth: 1 }} />
+          </Link>
+        </div>
+      </aside>
+
       {/* Mobile Bottom Navigation Bar (Icons Only) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] bg-gradient-to-t from-[#0B1120] via-[#0B1120] to-[#0B1120]/80 backdrop-blur-xl border-t border-white/5 flex items-center justify-around px-2 z-50 pb-safe">
         {navItems.map((item) => {
@@ -159,6 +260,16 @@ export default function Layout() {
             </Link>
           )
         })}
+        {/* Profile Icon */}
+        <Link 
+          to="/profile" 
+          className={`flex items-center justify-center w-16 h-full transition-all ${
+            location.pathname === '/profile' ? 'text-[#f99c00]' : 'text-slate-500 hover:text-white'
+          }`}
+          aria-label="Profile"
+        >
+          <Icon icon="solar:user-circle-linear" width="24" height="24" style={{ strokeWidth: 1.5 }} />
+        </Link>
       </nav>
     </div>
   );

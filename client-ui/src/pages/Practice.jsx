@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { examLevels, physicsTopics, mathematicsTopics } from '../data/examStructure';
+import ChatInterface from '../components/ChatInterface';
 
 
 // Custom Canvas Component for Drawing
@@ -534,80 +535,13 @@ export default function Practice() {
         </button>
       )}
 
-      {/* Mobile Backdrop for Chat Panel */}
-      {isChatOpen && step === 'workboard' && (
-        <div 
-          className="fixed inset-0 bg-[#0B1120]/60 backdrop-blur-sm z-55 lg:hidden"
-          onClick={() => setIsChatOpen(false)}
-        />
-      )}
-
-      {/* Slide-over Maestro AI Chat Panel - Mobile Responsive */}
+      {/* ChatInterface Component - Handles all chat UI */}
       {step === 'workboard' && (
-        <div className={`fixed lg:absolute top-0 bottom-0 right-0 z-60 w-full sm:w-105 lg:w-100 h-dvh lg:h-full bg-[#0B1120] lg:bg-gradient-to-b lg:from-[#0B1120] lg:to-[#0B1120] border-l border-white/5 flex flex-col transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-lg ${isChatOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}>
-          
-          {/* Panel Header */}
-          <div className="p-4 sm:p-5 md:p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-[#111827] to-[#0D0F1B] pt-safe lg:pt-4 md:pt-6 shrink-0 z-10 relative shadow-lg">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-gradient-to-br from-[#f99c00] to-rose-500 flex items-center justify-center text-white shadow-lg shadow-[#f99c00]/30 shrink-0">
-                <iconify-icon icon="solar:magic-stick-3-bold" width="24"></iconify-icon>
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2 truncate">
-                  Maestro AI
-                  <span className="flex h-2 w-2 relative shrink-0">
-                    <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                </h3>
-                <p className="text-xs text-slate-400 truncate font-medium">Follow-up Assistant</p>
-              </div>
-            </div>
-            <button 
-              onClick={() => setIsChatOpen(false)}
-              className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-all lg:hidden shrink-0"
-            >
-              <iconify-icon icon="solar:close-circle-linear" width="24"></iconify-icon>
-            </button>
-          </div>
-
-          {/* Chat Conversation Area - Better mobile scrolling */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-5 md:p-6 space-y-5 md:space-y-6">
-            {messages.map((msg, idx) => (
-              <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-fade-in-up`} style={{ animationDelay: `${Math.min(idx * 0.1, 0.3)}s` }}>
-                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'border border-white/10 overflow-hidden' : 'bg-gradient-to-br from-[#f99c00] to-rose-500 text-white'}`}>
-                  {msg.role === 'user' ? (
-                    <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/user-files/fd86d650-37a4-4a87-a832-38f8d246494a/a14eeb81-d59e-4bcb-a228-5249b5a17192-pp.png?v=1776510809689" alt="Sarah K." className="w-full h-full object-cover" />
-                  ) : <iconify-icon icon="solar:magic-stick-3-linear" width="20"></iconify-icon>}
-                </div>
-                <div className={`max-w-[80%] p-3 sm:p-4 rounded-2xl text-sm leading-relaxed ${msg.role === 'user' ? 'bg-[#f99c00] text-[#0B1120] rounded-tr-none font-semibold' : 'bg-[#111827] border border-white/5 text-slate-300 rounded-tl-none'}`}>
-                  {msg.content}
-                </div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} className="h-1" />
-          </div>
-
-          {/* Input Footer - Mobile optimized */}
-          <form onSubmit={handleChatSubmit} className="p-3 sm:p-4 md:p-5 border-t border-white/5 bg-gradient-to-r from-[#111827] to-[#0D0F1B] pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:pb-4 md:pb-5 shrink-0 z-10 relative shadow-lg">
-            <div className="relative flex items-center gap-2">
-              <input 
-                type="text" 
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Ask Maestro..." 
-                className="w-full bg-[#0B1120] border border-white/10 hover:border-white/20 rounded-lg pl-4 pr-11 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-[#f99c00]/50 focus:ring-2 focus:ring-[#f99c00]/30 transition-all"
-              />
-              <button 
-                type="submit"
-                disabled={!chatInput.trim()}
-                className="absolute right-1.5 w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[#f99c00]/10 text-[#f99c00] transition-all disabled:opacity-50 disabled:hover:bg-transparent"
-              >
-                <iconify-icon icon="solar:plain-bold" width="22"></iconify-icon>
-              </button>
-            </div>
-          </form>
-        </div>
+        <ChatInterface 
+          isOpen={isChatOpen} 
+          onClose={() => setIsChatOpen(false)}
+          initialMessage={t('chat.maestro')}
+        />
       )}
 
     </div>
