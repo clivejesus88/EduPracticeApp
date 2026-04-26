@@ -96,11 +96,6 @@ export default function Layout() {
             >
               <Icon icon={isMobileSidebarOpen ? "solar:close-circle-linear" : "solar:hamburger-menu-linear"} width="24" style={{ strokeWidth: 1 }} />
             </button>
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-200 rounded-lg flex items-center justify-center text-[#0B1120] group-hover:scale-110 transition-all">
-                <Icon icon="lucide:graduation-cap" width="24" height="24" style={{ strokeWidth: 1 }} />
-              </div>
-            </Link>
           </div>
 
           <div className="hidden md:block relative w-96">
