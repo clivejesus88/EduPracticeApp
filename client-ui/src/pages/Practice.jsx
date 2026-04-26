@@ -127,7 +127,7 @@ export default function Practice() {
       id: 'physics',
       name: 'Physics',
       description: 'Mechanics, Thermodynamics, Waves, and more',
-      icon: 'solar:flash-bold',
+      icon: 'lucide:atom',
       color: 'from-blue-500 to-cyan-500',
       questions: 24,
       difficulty: 'All Levels'
@@ -400,7 +400,7 @@ export default function Practice() {
                       Try Again
                     </button>
                     <button onClick={() => setIsChatOpen(true)} className="px-6 py-3 rounded-lg bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] text-sm font-bold transition-all flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg shadow-[#f99c00]/20">
-                      <iconify-icon icon="solar:chat-line-linear" width="20"></iconify-icon>
+                      <Icon icon="solar:chat-line-linear" width="20" />
                       <span className="hidden xs:inline">Follow up with Maestro</span>
                       <span className="xs:hidden">Ask Maestro</span>
                     </button>
