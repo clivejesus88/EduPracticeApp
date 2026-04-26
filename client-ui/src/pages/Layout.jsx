@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
+import Avatar from '../components/Avatar';
 
 export default function Layout() {
   const location = useLocation();
@@ -71,7 +72,7 @@ export default function Layout() {
         {/* Bottom User Profile */}
         <div className="p-4 border-t border-white/5">
           <Link to="/profile" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-all group">
-            <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/user-files/fd86d650-37a4-4a87-a832-38f8d246494a/a14eeb81-d59e-4bcb-a228-5249b5a17192-pp.png?v=1776510809689" alt="Sarah K." className="w-10 h-10 rounded-full object-cover border border-white/10 group-hover:border-[#f99c00]/50 transition-all" />
+            <Avatar name="Sarah K." size={40} />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate">Sarah K.</p>
               <p className="text-xs text-slate-500 truncate">{t('sidebar.freeplan')}</p>
@@ -205,7 +206,7 @@ export default function Layout() {
         {/* Bottom User Profile */}
         <div className="p-4 border-t border-white/5 sticky bottom-0 bg-[#0B1120]/95 backdrop-blur">
           <Link to="/profile" onClick={() => setIsMobileSidebarOpen(false)} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-all group">
-            <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/user-files/fd86d650-37a4-4a87-a832-38f8d246494a/a14eeb81-d59e-4bcb-a228-5249b5a17192-pp.png?v=1776510809689" alt="Sarah K." className="w-10 h-10 rounded-full object-cover border border-white/10 group-hover:border-[#f99c00]/50 transition-all" />
+            <Avatar name="Sarah K." size={40} />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate">Sarah K.</p>
               <p className="text-xs text-slate-500 truncate">{t('sidebar.freeplan')}</p>

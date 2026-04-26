@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
+import Avatar from '../components/Avatar';
 
 export default function Profile() {
   const { t } = useLocalization();
@@ -84,11 +85,9 @@ export default function Profile() {
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 md:gap-8">
             {/* Avatar */}
             <div className="flex-shrink-0 relative">
-              <img
-                src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/user-files/fd86d650-37a4-4a87-a832-38f8d246494a/a14eeb81-d59e-4bcb-a228-5249b5a17192-pp.png?v=1776510809689"
-                alt="Profile"
-                className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-lg md:rounded-2xl object-cover border-2 border-[#f99c00]/30"
-              />
+              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+                <Avatar name={formData.fullName} size={112} className="!rounded-lg md:!rounded-2xl !border-2 !border-[#f99c00]/30 w-full h-full" />
+              </div>
               <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 w-3 sm:w-4 h-3 sm:h-4 bg-emerald-500 rounded-full border-2 border-[#0B1120]"></div>
             </div>
 
