@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Icon } from '@iconify/react';
+
 
 // Custom Canvas Component for Drawing
 const DrawingCanvas = ({ isReadOnly }) => {
@@ -219,7 +221,7 @@ export default function Practice() {
                     {/* Icon and Stats Row */}
                     <div className="flex items-start justify-between mb-5">
                       <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${topic.color} flex items-center justify-center text-white shadow-lg shadow-current/20 group-hover:scale-110 transition-transform duration-300`}>
-                        <iconify-icon icon={topic.icon} width="28"></iconify-icon>
+                        <Icon icon={topic.icon} width="28" />
                       </div>
                       <div className="text-right">
                         <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{topic.questions} Questions</p>
@@ -237,7 +239,7 @@ export default function Practice() {
                     <div className="flex items-center justify-between pt-5 border-t border-white/5 group-hover:border-white/10 transition-colors duration-300">
                       <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Start Now</span>
                       <div className="w-8 h-8 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] group-hover:bg-[#f99c00] group-hover:text-[#0B1120] transition-all duration-300">
-                        <iconify-icon icon="solar:alt-arrow-right-linear" width="18"></iconify-icon>
+                        <Icon icon="solar:alt-arrow-right-linear" width="18" />
                       </div>
                     </div>
                   </div>
@@ -251,7 +253,7 @@ export default function Practice() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-5 rounded-xl bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 flex items-start gap-4 hover:border-[#f99c00]/20 transition-all">
                   <div className="w-10 h-10 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] shrink-0">
-                    <iconify-icon icon="solar:star-bold" width="20"></iconify-icon>
+                    <Icon icon="solar:star-bold" width="20" />
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-white mb-1">Instant AI Feedback</h4>
@@ -260,7 +262,7 @@ export default function Practice() {
                 </div>
                 <div className="p-5 rounded-xl bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 flex items-start gap-4 hover:border-emerald-500/20 transition-all">
                   <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
-                    <iconify-icon icon="solar:target-bold" width="20"></iconify-icon>
+                    <Icon icon="solar:target-bold" width="20" />
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-white mb-1">Track Progress</h4>
@@ -282,11 +284,11 @@ export default function Practice() {
                 onClick={handleBackToTopics}
                 className="flex items-center gap-2 text-slate-400 hover:text-[#f99c00] transition-colors mb-5 text-sm font-medium"
               >
-                <iconify-icon icon="solar:alt-arrow-left-linear" width="20"></iconify-icon>
+                <Icon icon="solar:alt-arrow-left-linear" width="20" />
                 <span>Back to Topics</span>
               </button>
               <div className="flex items-center gap-2 text-[#f99c00] text-xs font-bold uppercase tracking-widest mb-3">
-                <iconify-icon icon="solar:book-bookmark-linear" width="16"></iconify-icon>
+                <Icon icon="solar:book-bookmark-linear" width="16" />
                 <span>{selectedTopic?.name} • Kinematics</span>
               </div>
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">Projectile Motion Scenario</h1>
@@ -319,14 +321,14 @@ export default function Practice() {
                     onClick={() => setActiveTab('canvas')}
                     className={`flex-1 sm:flex-none flex justify-center items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'canvas' ? 'bg-[#f99c00] text-[#0B1120] shadow-lg shadow-[#f99c00]/20' : 'text-slate-400 hover:text-slate-200'}`}
                   >
-                    <iconify-icon icon="solar:pen-linear" width="20" style={{ strokeWidth: 1 }}></iconify-icon>
+                    <Icon icon="solar:pen-linear" width="20" style={{ strokeWidth: 1 }} />
                     Draw
                   </button>
                   <button 
                     onClick={() => setActiveTab('upload')}
                     className={`flex-1 sm:flex-none flex justify-center items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'upload' ? 'bg-[#f99c00] text-[#0B1120] shadow-lg shadow-[#f99c00]/20' : 'text-slate-400 hover:text-slate-200'}`}
                   >
-                    <iconify-icon icon="solar:gallery-linear" width="20" style={{ strokeWidth: 1 }}></iconify-icon>
+                    <Icon icon="solar:gallery-linear" width="20" style={{ strokeWidth: 1 }} />
                     Upload
                   </button>
                 </div>
@@ -339,7 +341,7 @@ export default function Practice() {
                 ) : (
                   <div className="w-full h-72 md:h-96 rounded-2xl border-2 border-dashed border-white/10 hover:border-[#f99c00]/40 bg-gradient-to-b from-[#111827]/50 to-[#0D0F1B]/50 flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer group">
                     <div className="w-16 h-16 rounded-full bg-white/5 group-hover:bg-[#f99c00]/10 flex items-center justify-center text-slate-400 group-hover:text-[#f99c00] group-hover:scale-110 transition-all duration-300 mb-4">
-                      <iconify-icon icon="solar:upload-minimalistic-linear" width="28"></iconify-icon>
+                      <Icon icon="solar:upload-minimalistic-linear" width="28" />
                     </div>
                     <p className="text-base font-semibold text-white mb-2">Click to upload or drag and drop</p>
                     <p className="text-sm text-slate-500 max-w-xs">Upload a clear photo of your written solution. (PNG, JPG, PDF up to 10MB)</p>
@@ -357,12 +359,12 @@ export default function Practice() {
                   >
                     {aiState === 'analyzing' ? (
                       <>
-                        <iconify-icon icon="solar:loader-bold" width="20" className="animate-spin"></iconify-icon>
+                        <Icon icon="solar:loader-bold" width="20" className="animate-spin" />
                         <span className="hidden xs:inline">Analyzing...</span>
                       </>
                     ) : (
                       <>
-                        <iconify-icon icon="solar:magic-stick-3-linear" width="20"></iconify-icon>
+                        <Icon icon="solar:magic-stick-3-linear" width="20" />
                         <span className="hidden xs:inline">Submit for Evaluation</span>
                         <span className="xs:hidden">Submit</span>
                       </>
@@ -378,7 +380,7 @@ export default function Practice() {
                   <div className="flex flex-col gap-5 md:items-start md:justify-between">
                     <div className="flex-1">
                       <h3 className="text-lg md:text-xl font-bold text-emerald-400 mb-4 flex items-center gap-2">
-                        <iconify-icon icon="solar:check-circle-bold" width="24"></iconify-icon>
+                        <Icon icon="solar:check-circle-bold" width="24" />
                         Solution Evaluated
                       </h3>
                       <div className="text-slate-300 text-sm md:text-base leading-relaxed space-y-3">

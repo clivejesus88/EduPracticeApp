@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Icon } from '@iconify/react';
 
 export default function Layout() {
   const location = useLocation();
@@ -19,7 +20,7 @@ export default function Layout() {
         <div className="h-20 px-6 flex items-center border-b border-white/5">
           <Link to="/" className="flex items-center gap-3 group">
             <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-200 rounded-lg flex items-center justify-center text-[#0B1120] transition-all group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-white/20">
-              <iconify-icon icon="solar:diploma-linear" width="28" height="28" style={{ strokeWidth: 1 }}></iconify-icon>
+              <Icon icon="lucide:graduation-cap" width="28" height="28" style={{ strokeWidth: 1 }} />
             </div>
             <span className="text-xl font-bold tracking-tight text-white">EduPractice</span>
           </Link>
@@ -39,13 +40,13 @@ export default function Layout() {
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <iconify-icon 
+                <Icon 
                   icon={item.icon} 
                   width="24" 
                   height="24" 
                   className={isActive ? '' : 'group-hover:text-white transition-colors'} 
                   style={{ strokeWidth: 1 }}
-                ></iconify-icon>
+                />
                 <span className="text-sm">{item.name}</span>
               </Link>
             );
@@ -72,7 +73,7 @@ export default function Layout() {
               <p className="text-sm font-semibold text-white truncate">Sarah K.</p>
               <p className="text-xs text-slate-500 truncate">Free Plan</p>
             </div>
-            <iconify-icon icon="solar:alt-arrow-right-linear" width="20" height="20" className="text-slate-500 group-hover:text-[#f99c00] transition-colors" style={{ strokeWidth: 1 }}></iconify-icon>
+            <Icon icon="solar:alt-arrow-right-linear" width="20" height="20" className="text-slate-500 group-hover:text-[#f99c00] transition-colors" style={{ strokeWidth: 1 }} />
           </a>
         </div>
       </aside>
@@ -86,12 +87,12 @@ export default function Layout() {
         <header className="h-16 md:h-20 px-4 md:px-8 flex items-center justify-between border-b border-white/5 bg-gradient-to-r from-[#0B1120] to-[#0D0F1B] backdrop-blur-lg z-10 shrink-0">
           <Link to="/" className="md:hidden flex items-center gap-2 group">
             <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-200 rounded-lg flex items-center justify-center text-[#0B1120] group-hover:scale-110 transition-all">
-              <iconify-icon icon="solar:diploma-linear" width="24" height="24" style={{ strokeWidth: 1 }}></iconify-icon>
+              <Icon icon="lucide:graduation-cap" width="24" height="24" style={{ strokeWidth: 1 }} />
             </div>
           </Link>
 
           <div className="hidden md:block relative w-96">
-            <iconify-icon icon="solar:magnifier-linear" width="20" height="20" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" style={{ strokeWidth: 1 }}></iconify-icon>
+            <Icon icon="solar:magnifier-linear" width="20" height="20" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" style={{ strokeWidth: 1 }} />
             <input type="text" placeholder="Search topics, questions..." className="w-full bg-white/5 border border-white/10 hover:border-white/20 rounded-lg pl-12 pr-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-[#f99c00]/50 focus:ring-2 focus:ring-[#f99c00]/30 transition-all" />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
               <kbd className="font-mono text-xs text-slate-500 bg-white/5 border border-white/10 rounded px-2 py-1">⌘</kbd>
@@ -101,21 +102,20 @@ export default function Layout() {
 
           <div className="flex items-center gap-2 md:gap-4">
             <div className="flex items-center gap-2 px-3 py-2 rounded-full border border-white/10 bg-[#111827]/80 hover:border-[#f99c00]/30 transition-all">
-              <iconify-icon icon="solar:fire-linear" width="18" height="18" className="text-[#f99c00]" style={{ strokeWidth: 1 }}></iconify-icon>
+              <Icon icon="solar:fire-linear" width="18" height="18" className="text-[#f99c00]" style={{ strokeWidth: 1 }} />
               <span className="text-xs md:text-sm font-bold text-slate-300">12<span className="hidden sm:inline"> Days</span></span>
             </div>
             
             <button className="relative w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
-              <iconify-icon icon="solar:bell-linear" width="24" height="24" style={{ strokeWidth: 1 }}></iconify-icon>
+              <Icon icon="solar:bell-linear" width="24" height="24" style={{ strokeWidth: 1 }} />
               <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#f99c00] border border-[#0B1120]"></span>
             </button>
             
             <button className="hidden md:flex w-11 h-11 items-center justify-center rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
-              <iconify-icon icon="solar:settings-linear" width="24" height="24" style={{ strokeWidth: 1 }}></iconify-icon>
+              <Icon icon="solar:settings-linear" width="24" height="24" style={{ strokeWidth: 1 }} />
             </button>
 
             <a href="#" className="md:hidden w-10 h-10 rounded-full border border-white/10 overflow-hidden block hover:border-[#f99c00]/50 transition-all">
-              <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/user-files/fd86d650-37a4-4a87-a832-38f8d246494a/a14eeb81-d59e-4bcb-a228-5249b5a17192-pp.png?v=1776510809689" alt="Sarah K." className="w-full h-full object-cover" />
             </a>
           </div>
         </header>
@@ -139,7 +139,7 @@ export default function Layout() {
               }`}
               aria-label={item.name}
             >
-              <iconify-icon icon={item.icon} width="24" height="24" style={{ strokeWidth: 1.5 }}></iconify-icon>
+              <Icon icon={item.icon} width="24" height="24" style={{ strokeWidth: 1.5 }} />
             </Link>
           )
         })}

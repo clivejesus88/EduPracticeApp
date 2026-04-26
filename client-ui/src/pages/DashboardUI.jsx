@@ -1,4 +1,5 @@
 import React from 'react';
+import { Icon } from '@iconify/react';
 
 export default function dashboardUI() {
   return (
@@ -7,7 +8,7 @@ export default function dashboardUI() {
         
         {/* Mobile Search Bar */}
         <div className="md:hidden relative w-full mb-6">
-          <iconify-icon icon="solar:magnifier-linear" width="24" height="24" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" style={{ strokeWidth: 1 }}></iconify-icon>
+          <Icon icon="solar:magnifier-linear" width="24" height="24" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" style={{ strokeWidth: 1 }} />
           <input type="text" placeholder="Search topics, questions..." className="w-full bg-[#111827] border border-white/5 rounded-lg pl-10 pr-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-[#f99c00]/50 focus:ring-1 focus:ring-[#f99c00]/50 transition-all" />
         </div>
 
@@ -18,7 +19,7 @@ export default function dashboardUI() {
             <p className="text-sm text-slate-400">You're making great progress. Keep up the momentum!</p>
           </div>
           <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] px-6 py-3 rounded-lg text-sm font-medium transition-all hover:shadow-lg hover:shadow-[#f99c00]/20">
-            <iconify-icon icon="solar:play-circle-linear" width="20" height="20" style={{ strokeWidth: 1 }}></iconify-icon>
+            <Icon icon="solar:play-circle-linear" width="22" height="22" style={{ strokeWidth: 1 }} />
             Resume Practice
           </button>
         </div>
@@ -29,7 +30,7 @@ export default function dashboardUI() {
           <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-5 hover:border-blue-500/20 hover:shadow-lg hover:shadow-blue-500/10 transition-all">
             <div className="flex items-start justify-between mb-4">
               <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
-                <iconify-icon icon="solar:checklist-minimalistic-linear" width="24" style={{ strokeWidth: 1 }}></iconify-icon>
+                <Icon icon="solar:checklist-minimalistic-linear" width="24" style={{ strokeWidth: 1 }} />
               </div>
               <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full">+12%</span>
             </div>
@@ -41,7 +42,7 @@ export default function dashboardUI() {
           <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-5 hover:border-purple-500/20 hover:shadow-lg hover:shadow-purple-500/10 transition-all">
             <div className="flex items-start justify-between mb-4">
               <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
-                <iconify-icon icon="solar:target-linear" width="24" style={{ strokeWidth: 1 }}></iconify-icon>
+                <Icon icon="solar:target-linear" width="24" style={{ strokeWidth: 1 }} />
               </div>
               <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full">+2.4%</span>
             </div>
@@ -53,7 +54,7 @@ export default function dashboardUI() {
           <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-5 hover:border-rose-500/20 hover:shadow-lg hover:shadow-rose-500/10 transition-all">
             <div className="flex items-start justify-between mb-4">
               <div className="w-12 h-12 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400">
-                <iconify-icon icon="solar:clock-circle-linear" width="24" style={{ strokeWidth: 1 }}></iconify-icon>
+                <Icon icon="solar:clock-circle-linear" width="24" style={{ strokeWidth: 1 }} />
               </div>
               <span className="text-xs font-medium text-slate-500 bg-white/5 px-2.5 py-1 rounded-full">Month</span>
             </div>
@@ -65,7 +66,7 @@ export default function dashboardUI() {
           <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-5 hover:border-[#f99c00]/20 hover:shadow-lg hover:shadow-[#f99c00]/10 transition-all">
             <div className="flex items-start justify-between mb-4">
               <div className="w-12 h-12 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00]">
-                <iconify-icon icon="solar:cup-star-linear" width="24" style={{ strokeWidth: 1 }}></iconify-icon>
+                <Icon icon="solar:cup-star-linear" width="24" style={{ strokeWidth: 1 }} />
               </div>
               <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full">Top 5%</span>
             </div>
@@ -153,7 +154,7 @@ export default function dashboardUI() {
             {/* Daily Goal Card */}
             <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 relative overflow-hidden group hover:border-[#f99c00]/20 transition-all">
               <div className="absolute -right-12 -top-12 text-white/5 group-hover:text-white/10 transform rotate-12 pointer-events-none transition-colors">
-                <iconify-icon icon="solar:target-linear" width="150" height="150" style={{ strokeWidth: 1 }}></iconify-icon>
+                <Icon icon="solar:target-linear" width="150" height="150" style={{ strokeWidth: 1 }}></Icon>
               </div>
 
               <div className="relative z-10">
