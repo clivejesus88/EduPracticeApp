@@ -539,16 +539,18 @@ export default function Practice() {
         </div>
       )}
 
-      {/* Floating Chat Toggle Button - Only show on workboard */}
-      {step === 'workboard' && (
+      {/* Floating Chat Toggle Button - Only show on workboard when chat is closed */}
+      {step === 'workboard' && !isChatOpen && (
         <button
           onClick={() => setIsChatOpen(true)}
-          className={`fixed lg:absolute right-4 bottom-24 lg:bottom-8 z-30 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#f99c00] to-rose-500 rounded-full flex items-center justify-center text-[#0B1120] shadow-xl shadow-[#f99c00]/40 hover:scale-110 transition-all duration-300 ${isChatOpen ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
+          className="fixed lg:absolute right-4 bottom-24 lg:bottom-8 z-30 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#f99c00] to-amber-600 rounded-full flex items-center justify-center text-white shadow-xl shadow-[#f99c00]/30 hover:shadow-[#f99c00]/50 hover:scale-110 active:scale-95 transition-all duration-300 group"
           aria-label="Open AI Tutor"
           title="Ask Maestro AI for help"
         >
-          <Icon icon="solar:magic-stick-3-bold" width="28" height="28" />
-          <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-400 border-2 border-[#f99c00] rounded-full animate-pulse"></span>
+          <Icon icon="solar:magic-stick-3-bold" width="26" height="26" className="group-hover:rotate-12 transition-transform" />
+          <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-[#0B1120] rounded-full flex items-center justify-center">
+            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+          </span>
         </button>
       )}
 
@@ -557,7 +559,7 @@ export default function Practice() {
         <ChatInterface 
           isOpen={isChatOpen} 
           onClose={() => setIsChatOpen(false)}
-          initialMessage={t('chat.maestro')}
+          initialMessage={`Hello! I'm Maestro, your AI study assistant. I see you're working on ${selectedTopic?.name || 'this topic'}. Feel free to ask me anything — I can explain concepts, give hints, or check your work!`}
         />
       )}
 
