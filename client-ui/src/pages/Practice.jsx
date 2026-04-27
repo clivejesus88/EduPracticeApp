@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { examLevels, physicsTopics, mathematicsTopics } from '../data/examStructure';
@@ -6,127 +6,14 @@ import ChatInterface from '../components/ChatInterface';
 import { trackPracticeAttempt, trackTopicView } from '../utils/analyticsTracker';
 
 
-// Custom Canvas Component for Drawing
-const DrawingCanvas = ({ isReadOnly }) => {
-  const canvasRef = useRef(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const ctxRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const parent = canvas.parentElement;
-    canvas.width = parent.offsetWidth;
-    canvas.height = parent.offsetHeight;
-    
-    const ctx = canvas.getContext("2d");
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.strokeStyle = "#f99c00"; // Signature Orange
-    ctx.lineWidth = 3;
-    ctxRef.current = ctx;
-
-    // Handle window resize gracefully
-    const handleResize = () => {
-      const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      canvas.width = parent.offsetWidth;
-      canvas.height = parent.offsetHeight;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.strokeStyle = "#f99c00";
-      ctx.lineWidth = 3;
-      ctx.putImageData(data, 0, 0);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const getCoordinates = (e) => {
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
-    };
-  };
-
-  const startDrawing = (e) => {
-    if (isReadOnly) return;
-    const { x, y } = getCoordinates(e);
-    ctxRef.current.beginPath();
-    ctxRef.current.moveTo(x, y);
-    setIsDrawing(true);
-  };
-
-  const finishDrawing = () => {
-    if (isReadOnly) return;
-    ctxRef.current.closePath();
-    setIsDrawing(false);
-  };
-
-  const draw = (e) => {
-    if (!isDrawing || isReadOnly) return;
-    const { x, y } = getCoordinates(e);
-    ctxRef.current.lineTo(x, y);
-    ctxRef.current.stroke();
-  };
-
-  const clearCanvas = () => {
-    if (!canvasRef.current || !ctxRef.current) return;
-    ctxRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-  };
-
-  return (
-    <div className="relative w-full h-80 sm:h-96 md:h-112 rounded-xl overflow-hidden border border-white/10 bg-[#1A2234]">
-      {/* Background Grid Pattern */}
-      <div 
-        className="absolute inset-0 opacity-10 pointer-events-none" 
-        style={{
-          backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.5) 1px, transparent 1px)',
-          backgroundSize: '20px 20px'
-        }}
-      />
-      <canvas
-        ref={canvasRef}
-        onMouseDown={startDrawing}
-        onMouseUp={finishDrawing}
-        onMouseMove={draw}
-        onMouseLeave={finishDrawing}
-        onTouchStart={startDrawing}
-        onTouchEnd={finishDrawing}
-        onTouchMove={draw}
-        className={`w-full h-full relative z-10 touch-none ${isReadOnly ? 'cursor-default' : 'cursor-crosshair'}`}
-      />
-      {!isReadOnly && (
-        <button 
-          onClick={clearCanvas}
-          className="absolute top-4 right-4 z-20 px-3 py-1.5 rounded-md bg-[#0B1120]/80 border border-white/10 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-colors backdrop-blur-sm"
-        >
-          Clear
-        </button>
-      )}
-    </div>
-  );
-};
-
 export default function Practice() {
   const { t } = useLocalization();
   const [step, setStep] = useState('selectLevel'); // selectLevel | topics | workboard
   const [selectedExamLevel, setSelectedExamLevel] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [selectedTopic, setSelectedTopic] = useState(null);
-  const [activeTab, setActiveTab] = useState('canvas');
   const [aiState, setAiState] = useState('idle'); // idle | analyzing | feedback
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatInput, setChatInput] = useState('');
-  const [messages, setMessages] = useState([
-    { role: 'ai', content: "Hello Sarah! I'm Maestro. I'm here if you have any follow-up questions about this scenario or need a hint." }
-  ]);
-  const messagesEndRef = useRef(null);
 
   // Get topics based on selected exam level
   const getTopics = () => {
@@ -195,16 +82,6 @@ export default function Practice() {
     setAiState('idle');
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    if (isChatOpen) {
-      scrollToBottom();
-    }
-  }, [messages, isChatOpen]);
-
   const handleSubmit = () => {
     if (aiState !== 'idle') return;
     
@@ -217,22 +94,6 @@ export default function Practice() {
       const score = Math.floor(Math.random() * (95 - 70 + 1)) + 70; // Random score 70-95
       trackPracticeAttempt(selectedTopic?.name || 'Practice', score, 5);
     }, 2000);
-  };
-
-  const handleChatSubmit = (e) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
-    
-    setMessages(prev => [...prev, { role: 'user', content: chatInput }]);
-    setChatInput('');
-    
-    // Simulate AI thinking and follow-up response
-    setTimeout(() => {
-      setMessages(prev => [...prev, { 
-        role: 'ai', 
-        content: "To find the final velocity, remember to use the kinematic equation v² = u² + 2as. Since it starts from rest, u = 0. Have you calculated the acceleration first?" 
-      }]);
-    }, 1200);
   };
 
   return (
@@ -438,41 +299,17 @@ export default function Practice() {
             <div className="space-y-4 sm:space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                 <h3 className="text-xl sm:text-2xl font-bold text-white">{t('practice.yourSolution')}</h3>
-                
-                {/* Tabs */}
-                <div className="flex bg-[#111827] p-1 rounded-lg sm:rounded-xl border border-white/5 w-full sm:w-auto gap-1 sm:gap-0">
-                  <button 
-                    onClick={() => setActiveTab('canvas')}
-                    className={`flex-1 sm:flex-none flex justify-center items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all min-h-[44px] sm:min-h-[40px] ${activeTab === 'canvas' ? 'bg-[#f99c00] text-[#0B1120] shadow-lg shadow-[#f99c00]/20' : 'text-slate-400 hover:text-slate-200'}`}
-                  >
-                    <Icon icon="solar:pen-linear" width="18" style={{ strokeWidth: 1.2 }} />
-                    <span className="hidden sm:inline">{t('practice.draw')}</span>
-                    <span className="sm:hidden text-xs">Draw</span>
-                  </button>
-                  <button 
-                    onClick={() => setActiveTab('upload')}
-                    className={`flex-1 sm:flex-none flex justify-center items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all min-h-[44px] sm:min-h-[40px] ${activeTab === 'upload' ? 'bg-[#f99c00] text-[#0B1120] shadow-lg shadow-[#f99c00]/20' : 'text-slate-400 hover:text-slate-200'}`}
-                  >
-                    <Icon icon="solar:gallery-linear" width="18" style={{ strokeWidth: 1.2 }} />
-                    <span className="hidden sm:inline">{t('practice.upload')}</span>
-                    <span className="sm:hidden text-xs">Upload</span>
-                  </button>
-                </div>
               </div>
 
-              {/* Input Area */}
+              {/* Upload Area */}
               <div className="animate-fade-in-up">
-                {activeTab === 'canvas' ? (
-                  <DrawingCanvas isReadOnly={aiState === 'analyzing' || aiState === 'feedback'} />
-                ) : (
-                  <div className="w-full h-48 sm:h-64 md:h-72 lg:h-96 rounded-xl sm:rounded-2xl border-2 border-dashed border-white/10 hover:border-[#f99c00]/40 bg-gradient-to-b from-[#111827]/50 to-[#0D0F1B]/50 flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer group">
-                    <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-full bg-white/5 group-hover:bg-[#f99c00]/10 flex items-center justify-center text-slate-400 group-hover:text-[#f99c00] group-hover:scale-110 transition-all duration-300 mb-3 sm:mb-4">
-                      <Icon icon="solar:upload-minimalistic-linear" width="24" />
-                    </div>
-                    <p className="text-sm sm:text-base font-semibold text-white mb-1 sm:mb-2">{t('practice.clickToUpload')}</p>
-                    <p className="text-xs sm:text-sm text-slate-500 max-w-xs px-2">{t('practice.uploadDescription')}</p>
+                <div className="w-full h-48 sm:h-64 md:h-72 lg:h-96 rounded-xl sm:rounded-2xl border-2 border-dashed border-white/10 hover:border-[#f99c00]/40 bg-gradient-to-b from-[#111827]/50 to-[#0D0F1B]/50 flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer group">
+                  <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-full bg-white/5 group-hover:bg-[#f99c00]/10 flex items-center justify-center text-slate-400 group-hover:text-[#f99c00] group-hover:scale-110 transition-all duration-300 mb-3 sm:mb-4">
+                    <Icon icon="solar:upload-minimalistic-linear" width="24" />
                   </div>
-                )}
+                  <p className="text-sm sm:text-base font-semibold text-white mb-1 sm:mb-2">{t('practice.clickToUpload')}</p>
+                  <p className="text-xs sm:text-sm text-slate-500 max-w-xs px-2">{t('practice.uploadDescription')}</p>
+                </div>
               </div>
 
               {/* Submit Action */}
@@ -539,16 +376,18 @@ export default function Practice() {
         </div>
       )}
 
-      {/* Floating Chat Toggle Button - Only show on workboard */}
-      {step === 'workboard' && (
+      {/* Floating Chat Toggle Button - Only show on workboard when chat is closed */}
+      {step === 'workboard' && !isChatOpen && (
         <button
           onClick={() => setIsChatOpen(true)}
-          className={`fixed lg:absolute right-4 bottom-24 lg:bottom-8 z-30 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#f99c00] to-rose-500 rounded-full flex items-center justify-center text-[#0B1120] shadow-xl shadow-[#f99c00]/40 hover:scale-110 transition-all duration-300 ${isChatOpen ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
+          className="fixed lg:absolute right-4 bottom-24 lg:bottom-8 z-30 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#f99c00] to-amber-600 rounded-full flex items-center justify-center text-white shadow-xl shadow-[#f99c00]/30 hover:shadow-[#f99c00]/50 hover:scale-110 active:scale-95 transition-all duration-300 group"
           aria-label="Open AI Tutor"
           title="Ask Maestro AI for help"
         >
-          <Icon icon="solar:magic-stick-3-bold" width="28" height="28" />
-          <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-400 border-2 border-[#f99c00] rounded-full animate-pulse"></span>
+          <Icon icon="solar:magic-stick-3-bold" width="26" height="26" className="group-hover:rotate-12 transition-transform" />
+          <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-[#0B1120] rounded-full flex items-center justify-center">
+            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+          </span>
         </button>
       )}
 
@@ -557,7 +396,7 @@ export default function Practice() {
         <ChatInterface 
           isOpen={isChatOpen} 
           onClose={() => setIsChatOpen(false)}
-          initialMessage={t('chat.maestro')}
+          initialMessage={`Hello! I'm Maestro, your AI study assistant. I see you're working on ${selectedTopic?.name || 'this topic'}. Feel free to ask me anything — I can explain concepts, give hints, or check your work!`}
         />
       )}
 
