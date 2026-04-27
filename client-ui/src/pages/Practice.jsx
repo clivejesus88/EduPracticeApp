@@ -3,6 +3,7 @@ import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { examLevels, physicsTopics, mathematicsTopics } from '../data/examStructure';
 import ChatInterface from '../components/ChatInterface';
+import { trackPracticeAttempt, trackTopicView } from '../utils/analyticsTracker';
 
 
 // Custom Canvas Component for Drawing
@@ -177,6 +178,7 @@ export default function Practice() {
   const handleTopicSelect = (topic) => {
     setSelectedTopic(topic);
     setSelectedSubject(topic.id);
+    trackTopicView(topic.name, topic.id);
     setStep('workboard');
   };
 
@@ -211,6 +213,9 @@ export default function Practice() {
 
     setTimeout(() => {
       setAiState('feedback');
+      // Track practice attempt with simulated score
+      const score = Math.floor(Math.random() * (95 - 70 + 1)) + 70; // Random score 70-95
+      trackPracticeAttempt(selectedTopic?.name || 'Practice', score, 5);
     }, 2000);
   };
 
@@ -397,20 +402,20 @@ export default function Practice() {
                 <Icon icon="solar:alt-arrow-left-linear" width="18" className="group-hover:scale-110 transition-transform shrink-0" />
                 <span>Back to Topics</span>
               </button>
-              <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
-                <div className="flex items-center gap-2 text-[#f99c00] text-xs font-bold uppercase tracking-widest">
-                  <Icon icon="solar:book-bookmark-linear" width="16" />
-                  <span className="truncate">{selectedTopic?.name} • Kinematics</span>
-                </div>
+  <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+  <div className="flex items-center gap-2 text-[#f99c00] text-xs font-bold uppercase tracking-widest">
+  <Icon icon="solar:book-bookmark-linear" width="16" />
+  <span className="truncate">{selectedTopic?.name}</span>
+  </div>
                 <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 shrink-0">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   <span className="text-xs font-semibold text-emerald-400">Easy</span>
                 </div>
               </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white break-words mb-2">Projectile Motion Scenario</h1>
-                <p className="text-sm text-slate-400">{t('practice.maximumMark')}: <span className="font-semibold text-white">7</span></p>
-              </div>
+  <div>
+  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white break-words mb-2">{selectedTopic?.name} Question</h1>
+  <p className="text-sm text-slate-400">{t('practice.maximumMark')}: <span className="font-semibold text-white">7</span></p>
+  </div>
             </div>
 
             {/* Scenario Details Card */}

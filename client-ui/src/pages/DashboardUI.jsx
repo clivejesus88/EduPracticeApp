@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
+import { getMetrics } from '../utils/analyticsTracker';
 
 export default function dashboardUI() {
   const { t, translate } = useLocalization();
+  const [metrics, setMetrics] = useState(null);
+
+  useEffect(() => {
+    const data = getMetrics();
+    setMetrics(data);
+  }, []);
 
   return (
     <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pb-24 md:pb-8">
@@ -36,10 +43,10 @@ export default function dashboardUI() {
               <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform shrink-0">
                 <Icon icon="solar:checklist-minimalistic-linear" width="20" style={{ strokeWidth: 1 }} />
               </div>
-              <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full whitespace-nowrap">+12%</span>
+              <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full whitespace-nowrap">{metrics?.improvement > 0 ? '+' : ''}{metrics?.improvement}%</span>
             </div>
             <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-2">{t('dashboard.questionsSolved')}</p>
-            <h3 className="text-xl sm:text-2xl font-semibold text-white">1,248</h3>
+            <h3 className="text-xl sm:text-2xl font-semibold text-white">{metrics?.totalAttempts || 0}</h3>
           </div>
 
           {/* Stat 2 */}
@@ -48,10 +55,10 @@ export default function dashboardUI() {
               <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform shrink-0">
                 <Icon icon="solar:target-linear" width="20" style={{ strokeWidth: 1 }} />
               </div>
-              <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full whitespace-nowrap">+2.4%</span>
+              <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full whitespace-nowrap">{metrics?.avgAccuracy > 0 ? '+' : ''}{Math.round((metrics?.avgAccuracy || 0) / 10) / 10}%</span>
             </div>
             <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-2">{t('dashboard.averageAccuracy')}</p>
-            <h3 className="text-xl sm:text-2xl font-semibold text-white">86.5%</h3>
+            <h3 className="text-xl sm:text-2xl font-semibold text-white">{metrics?.avgAccuracy || 0}%</h3>
           </div>
 
           {/* Stat 3 */}
@@ -74,8 +81,8 @@ export default function dashboardUI() {
               </div>
               <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full whitespace-nowrap">{t('dashboard.topPercentage')}</span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-2">{t('dashboard.globalRank')}</p>
-            <h3 className="text-xl sm:text-2xl font-semibold text-white">#4,291</h3>
+            <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-2">{t('dashboard.examsPassed')}</p>
+            <h3 className="text-xl sm:text-2xl font-semibold text-white">{metrics?.examsTaken || 0}</h3>
           </div>
         </div>
 

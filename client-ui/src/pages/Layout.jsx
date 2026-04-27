@@ -94,14 +94,14 @@ export default function Layout() {
           <div className="pt-6 pb-2 px-3">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('sidebar.subjects')}</p>
           </div>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
+          <Link to="/practice?subject=physics" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
             <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
             <span className="text-sm">{t('subjects.physics')}</span>
-          </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
+          </Link>
+          <Link to="/practice?subject=mathematics" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
             <div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
             <span className="text-sm">{t('subjects.mathematics')}</span>
-          </a>
+          </Link>
         </nav>
 
         {/* Bottom User Profile */}
@@ -220,14 +220,14 @@ export default function Layout() {
           <div className="pt-6 pb-2 px-3">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('sidebar.subjects')}</p>
           </div>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
+          <Link to="/practice?subject=physics" onClick={() => setIsMobileSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
             <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
             <span className="text-sm">{t('subjects.physics')}</span>
-          </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
+          </Link>
+          <Link to="/practice?subject=mathematics" onClick={() => setIsMobileSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
             <div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
             <span className="text-sm">{t('subjects.mathematics')}</span>
-          </a>
+          </Link>
         </nav>
 
         <div className="p-4 border-t border-white/5 sticky bottom-0 bg-[#0B1120]/95 backdrop-blur">

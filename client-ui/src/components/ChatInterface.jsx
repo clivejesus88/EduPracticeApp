@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
+import { trackChatInteraction } from '../utils/analyticsTracker';
 
 export default function ChatInterface({ isOpen, onClose, initialMessage }) {
   const { t } = useLocalization();
@@ -21,6 +22,9 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
 
   const handleSendMessage = () => {
     if (!input.trim()) return;
+
+    // Track chat interaction
+    trackChatInteraction('message_sent');
 
     // Add user message
     const userMessage = {
@@ -63,7 +67,7 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
       )}
 
       {/* Chat Panel */}
-      <div className={`fixed bottom-0 right-0 top-0 w-full sm:w-96 lg:w-1/3 bg-gradient-to-b from-[#111827] to-[#0D0F1B] border-l border-white/5 flex flex-col shadow-2xl z-40 transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} lg:relative lg:translate-x-0 lg:border-l lg:rounded-none`}>
+      <div className={`fixed bottom-0 right-0 top-0 left-0 w-full h-full sm:h-auto sm:w-96 md:w-[420px] lg:w-1/3 lg:relative bg-gradient-to-b from-[#111827] to-[#0D0F1B] border-l border-white/5 flex flex-col shadow-2xl z-40 transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} lg:relative lg:translate-x-0 lg:border-l lg:rounded-none`}>
         
         {/* Header */}
         <div className="flex-shrink-0 flex items-center justify-between p-4 sm:p-5 border-b border-white/5 bg-[#0B1120]/50 sticky top-0 z-10">
@@ -85,20 +89,20 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
         </div>
 
         {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 scroll-smooth">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 space-y-3 sm:space-y-4 scroll-smooth">
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} px-1`}
             >
               <div
-                className={`max-w-xs sm:max-w-sm px-4 py-3 rounded-2xl ${
+                className={`w-full sm:max-w-xs md:max-w-sm px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl text-xs sm:text-sm ${
                   msg.role === 'user'
-                    ? 'bg-[#f99c00] text-[#0B1120] rounded-br-none'
+                    ? 'bg-[#f99c00] text-[#0B1120] rounded-br-none ml-auto'
                     : 'bg-white/5 text-slate-100 border border-white/10 rounded-bl-none'
                 } group relative`}
               >
-                <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
+                <p className="leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
                 <span className={`text-xs mt-2 block ${msg.role === 'user' ? 'text-[#0B1120]/60' : 'text-slate-500'}`}>
                   {msg.timestamp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
@@ -122,27 +126,27 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
         </div>
 
         {/* Input Area */}
-        <div className="flex-shrink-0 border-t border-white/5 bg-[#0B1120]/50 p-4 sm:p-5 sticky bottom-0">
-          <div className="flex gap-2 sm:gap-3">
+        <div className="flex-shrink-0 border-t border-white/5 bg-[#0B1120]/50 p-3 sm:p-4 md:p-5 sticky bottom-0 w-full">
+          <div className="flex gap-2 w-full">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={t('chat.typeMessage')}
               rows="1"
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 sm:px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#f99c00]/50 focus:border-transparent resize-none max-h-24 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent"
+              className="flex-1 bg-white/5 border border-white/10 rounded-lg sm:rounded-xl px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#f99c00]/50 focus:border-transparent resize-none max-h-20 sm:max-h-24 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent"
             />
             <button
               onClick={handleSendMessage}
               disabled={isLoading || !input.trim()}
-              className="px-3 sm:px-4 py-2.5 bg-[#f99c00] hover:bg-[#f88c00] disabled:bg-slate-600 disabled:cursor-not-allowed text-[#0B1120] rounded-xl font-semibold transition-all flex items-center justify-center gap-2 active:scale-95 min-w-max"
+              className="px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 bg-[#f99c00] hover:bg-[#f88c00] disabled:bg-slate-600 disabled:cursor-not-allowed text-[#0B1120] rounded-lg sm:rounded-xl font-semibold transition-all flex items-center justify-center gap-1 sm:gap-2 active:scale-95 min-w-max min-h-[44px] sm:min-h-[40px]"
             >
               {isLoading ? (
-                <Icon icon="solar:loader-bold" width="18" className="animate-spin" />
+                <Icon icon="solar:loader-bold" width="16" height="16" className="animate-spin flex-shrink-0" />
               ) : (
-                <Icon icon="solar:send-linear" width="18" />
+                <Icon icon="solar:send-linear" width="16" height="16" className="flex-shrink-0" />
               )}
-              <span className="hidden sm:inline text-sm">{t('chat.send')}</span>
+              <span className="hidden sm:inline text-xs sm:text-sm">{t('chat.send')}</span>
             </button>
           </div>
           <p className="text-xs text-slate-500 mt-2">{t('chat.pressEnter')}</p>
