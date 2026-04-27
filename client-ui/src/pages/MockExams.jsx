@@ -1,10 +1,27 @@
 import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
+import { trackExamStart, trackExamCompletion } from '../utils/analyticsTracker';
 
 export default function MockExams() {
   const { t } = useLocalization();
   const [selectedLevel, setSelectedLevel] = useState(null);
+  
+  const handleStartExam = (exam) => {
+    trackExamStart(exam.title, exam.difficulty);
+    // In a real app, this would navigate to exam page or open exam modal
+    console.log('[v0] Starting exam:', exam.title);
+  };
+  
+  const handleCreateExam = () => {
+    // In a real app, this would open a custom exam builder
+    console.log('[v0] Create exam clicked');
+  };
+  
+  const handleViewAll = () => {
+    // In a real app, this would show all exams for the selected level
+    console.log('[v0] View all exams clicked');
+  };
 
   const examLevels = [
     { id: 'olevel', name: 'O-Level (UCE)', description: 'Uganda Certificate of Education', exams: 12 },
@@ -55,7 +72,7 @@ export default function MockExams() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl sm:text-2xl font-bold text-white">Available Mock Exams</h2>
-            <button className="text-sm font-medium text-[#f99c00] hover:text-[#f88c00] transition-colors">View All</button>
+            <button onClick={handleViewAll} className="text-sm font-medium text-[#f99c00] hover:text-[#f88c00] transition-colors">View All</button>
           </div>
 
           <div className="grid grid-cols-1 gap-4">
@@ -104,7 +121,7 @@ export default function MockExams() {
                         <p className="text-2xl sm:text-3xl font-bold text-[#f99c00]">{exam.score}%</p>
                       </div>
                     ) : (
-                      <button className="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] rounded-lg font-semibold transition-all min-h-[44px] sm:min-h-[40px] flex items-center justify-center gap-2 group-hover:shadow-lg group-hover:shadow-[#f99c00]/20">
+                      <button onClick={() => handleStartExam(exam)} className="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] rounded-lg font-semibold transition-all min-h-[44px] sm:min-h-[40px] flex items-center justify-center gap-2 group-hover:shadow-lg group-hover:shadow-[#f99c00]/20">
                         <Icon icon="solar:play-circle-linear" width="18" />
                         <span className="hidden sm:inline">Start Exam</span>
                         <span className="sm:hidden">Start</span>
@@ -122,7 +139,7 @@ export default function MockExams() {
           <Icon icon="solar:layers-linear" width="48" height="48" className="text-[#f99c00] mx-auto mb-4 opacity-50" />
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Create Custom Exam</h3>
           <p className="text-sm text-slate-400 mb-4">Build your own mock exam by selecting specific topics and questions</p>
-          <button className="px-6 py-3 bg-[#f99c00]/20 border border-[#f99c00]/30 hover:border-[#f99c00]/50 text-[#f99c00] rounded-lg font-semibold transition-all min-h-[44px] inline-flex items-center gap-2">
+          <button onClick={handleCreateExam} className="px-6 py-3 bg-[#f99c00]/20 border border-[#f99c00]/30 hover:border-[#f99c00]/50 text-[#f99c00] rounded-lg font-semibold transition-all min-h-[44px] inline-flex items-center gap-2">
             <Icon icon="solar:add-circle-linear" width="20" />
             <span>Create Exam</span>
           </button>
