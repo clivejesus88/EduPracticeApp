@@ -249,7 +249,7 @@ export default function ChatbotUI() {
   };
 
   return (
-    <div className="flex h-screen bg-[#0B1120] overflow-hidden">
+    <div className="flex h-full w-full bg-[#0B1120] overflow-hidden">
 
       {/* Sidebar overlay (mobile) */}
       {sidebarOpen && (
