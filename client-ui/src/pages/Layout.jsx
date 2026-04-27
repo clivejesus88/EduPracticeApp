@@ -3,11 +3,13 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
 import Avatar from '../components/Avatar';
+import SearchModal from '../components/SearchModal';
 
 export default function Layout() {
   const location = useLocation();
   const { t } = useLocalization();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // ── Auto-hide bottom nav on scroll ──────────────────────────────────────────
   const [navVisible, setNavVisible] = useState(true);
@@ -43,6 +45,19 @@ export default function Layout() {
     setNavVisible(true);
     lastScrollY.current = 0;
   }, [location.pathname]);
+
+  // Keyboard shortcut for search (Cmd+K or Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const navItems = [
     { name: t('nav.dashboard'), path: '/dashboard', icon: 'solar:home-2-linear' },
@@ -133,14 +148,17 @@ export default function Layout() {
             </button>
           </div>
 
-          <div className="hidden md:block relative w-96">
-            <Icon icon="solar:magnifier-linear" width="20" height="20" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" style={{ strokeWidth: 1 }} />
-            <input type="text" placeholder="Search topics, questions..." className="w-full bg-white/5 border border-white/10 hover:border-white/20 rounded-lg pl-12 pr-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-[#f99c00]/50 focus:ring-2 focus:ring-[#f99c00]/30 transition-all" />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
+          <button 
+            onClick={() => setIsSearchOpen(true)}
+            className="hidden md:flex items-center gap-3 w-96 bg-white/5 border border-white/10 hover:border-white/20 hover:bg-white/[0.07] rounded-lg px-4 py-2.5 text-sm text-slate-500 transition-all group"
+          >
+            <Icon icon="solar:magnifier-linear" width="20" height="20" className="text-slate-400 group-hover:text-slate-300" style={{ strokeWidth: 1 }} />
+            <span className="flex-1 text-left">Search topics, questions...</span>
+            <div className="flex items-center gap-1">
               <kbd className="font-mono text-xs text-slate-500 bg-white/5 border border-white/10 rounded px-2 py-1">⌘</kbd>
               <kbd className="font-mono text-xs text-slate-500 bg-white/5 border border-white/10 rounded px-2 py-1">K</kbd>
             </div>
-          </div>
+          </button>
 
           <div className="flex items-center gap-2 md:gap-4">
             <div className="flex items-center gap-2 px-3 py-2 rounded-full border border-white/10 bg-[#111827]/80 hover:border-[#f99c00]/30 transition-all">
@@ -275,6 +293,9 @@ export default function Layout() {
           <Icon icon="solar:user-circle-linear" width="24" height="24" style={{ strokeWidth: 1.5 }} />
         </Link>
       </nav>
+
+      {/* Search Modal */}
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </div>
   );
 }
