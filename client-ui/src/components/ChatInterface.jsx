@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { AiBrain05Icon } from '@hugeicons/core-free-icons';
 
 const INITIAL_MESSAGES = [
   {
@@ -14,12 +16,12 @@ function Avatar({ role }) {
   if (role === 'assistant') {
     return (
       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#f99c00] to-amber-600 flex items-center justify-center shrink-0">
-        <Icon icon="solar:magic-stick-3-bold" width="14" className="text-white" />
+        <HugeiconsIcon icon={AiBrain05Icon} size={16} strokeWidth={2} className="text-white" />
       </div>
     );
   }
   return (
-    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0 text-white text-xs font-bold -blue-500/20">
+    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0 text-white text-xs font-bold">
       S
     </div>
   );
@@ -186,7 +188,6 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
  w-full sm:w-96 lg:w-[400px]
  bg-[#0a0f1a] border-l border-white/5
  flex flex-col
- -black/50
  transform transition-transform duration-300 ease-out
  ${isOpen ? 'translate-x-0' : 'translate-x-full'}
  `}
@@ -196,7 +197,7 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f99c00] to-amber-600 flex items-center justify-center">
-                <Icon icon="solar:magic-stick-3-bold" width="20" className="text-white" />
+                <HugeiconsIcon icon={AiBrain05Icon} size={22} strokeWidth={2} className="text-white" />
               </div>
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#0a0f1a]" />
             </div>
