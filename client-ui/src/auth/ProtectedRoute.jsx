@@ -84,7 +84,7 @@ function AuthLoader({ onDone }) {
       >
         {/* Logo mark — swaps to checkmark on complete */}
         <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl shadow-black/40"
+          className="w-16 h-16 rounded-2xl flex items-center justify-center -black/40"
           style={{
             background:  completing
               ? 'linear-gradient(135deg,#f99c00 0%,#f88c00 100%)'

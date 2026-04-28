@@ -154,7 +154,7 @@ export default function SearchModal({ isOpen, onClose }) {
 
       {/* Modal */}
       <div className="fixed inset-x-4 top-[15%] sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-xl z-50">
-        <div className="bg-[#111827] border border-white/10 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden">
+        <div className="bg-[#111827] border border-white/10 rounded-2xl -black/50 overflow-hidden">
           {/* Search Input */}
           <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
             <Icon icon="solar:magnifier-linear" width="22" className="text-slate-400 shrink-0" />
@@ -189,21 +189,21 @@ export default function SearchModal({ isOpen, onClose }) {
                     onClick={() => handleSelect(item)}
                     onMouseEnter={() => setSelectedIndex(index)}
                     className={`w-full flex items-center gap-4 px-3 py-3 rounded-xl text-left transition-all group ${
-                      selectedIndex === index
-                        ? 'bg-[#f99c00]/10'
-                        : 'hover:bg-white/5'
-                    }`}
+ selectedIndex === index
+ ? 'bg-[#f99c00]/10'
+ : 'hover:bg-white/5'
+ }`}
                   >
                     <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center text-white shrink-0 ${
-                      selectedIndex === index ? 'scale-110' : ''
-                    } transition-transform`}>
+ selectedIndex === index ? 'scale-110' : ''
+ } transition-transform`}>
                       <Icon icon={item.icon} width="20" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className={`text-sm font-semibold truncate ${
-                          selectedIndex === index ? 'text-[#f99c00]' : 'text-white'
-                        }`}>
+ selectedIndex === index ? 'text-[#f99c00]' : 'text-white'
+ }`}>
                           {item.title}
                         </span>
                         <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-slate-400 shrink-0">
@@ -216,8 +216,8 @@ export default function SearchModal({ isOpen, onClose }) {
                       icon="solar:alt-arrow-right-linear" 
                       width="18" 
                       className={`shrink-0 transition-all ${
-                        selectedIndex === index ? 'text-[#f99c00] translate-x-1' : 'text-slate-600'
-                      }`}
+ selectedIndex === index ? 'text-[#f99c00] translate-x-1' : 'text-slate-600'
+ }`}
                     />
                   </button>
                 ))}

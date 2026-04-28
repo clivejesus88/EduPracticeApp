@@ -157,10 +157,10 @@ export default function Profile() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-3 text-sm font-semibold whitespace-nowrap transition-all border-b-2 ${
-                activeTab === tab.id
-                  ? 'text-[#f99c00] border-[#f99c00]'
-                  : 'text-slate-400 border-transparent hover:text-white'
-              }`}
+ activeTab === tab.id
+ ? 'text-[#f99c00] border-[#f99c00]'
+ : 'text-slate-400 border-transparent hover:text-white'
+ }`}
             >
               {tab.label}
             </button>
@@ -326,7 +326,7 @@ export default function Profile() {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {badges.map((badge, idx) => (
                   <div key={idx} className="group relative">
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-[#f99c00]/30 transition-all text-center cursor-pointer hover:scale-105 hover:shadow-lg hover:shadow-[#f99c00]/10">
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-[#f99c00]/30 transition-all text-center cursor-pointer hover:scale-105">
                       <div className="w-12 h-12 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] mx-auto mb-3 group-hover:scale-110 transition-transform">
                         <Icon icon={badge.icon} width="24" />
                       </div>

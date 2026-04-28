@@ -84,17 +84,17 @@ export default function MockExams() {
                     key={level.id}
                     onClick={() => setSelectedLevel(selectedLevel === level.id ? null : level.id)}
                     className={`p-6 md:p-8 rounded-xl border-2 transition-all text-left group ${
-                      selectedLevel === level.id
-                        ? 'bg-[#f99c00]/10 border-[#f99c00] shadow-lg shadow-[#f99c00]/10'
-                        : 'bg-white/5 border-white/10 hover:border-[#f99c00]/50'
-                    }`}
+ selectedLevel === level.id
+ ? 'bg-[#f99c00]/10 border-[#f99c00] '
+ : 'bg-white/5 border-white/10 hover:border-[#f99c00]/50'
+ }`}
                   >
                     <div className="flex items-center gap-4 mb-4">
                       <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl ${
-                        selectedLevel === level.id
-                          ? 'bg-[#f99c00] text-[#0B1120]'
-                          : 'bg-white/10 text-slate-300'
-                      }`}>
+ selectedLevel === level.id
+ ? 'bg-[#f99c00] text-[#0B1120]'
+ : 'bg-white/10 text-slate-300'
+ }`}>
                         <Icon icon="solar:book-2-bold" width="24" />
                       </div>
                       <div>
@@ -132,12 +132,12 @@ export default function MockExams() {
                         <div className="flex items-center gap-3 mb-2 flex-wrap">
                           <h3 className="text-base sm:text-lg font-bold text-white">{exam.title}</h3>
                           <span className={`text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap ${
-                            exam.difficulty === 'Easy' 
-                              ? 'bg-emerald-500/20 text-emerald-400'
-                              : exam.difficulty === 'Medium'
-                              ? 'bg-[#f99c00]/20 text-[#f99c00]'
-                              : 'bg-red-500/20 text-red-400'
-                          }`}>
+ exam.difficulty === 'Easy' 
+ ? 'bg-emerald-500/20 text-emerald-400'
+ : exam.difficulty === 'Medium'
+ ? 'bg-[#f99c00]/20 text-[#f99c00]'
+ : 'bg-red-500/20 text-red-400'
+ }`}>
                             {exam.difficulty}
                           </span>
                         </div>
@@ -201,7 +201,7 @@ export default function MockExams() {
       {/* Exam Start Modal */}
       {activeExamModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-[#111827] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-6 sm:p-8 max-h-[90vh] overflow-y-auto border border-white/10 shadow-2xl">
+          <div className="bg-[#111827] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-6 sm:p-8 max-h-[90vh] overflow-y-auto border border-white/10">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">Ready to start?</h2>
               <button 
@@ -250,7 +250,7 @@ export default function MockExams() {
       {/* Custom Exam Builder Modal */}
       {showCustomBuilder && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-[#111827] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-6 sm:p-8 max-h-[90vh] overflow-y-auto border border-white/10 shadow-2xl">
+          <div className="bg-[#111827] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-6 sm:p-8 max-h-[90vh] overflow-y-auto border border-white/10">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">Create Custom Exam</h2>
               <button 

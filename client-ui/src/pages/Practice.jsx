@@ -116,7 +116,7 @@ export default function Practice() {
                 <button
                   key={level.id}
                   onClick={() => handleExamLevelSelect(level.id)}
-                  className="group relative p-4 sm:p-5 md:p-6 lg:p-8 rounded-lg sm:rounded-2xl border border-white/5 bg-gradient-to-br from-[#111827] to-[#0D0F1B] hover:border-white/10 hover:shadow-lg hover:shadow-white/5 transition-all duration-300 text-left overflow-hidden active:scale-95 min-h-[180px] flex flex-col justify-between"
+                  className="group relative p-4 sm:p-5 md:p-6 lg:p-8 rounded-lg sm:rounded-2xl border border-white/5 bg-gradient-to-br from-[#111827] to-[#0D0F1B] hover:border-white/10 -white/5 transition-all duration-300 text-left overflow-hidden active:scale-95 min-h-[180px] flex flex-col justify-between"
                 >
                   {/* Background glow on hover */}
                   <div className={`absolute -inset-96 bg-gradient-to-br ${level.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300 blur-3xl pointer-events-none`}></div>
@@ -169,7 +169,7 @@ export default function Practice() {
                 <button
                   key={topic.id}
                   onClick={() => handleTopicSelect(topic)}
-                  className="group relative p-4 sm:p-5 md:p-6 lg:p-8 rounded-lg sm:rounded-2xl border border-white/5 bg-gradient-to-br from-[#111827] to-[#0D0F1B] hover:border-white/10 hover:shadow-lg hover:shadow-white/5 transition-all duration-300 text-left overflow-hidden active:scale-95 flex flex-col"
+                  className="group relative p-4 sm:p-5 md:p-6 lg:p-8 rounded-lg sm:rounded-2xl border border-white/5 bg-gradient-to-br from-[#111827] to-[#0D0F1B] hover:border-white/10 -white/5 transition-all duration-300 text-left overflow-hidden active:scale-95 flex flex-col"
                 >
                   {/* Background glow on hover */}
                   <div className={`absolute -inset-96 bg-gradient-to-br ${topic.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300 blur-3xl pointer-events-none`}></div>
@@ -177,7 +177,7 @@ export default function Practice() {
                   <div className="relative z-10 flex flex-col flex-1">
                     {/* Icon and Stats Row */}
                     <div className="flex items-start justify-between mb-3 sm:mb-4 md:mb-5">
-                      <div className={`w-10 sm:w-12 md:w-14 h-10 sm:h-12 md:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br ${topic.color} flex items-center justify-center text-white shadow-lg shadow-current/20 group-hover:scale-110 transition-transform duration-300`}>
+                      <div className={`w-10 sm:w-12 md:w-14 h-10 sm:h-12 md:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br ${topic.color} flex items-center justify-center text-white -current/20 group-hover:scale-110 transition-transform duration-300`}>
                         <Icon icon={topic.icon} width="20" />
                       </div>
                       <div className="text-right">
@@ -227,7 +227,7 @@ export default function Practice() {
             <div className="space-y-4">
               <h2 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-5">{t('practice.whyPractice')}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div className="p-3 sm:p-4 md:p-5 rounded-lg md:rounded-xl bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 flex items-start gap-3 sm:gap-4 hover:border-[#f99c00]/20 hover:shadow-lg hover:shadow-[#f99c00]/5 transition-all group cursor-pointer">
+                <div className="p-3 sm:p-4 md:p-5 rounded-lg md:rounded-xl bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 flex items-start gap-3 sm:gap-4 hover:border-[#f99c00]/20 transition-all group cursor-pointer">
                   <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] shrink-0 group-hover:scale-110 transition-transform">
                     <Icon icon="solar:star-bold" width="18" />
                   </div>
@@ -236,7 +236,7 @@ export default function Practice() {
                     <p className="text-xs text-slate-400 leading-snug">{t('practice.getInstantAnalysis')}</p>
                   </div>
                 </div>
-                <div className="p-3 sm:p-4 md:p-5 rounded-lg md:rounded-xl bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 flex items-start gap-3 sm:gap-4 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5 transition-all group cursor-pointer">
+                <div className="p-3 sm:p-4 md:p-5 rounded-lg md:rounded-xl bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 flex items-start gap-3 sm:gap-4 hover:border-emerald-500/20 -emerald-500/5 transition-all group cursor-pointer">
                   <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0 group-hover:scale-110 transition-transform">
                     <Icon icon="solar:target-bold" width="18" />
                   </div>
@@ -286,7 +286,7 @@ export default function Practice() {
               </p>
               
               {/* Embedded Reference Image */}
-              <div className="rounded-xl overflow-hidden border border-white/5 bg-white/5 hover:shadow-lg hover:shadow-white/5 transition-all">
+              <div className="rounded-xl overflow-hidden border border-white/5 bg-white/5 -white/5 transition-all">
                 <img 
                   src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/user-files/fd86d650-37a4-4a87-a832-38f8d246494a/c1d8f4a0-dfec-4aba-8c26-7c9d7cb813e2-pr.png?v=1776510287457" 
                   alt="Scenario Reference" 
@@ -318,7 +318,7 @@ export default function Practice() {
                   <button 
                     onClick={handleSubmit}
                     disabled={aiState !== 'idle'}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] px-4 sm:px-7 py-3 sm:py-3.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#f99c00]/20 hover:shadow-xl hover:shadow-[#f99c00]/30 min-h-[44px] sm:min-h-[48px]"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] px-4 sm:px-7 py-3 sm:py-3.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] sm:min-h-[48px]"
                   >
                     {aiState === 'analyzing' ? (
                       <>
@@ -338,7 +338,7 @@ export default function Practice() {
 
               {/* Inline Feedback Section */}
               {aiState === 'feedback' && (
-                <div className="mt-6 bg-gradient-to-br from-emerald-950/30 to-emerald-900/10 border border-emerald-500/30 rounded-2xl p-7 md:p-8 animate-fade-in-up relative overflow-hidden shadow-lg shadow-emerald-500/10">
+                <div className="mt-6 bg-gradient-to-br from-emerald-950/30 to-emerald-900/10 border border-emerald-500/30 rounded-2xl p-7 md:p-8 animate-fade-in-up relative overflow-hidden -emerald-500/10">
                   <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
                   <div className="flex flex-col gap-5 md:items-start md:justify-between">
                     <div className="flex-1">
@@ -362,7 +362,7 @@ export default function Practice() {
                     <button onClick={() => setAiState('idle')} className="px-6 py-3 rounded-lg border border-white/10 hover:border-white/20 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all w-full sm:w-auto active:scale-95">
                       {t('practice.tryAgain')}
                     </button>
-                    <button onClick={() => setIsChatOpen(true)} className="px-6 py-3 rounded-lg bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] text-sm font-bold transition-all flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg shadow-[#f99c00]/20 active:scale-95">
+                    <button onClick={() => setIsChatOpen(true)} className="px-6 py-3 rounded-lg bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] text-sm font-bold transition-all flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95">
                       <Icon icon="solar:chat-line-linear" width="20" />
                       <span className="hidden xs:inline">{t('practice.askMaestro')}</span>
                       <span className="xs:hidden">{t('practice.askMaestro')}</span>
@@ -380,7 +380,7 @@ export default function Practice() {
       {step === 'workboard' && !isChatOpen && (
         <button
           onClick={() => setIsChatOpen(true)}
-          className="fixed lg:absolute right-4 bottom-24 lg:bottom-8 z-30 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#f99c00] to-amber-600 rounded-full flex items-center justify-center text-white shadow-xl shadow-[#f99c00]/30 hover:shadow-[#f99c00]/50 hover:scale-110 active:scale-95 transition-all duration-300 group"
+          className="fixed lg:absolute right-4 bottom-24 lg:bottom-8 z-30 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#f99c00] to-amber-600 rounded-full flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all duration-300 group"
           aria-label="Open AI Tutor"
           title="Ask Maestro AI for help"
         >

@@ -65,7 +65,7 @@ export default function DashboardUI() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <button
               onClick={() => handleStatClick('questions')}
-              className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-[#f99c00]/20 hover:shadow-lg hover:shadow-[#f99c00]/10 transition-all text-left group active:scale-95"
+              className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-[#f99c00]/20 transition-all text-left group active:scale-95"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
@@ -81,7 +81,7 @@ export default function DashboardUI() {
 
             <button
               onClick={() => handleStatClick('accuracy')}
-              className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-[#f99c00]/20 hover:shadow-lg hover:shadow-[#f99c00]/10 transition-all text-left group active:scale-95"
+              className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-[#f99c00]/20 transition-all text-left group active:scale-95"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
@@ -97,7 +97,7 @@ export default function DashboardUI() {
 
             <button
               onClick={() => handleStatClick('studyTime')}
-              className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-[#f99c00]/20 hover:shadow-lg hover:shadow-[#f99c00]/10 transition-all text-left group active:scale-95"
+              className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-[#f99c00]/20 transition-all text-left group active:scale-95"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform">
@@ -111,7 +111,7 @@ export default function DashboardUI() {
 
             <button
               onClick={() => handleStatClick('exams')}
-              className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-[#f99c00]/20 hover:shadow-lg hover:shadow-[#f99c00]/10 transition-all text-left group active:scale-95"
+              className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-[#f99c00]/20 transition-all text-left group active:scale-95"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
@@ -158,10 +158,10 @@ export default function DashboardUI() {
                     <div key={i} className="w-full flex flex-col justify-end gap-2 group">
                       <div
                         className={`w-full rounded-t-md transition-all duration-300 relative ${
-                          bar.active
-                            ? 'bg-[#f99c00] shadow-lg shadow-[#f99c00]/40'
-                            : 'bg-[#f99c00]/20 hover:bg-[#f99c00]/40'
-                        }`}
+ bar.active
+ ? 'bg-[#f99c00] '
+ : 'bg-[#f99c00]/20 hover:bg-[#f99c00]/40'
+ }`}
                         style={{ height: bar.h }}
                       >
                         <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#2a3441]/95 text-xs text-white px-2.5 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 font-medium">
@@ -217,7 +217,7 @@ export default function DashboardUI() {
             {/* Right Column */}
             <div className="space-y-6">
               {/* Daily Goal */}
-              <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 relative overflow-hidden group hover:border-[#f99c00]/20 transition-all hover:shadow-lg hover:shadow-[#f99c00]/10">
+              <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 relative overflow-hidden group hover:border-[#f99c00]/20 transition-all">
                 <div className="absolute -right-12 -top-12 text-white/5 group-hover:text-white/10 transform rotate-12 pointer-events-none transition-colors">
                   <Icon icon="solar:target-linear" width="150" height="150" />
                 </div>
@@ -264,7 +264,7 @@ export default function DashboardUI() {
               </div>
 
               {/* Study Reminders Toggle */}
-              <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 flex items-center justify-between hover:border-white/10 transition-all hover:shadow-lg hover:shadow-white/5">
+              <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 flex items-center justify-between hover:border-white/10 transition-all -white/5">
                 <div>
                   <h4 className="text-sm font-semibold text-white mb-1">{t('dashboard.studyReminders')}</h4>
                   <p className="text-xs text-slate-500">{t('dashboard.dailyPracticeAlerts')}</p>

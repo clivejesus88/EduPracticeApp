@@ -74,7 +74,7 @@ export default function Layout() {
         {/* Logo */}
         <div className="h-20 px-6 flex items-center border-b border-white/5">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-200 rounded-lg flex items-center justify-center text-[#0B1120] transition-all group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-white/20">
+            <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-200 rounded-lg flex items-center justify-center text-[#0B1120] transition-all group-hover:scale-110 -white/20">
               <Icon icon="lucide:graduation-cap" width="28" height="28" style={{ strokeWidth: 1 }} />
             </div>
             <span className="text-xl font-bold tracking-tight text-white">EduPractice</span>
@@ -90,10 +90,10 @@ export default function Layout() {
                 key={item.name}
                 to={item.path}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all group font-medium ${
-                  isActive
-                    ? 'bg-[#f99c00]/15 text-[#f99c00] shadow-lg shadow-[#f99c00]/10'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
+ isActive
+ ? 'bg-[#f99c00]/15 text-[#f99c00] '
+ : 'text-slate-400 hover:text-white hover:bg-white/5'
+ }`}
               >
                 <Icon
                   icon={item.icon}
@@ -203,7 +203,7 @@ export default function Layout() {
       <aside className={`md:hidden fixed top-0 left-0 w-64 h-[100dvh] pb-[60px] bg-gradient-to-b from-[#0B1120] to-[#0D0F1B] border-r border-white/5 flex flex-col z-40 transform transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto`}>
         <div className="h-20 px-6 flex items-center border-b border-white/5 sticky top-0 bg-[#0B1120]/95 backdrop-blur">
           <Link to="/" className="flex items-center gap-3 group w-full" onClick={() => setIsMobileSidebarOpen(false)}>
-            <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-200 rounded-lg flex items-center justify-center text-[#0B1120] transition-all group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-white/20">
+            <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-200 rounded-lg flex items-center justify-center text-[#0B1120] transition-all group-hover:scale-110 -white/20">
               <Icon icon="lucide:graduation-cap" width="28" height="28" style={{ strokeWidth: 1 }} />
             </div>
             <span className="text-xl font-bold tracking-tight text-white">EduPractice</span>
@@ -219,10 +219,10 @@ export default function Layout() {
                 to={item.path}
                 onClick={() => setIsMobileSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all group font-medium ${
-                  isActive
-                    ? 'bg-[#f99c00]/15 text-[#f99c00] shadow-lg shadow-[#f99c00]/10'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
+ isActive
+ ? 'bg-[#f99c00]/15 text-[#f99c00] '
+ : 'text-slate-400 hover:text-white hover:bg-white/5'
+ }`}
               >
                 <Icon
                   icon={item.icon}
@@ -275,8 +275,8 @@ export default function Layout() {
               key={item.name}
               to={item.path}
               className={`flex items-center justify-center w-16 h-full transition-all ${
-                isActive ? 'text-[#f99c00]' : 'text-slate-500 hover:text-white'
-              }`}
+ isActive ? 'text-[#f99c00]' : 'text-slate-500 hover:text-white'
+ }`}
               aria-label={item.name}
             >
               <Icon icon={item.icon} width="24" height="24" style={{ strokeWidth: 1.5 }} />
@@ -286,8 +286,8 @@ export default function Layout() {
         <Link
           to="/profile"
           className={`flex items-center justify-center w-16 h-full transition-all ${
-            location.pathname === '/profile' ? 'text-[#f99c00]' : 'text-slate-500 hover:text-white'
-          }`}
+ location.pathname === '/profile' ? 'text-[#f99c00]' : 'text-slate-500 hover:text-white'
+ }`}
           aria-label="Profile"
         >
           <Icon icon="solar:user-circle-linear" width="24" height="24" style={{ strokeWidth: 1.5 }} />

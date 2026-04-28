@@ -30,7 +30,6 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #ffb31a 0%, #f99c00 100%);
-  box-shadow: 0 0 10px rgba(249, 156, 0, 0.3);
   border-color: #111827;
 }
 

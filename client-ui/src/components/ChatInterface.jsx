@@ -13,13 +13,13 @@ const INITIAL_MESSAGES = [
 function Avatar({ role }) {
   if (role === 'assistant') {
     return (
-      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#f99c00] to-amber-600 flex items-center justify-center shrink-0 shadow-lg shadow-[#f99c00]/20">
+      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#f99c00] to-amber-600 flex items-center justify-center shrink-0">
         <Icon icon="solar:magic-stick-3-bold" width="14" className="text-white" />
       </div>
     );
   }
   return (
-    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0 text-white text-xs font-bold shadow-lg shadow-blue-500/20">
+    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0 text-white text-xs font-bold -blue-500/20">
       S
     </div>
   );
@@ -35,10 +35,10 @@ function MessageBubble({ msg }) {
       <div className={`max-w-[85%] space-y-1 ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
         <div
           className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-            isUser
-              ? 'bg-[#f99c00] text-[#0B1120] rounded-br-md font-medium'
-              : 'bg-white/5 border border-white/10 text-slate-200 rounded-bl-md'
-          }`}
+ isUser
+ ? 'bg-[#f99c00] text-[#0B1120] rounded-br-md font-medium'
+ : 'bg-white/5 border border-white/10 text-slate-200 rounded-bl-md'
+ }`}
         >
           {parts.map((line, i) => {
             const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#f99c00]">$1</strong>');
@@ -182,20 +182,20 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
       {/* Chat Panel */}
       <div 
         className={`
-          fixed lg:absolute inset-y-0 right-0 z-50
-          w-full sm:w-96 lg:w-[400px]
-          bg-[#0a0f1a] border-l border-white/5
-          flex flex-col
-          shadow-2xl shadow-black/50
-          transform transition-transform duration-300 ease-out
-          ${isOpen ? 'translate-x-0' : 'translate-x-full'}
-        `}
+ fixed lg:absolute inset-y-0 right-0 z-50
+ w-full sm:w-96 lg:w-[400px]
+ bg-[#0a0f1a] border-l border-white/5
+ flex flex-col
+ -black/50
+ transform transition-transform duration-300 ease-out
+ ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+ `}
       >
         {/* Header */}
         <header className="flex items-center justify-between px-4 py-4 border-b border-white/5 bg-gradient-to-r from-[#0a0f1a] to-[#111827] shrink-0">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f99c00] to-amber-600 flex items-center justify-center shadow-lg shadow-[#f99c00]/20">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f99c00] to-amber-600 flex items-center justify-center">
                 <Icon icon="solar:magic-stick-3-bold" width="20" className="text-white" />
               </div>
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#0a0f1a]" />
@@ -274,10 +274,10 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
               onClick={sendMessage}
               disabled={!inputValue.trim()}
               className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 ${
-                inputValue.trim()
-                  ? 'bg-[#f99c00] hover:bg-[#e88d00] text-[#0B1120] hover:scale-105 active:scale-95 shadow-lg shadow-[#f99c00]/20'
-                  : 'bg-white/5 text-slate-600 cursor-not-allowed'
-              }`}
+ inputValue.trim()
+ ? 'bg-[#f99c00] hover:bg-[#e88d00] text-[#0B1120] hover:scale-105 active:scale-95 '
+ : 'bg-white/5 text-slate-600 cursor-not-allowed'
+ }`}
             >
               <Icon icon="solar:arrow-up-linear" width="18" />
             </button>
