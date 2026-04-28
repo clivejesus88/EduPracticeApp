@@ -74,8 +74,8 @@ export default function Layout() {
         {/* Logo */}
         <div className="h-20 px-6 flex items-center border-b border-white/5">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-200 rounded-lg flex items-center justify-center text-[#0B1120] transition-all group-hover:scale-110 -white/20">
-              <Icon icon="lucide:graduation-cap" width="28" height="28" style={{ strokeWidth: 1 }} />
+            <div className="w-10 h-10 bg-gradient-to-br from-[#f99c00] to-amber-600 rounded-lg flex items-center justify-center text-white transition-all group-hover:scale-110">
+              <Icon icon="lucide:graduation-cap" width="24" height="24" />
             </div>
             <span className="text-xl font-bold tracking-tight text-white">EduPractice</span>
           </Link>
@@ -203,8 +203,8 @@ export default function Layout() {
       <aside className={`md:hidden fixed top-0 left-0 w-64 h-[100dvh] pb-[60px] bg-gradient-to-b from-[#0B1120] to-[#0D0F1B] border-r border-white/5 flex flex-col z-40 transform transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto`}>
         <div className="h-20 px-6 flex items-center border-b border-white/5 sticky top-0 bg-[#0B1120]/95 backdrop-blur">
           <Link to="/" className="flex items-center gap-3 group w-full" onClick={() => setIsMobileSidebarOpen(false)}>
-            <div className="w-10 h-10 bg-gradient-to-br from-white to-slate-200 rounded-lg flex items-center justify-center text-[#0B1120] transition-all group-hover:scale-110 -white/20">
-              <Icon icon="lucide:graduation-cap" width="28" height="28" style={{ strokeWidth: 1 }} />
+            <div className="w-10 h-10 bg-gradient-to-br from-[#f99c00] to-amber-600 rounded-lg flex items-center justify-center text-white transition-all group-hover:scale-110">
+              <Icon icon="lucide:graduation-cap" width="24" height="24" />
             </div>
             <span className="text-xl font-bold tracking-tight text-white">EduPractice</span>
           </Link>

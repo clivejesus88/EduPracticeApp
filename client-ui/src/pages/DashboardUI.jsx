@@ -35,7 +35,7 @@ export default function DashboardUI() {
   return (
     <div className="flex-1 overflow-y-auto bg-[#0B1120]">
       {/* Header */}
-      <div className="bg-[#0B1120] border-b border-white/5 sticky top-0 z-10">
+      <div className="bg-[#0B1120] border-b border-white/5">
         <div className="px-4 sm:px-6 md:px-8 py-6">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
