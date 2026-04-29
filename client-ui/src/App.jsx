@@ -5,6 +5,8 @@ import DashboardUI from './pages/DashboardUI';
 import Practice from './pages/Practice';
 import Analytics from './pages/Analytics';
 import MockExams from './pages/MockExams';
+import ExamRunner from './pages/ExamRunner';
+import ExamResults from './pages/ExamResults';
 import Profile from './pages/Profile';
 import Layout from './pages/Layout';
 import ProtectedRoute from './auth/ProtectedRoute';
@@ -30,6 +32,9 @@ function App() {
               <Route path="/mock-exams" element={<MockExams />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
+            {/* Distraction-free exam routes (no sidebar) */}
+            <Route path="/exam/run" element={<ExamRunner />} />
+            <Route path="/exam/results/:attemptId" element={<ExamResults />} />
           </Route>
         </Routes>
         </Router>

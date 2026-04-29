@@ -20,6 +20,13 @@ A React + Vite + TypeScript single-page app for the EduPractice study platform. 
 - `Profile.jsx` initializes its form from the context, syncs back via `updateUser(formData)` on save, and re-syncs from context if the user changes elsewhere while not editing.
 - `DashboardUI` welcome heading and `Layout` sidebar (avatar + name) all read live from `useUser()`, so any name edit on the Profile page propagates instantly across the app.
 
+## Exam Engine
+- `src/data/examBank.js` holds a real, hand-written question bank (Physics / Mathematics / Chemistry / Biology / English across O-Level, A-Level and UACE) with MCQ + numeric questions, answers, explanations and marks. Exposes `buildExam(config)` (deterministic, seeded shuffle with graceful fallback when filters are too narrow), `scoreExam()`, and `saveAttempt() / listAttempts() / getAttempt()` (localStorage key `eduPractice_examAttempts`, capped at 25).
+- `src/pages/ExamRunner.jsx` (route `/exam/run`) is the distraction-free exam UI: countdown timer with low-time warning, progress strip, MCQ + numeric inputs, flag-for-review, question overview grid, draft auto-save (`eduPractice_examDraft`) so refreshes don't lose progress, and timer auto-submit at 0.
+- `src/pages/ExamResults.jsx` (route `/exam/results/:attemptId`) shows the final score, grade, per-topic accuracy bars, and a per-question review with correct answers + explanations. Has retake and back-to-list actions.
+- Both exam routes are mounted **outside** the sidebar `Layout` (still inside `ProtectedRoute`) for full-screen focus.
+- `src/pages/MockExams.jsx` drives everything: level selector, dynamic mock exams filtered by level, topic exams generated from `data/examStructure.js` (only surfaces topics where the question bank has matching content), recent-attempts list, and a custom builder that accepts subject / level / difficulty / count and routes into the runner with a real config.
+
 ## Recent UI Changes
 - Practice page redesigned with examdojo-inspired clean look: bigger headlines, generous spacing, single-column → multi-column responsive grids, pill-shaped CTAs, consistent rounded card system, mobile-friendly workboard with sticky-safe bottom padding.
 - Workboard reserves right-side room for the chat sidebar only when chat is open (`lg:pr-[400px]` conditionally) instead of an invalid hard-coded class.
