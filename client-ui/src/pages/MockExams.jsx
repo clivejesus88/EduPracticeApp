@@ -12,58 +12,42 @@ const LEVELS = [
   { id: 'UACE',    name: 'UACE',           short: 'UACE',    description: 'Uganda Advanced Certificate of Education', topicsKey: 'ALEVEL' },
 ];
 
-// Pre-defined mock exams the user can take. They are all wired to real questions
-// via the question bank (which falls back gracefully if a subject lacks enough items).
+// Pre-defined mock exams. Each one mixes scenario-based questions with MCQs/numerics.
+// `scenarioCount` reserves N slots for Uganda-context scenario questions.
 const MOCK_EXAMS = [
   {
-    id: 'mock-physics-paper1', title: 'Physics Paper 1 — Full Mock',
+    id: 'mock-physics-ol', title: 'Physics — O-Level Full Mock',
     subject: 'Physics', level: 'O-Level', difficulty: 'Medium',
-    duration: '1h 30m', count: 15, icon: 'solar:atom-bold', tone: 'sky',
-    description: 'A timed full-paper mock covering mechanics, waves, electricity and thermodynamics.'
+    duration: '1h 30m', count: 12, scenarioCount: 3,
+    icon: 'solar:atom-bold', tone: 'sky',
+    description: 'Full-paper timing across mechanics, waves, electricity and thermodynamics. Includes Uganda-context scenarios.'
   },
   {
-    id: 'mock-physics-advanced', title: 'Physics — Advanced Mock',
+    id: 'mock-physics-al', title: 'Physics — A-Level Mock',
     subject: 'Physics', level: 'A-Level', difficulty: 'Hard',
-    duration: '2h', count: 12, icon: 'solar:atom-bold', tone: 'sky',
-    description: 'Tougher questions across classical mechanics, optics and modern physics.'
+    duration: '2h', count: 10, scenarioCount: 2,
+    icon: 'solar:atom-bold', tone: 'sky',
+    description: 'Classical mechanics, optics and modern physics with applied scenarios.'
   },
   {
-    id: 'mock-math-paper1', title: 'Mathematics Paper 1 — Full Mock',
+    id: 'mock-math-ol', title: 'Mathematics — O-Level Full Mock',
     subject: 'Mathematics', level: 'O-Level', difficulty: 'Medium',
-    duration: '1h 30m', count: 15, icon: 'solar:square-academic-cap-bold', tone: 'violet',
-    description: 'Algebra, geometry, calculus basics and statistics — exam standard timing.'
+    duration: '1h 30m', count: 12, scenarioCount: 3,
+    icon: 'solar:calculator-bold', tone: 'violet',
+    description: 'Algebra, geometry, calculus basics and statistics — with real-life Uganda problems.'
   },
   {
-    id: 'mock-math-advanced', title: 'Mathematics — A-Level Mock',
+    id: 'mock-math-al', title: 'Mathematics — A-Level Mock',
     subject: 'Mathematics', level: 'A-Level', difficulty: 'Hard',
-    duration: '2h', count: 12, icon: 'solar:square-academic-cap-bold', tone: 'violet',
-    description: 'Pure and applied mathematics, statistics and probability.'
-  },
-  {
-    id: 'mock-chem', title: 'Chemistry Mock',
-    subject: 'Chemistry', level: 'O-Level', difficulty: 'Medium',
-    duration: '1h', count: 10, icon: 'solar:test-tube-bold', tone: 'emerald',
-    description: 'Atomic structure, acids & bases, stoichiometry and the periodic table.'
-  },
-  {
-    id: 'mock-bio', title: 'Biology Mock',
-    subject: 'Biology', level: 'O-Level', difficulty: 'Medium',
-    duration: '1h', count: 10, icon: 'solar:leaf-bold', tone: 'emerald',
-    description: 'Cell biology, genetics, photosynthesis and human body systems.'
-  },
-  {
-    id: 'mock-eng', title: 'English Language Mock',
-    subject: 'English', level: 'O-Level', difficulty: 'Easy',
-    duration: '45m', count: 10, icon: 'solar:book-bookmark-bold', tone: 'amber',
-    description: 'Grammar, vocabulary and reading comprehension.'
+    duration: '2h', count: 10, scenarioCount: 2,
+    icon: 'solar:calculator-bold', tone: 'violet',
+    description: 'Pure and applied mathematics, statistics and probability with applied scenarios.'
   },
 ];
 
 const TONE = {
   sky:     'from-sky-500/15 to-sky-500/5 border-sky-500/30 text-sky-300',
   violet:  'from-violet-500/15 to-violet-500/5 border-violet-500/30 text-violet-300',
-  emerald: 'from-emerald-500/15 to-emerald-500/5 border-emerald-500/30 text-emerald-300',
-  amber:   'from-amber-500/15 to-amber-500/5 border-amber-500/30 text-amber-300',
 };
 
 export default function MockExams() {
@@ -114,6 +98,7 @@ export default function MockExams() {
           count: exam.count,
           duration: exam.duration,
           topics: exam.topics || null,
+          scenarioCount: exam.scenarioCount || 0,
         }
       }
     });
@@ -260,6 +245,9 @@ export default function MockExams() {
                         <Pill icon="solar:clock-circle-linear">{exam.duration}</Pill>
                         <Pill icon="solar:checklist-minimalistic-linear">{exam.count} questions</Pill>
                         <Pill icon="solar:graph-up-linear">{exam.difficulty}</Pill>
+                        {exam.scenarioCount > 0 && (
+                          <Pill icon="solar:map-point-wave-linear">{exam.scenarioCount} scenarios</Pill>
+                        )}
                       </div>
                       <button
                         onClick={() => setConfirmExam(exam)}
@@ -488,9 +476,6 @@ function subjectIcon(subject) {
   switch (subject) {
     case 'Physics': return 'solar:atom-bold';
     case 'Mathematics': return 'solar:calculator-bold';
-    case 'Chemistry': return 'solar:test-tube-bold';
-    case 'Biology': return 'solar:leaf-bold';
-    case 'English': return 'solar:book-bookmark-bold';
     default: return 'solar:book-2-bold';
   }
 }

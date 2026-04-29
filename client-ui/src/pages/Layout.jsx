@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { useUser } from '../contexts/UserContext';
 import Avatar from '../components/Avatar';
 import SearchModal from '../components/SearchModal';
+import { deriveAnalytics } from '../data/examBank';
 
 export default function Layout() {
   const location = useLocation();
@@ -12,6 +13,10 @@ export default function Layout() {
   const { user } = useUser();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Live streak from real exam attempts. Recompute on every route change so
+  // returning from an exam shows the new streak immediately.
+  const streak = useMemo(() => deriveAnalytics({ days: null }).streak, [location.pathname]);
 
   // ── Auto-hide bottom nav on scroll ──────────────────────────────────────────
   const [navVisible, setNavVisible] = useState(true);
@@ -165,7 +170,7 @@ export default function Layout() {
           <div className="flex items-center gap-2 md:gap-4">
             <div className="flex items-center gap-2 px-3 py-2 rounded-full border border-white/10 bg-[#111827]/80 hover:border-[#f99c00]/30 transition-all">
               <Icon icon="solar:fire-linear" width="18" height="18" className="text-[#f99c00]" style={{ strokeWidth: 1 }} />
-              <span className="text-xs md:text-sm font-bold text-slate-300">12<span className="hidden sm:inline"> Days</span></span>
+              <span className="text-xs md:text-sm font-bold text-slate-300">{streak}<span className="hidden sm:inline"> {streak === 1 ? 'Day' : 'Days'}</span></span>
             </div>
 
             <button className="relative w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">

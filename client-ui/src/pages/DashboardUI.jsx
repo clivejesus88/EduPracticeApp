@@ -1,37 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Icon } from '@iconify/react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { useUser } from '../contexts/UserContext';
-import { getMetrics } from '../utils/analyticsTracker';
+import { deriveAnalytics, formatStudyTime } from '../data/examBank';
+
+const DAILY_GOAL = 30;
 
 export default function DashboardUI() {
   const { t, translate } = useLocalization();
   const { getFirstName } = useUser();
-  const [metrics, setMetrics] = useState(null);
+  const navigate = useNavigate();
   const [showPracticeModal, setShowPracticeModal] = useState(false);
-  const [selectedSession, setSelectedSession] = useState(null);
 
-  useEffect(() => {
-    const data = getMetrics();
-    setMetrics(data);
-  }, []);
+  // Recompute when modal opens/closes (cheap) so new attempts appear after returning from an exam.
+  const data = useMemo(() => deriveAnalytics({ days: 30 }), [showPracticeModal]);
+  const allTime = useMemo(() => deriveAnalytics({ days: null }), [showPracticeModal]);
+  const peakWeekly = Math.max(1, ...data.weeklyActivity.map(d => d.questions));
+  const todayBucket = data.weeklyActivity[data.weeklyActivity.length - 1];
+  const todayQuestions = todayBucket?.questions || 0;
+  const dailyProgress = Math.min(100, Math.round((todayQuestions / DAILY_GOAL) * 100));
+  const recentAttempts = allTime.attempts.slice(0, 3);
+  const physics = allTime.subjectPerformance.find(s => s.subject === 'Physics');
+  const maths   = allTime.subjectPerformance.find(s => s.subject === 'Mathematics');
 
   const handleResumePractice = () => {
-    setShowPracticeModal(true);
-  };
-
-  const handleSessionClick = (session) => {
-    setSelectedSession(session);
+    if (allTime.latest) setShowPracticeModal(true);
+    else navigate('/mock-exams');
   };
 
   const handleStatClick = (statType) => {
-    const messages = {
-      questions: 'View detailed analytics for all questions solved',
-      accuracy: 'Check your performance breakdown by subject',
-      studyTime: 'View your study schedule and trends',
-      exams: 'See exam results and progress',
-    };
-    alert(messages[statType] || 'Loading...');
+    if (statType === 'questions' || statType === 'accuracy' || statType === 'studyTime') {
+      navigate('/analytics');
+    } else if (statType === 'exams') {
+      navigate('/mock-exams');
+    }
   };
 
   return (
@@ -63,67 +66,38 @@ export default function DashboardUI() {
       <div className="px-4 sm:px-6 md:px-8 py-8">
         <div className="max-w-7xl mx-auto space-y-8">
 
-          {/* Stats Grid */}
+          {/* Stats Grid (real data from your attempts) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <button
+            <StatCard
               onClick={() => handleStatClick('questions')}
-              className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-[#f99c00]/20 transition-all text-left group active:scale-95"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
-                  <Icon icon="solar:checklist-minimalistic-linear" width="24" />
-                </div>
-                <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">
-                  {metrics?.improvement > 0 ? '+' : ''}{metrics?.improvement}%
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mb-1">{t('dashboard.questionsSolved')}</p>
-              <h3 className="text-2xl font-bold text-white">{metrics?.totalAttempts || 0}</h3>
-            </button>
-
-            <button
+              icon="solar:checklist-minimalistic-linear" tone="blue"
+              label={t('dashboard.questionsSolved')}
+              value={data.totalQuestions}
+              badge={data.improvement !== 0
+                ? { text: `${data.improvement > 0 ? '+' : ''}${data.improvement}%`, tone: data.improvement >= 0 ? 'good' : 'bad' }
+                : { text: 'Last 30 days', tone: 'muted' }}
+            />
+            <StatCard
               onClick={() => handleStatClick('accuracy')}
-              className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-[#f99c00]/20 transition-all text-left group active:scale-95"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
-                  <Icon icon="solar:target-linear" width="24" />
-                </div>
-                <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">
-                  {Math.round((metrics?.avgAccuracy || 0) / 10) / 10}%
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mb-1">{t('dashboard.averageAccuracy')}</p>
-              <h3 className="text-2xl font-bold text-white">{metrics?.avgAccuracy || 0}%</h3>
-            </button>
-
-            <button
+              icon="solar:target-linear" tone="purple"
+              label={t('dashboard.averageAccuracy')}
+              value={`${data.accuracyOverall}%`}
+              badge={{ text: `${data.totalAttempts} exam${data.totalAttempts === 1 ? '' : 's'}`, tone: 'muted' }}
+            />
+            <StatCard
               onClick={() => handleStatClick('studyTime')}
-              className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-[#f99c00]/20 transition-all text-left group active:scale-95"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform">
-                  <Icon icon="solar:clock-circle-linear" width="24" />
-                </div>
-                <span className="text-xs font-bold text-slate-400 bg-white/5 px-2.5 py-1 rounded-full">Active</span>
-              </div>
-              <p className="text-xs text-slate-400 mb-1">{t('dashboard.studyTime')}</p>
-              <h3 className="text-2xl font-bold text-white">42h 15m</h3>
-            </button>
-
-            <button
+              icon="solar:clock-circle-linear" tone="rose"
+              label={t('dashboard.studyTime')}
+              value={formatStudyTime(data.studyMinutes)}
+              badge={{ text: 'Last 30 days', tone: 'muted' }}
+            />
+            <StatCard
               onClick={() => handleStatClick('exams')}
-              className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-[#f99c00]/20 transition-all text-left group active:scale-95"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
-                  <Icon icon="solar:cup-star-linear" width="24" />
-                </div>
-                <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">95th</span>
-              </div>
-              <p className="text-xs text-slate-400 mb-1">{t('dashboard.examsPassed')}</p>
-              <h3 className="text-2xl font-bold text-white">{metrics?.examsTaken || 0}</h3>
-            </button>
+              icon="solar:cup-star-linear" tone="amber"
+              label={t('dashboard.examsPassed')}
+              value={data.totalAttempts}
+              badge={data.streak > 0 ? { text: `${data.streak}-day streak`, tone: 'good' } : null}
+            />
           </div>
 
           {/* Main Layout */}
@@ -148,71 +122,89 @@ export default function DashboardUI() {
                 </div>
 
                 <div className="h-56 flex items-end justify-between gap-1.5 mt-8 px-2">
-                  {[
-                    { h: '40%', d: 'M', v: '24' },
-                    { h: '65%', d: 'T', v: '45' },
-                    { h: '30%', d: 'W', v: '18' },
-                    { h: '90%', d: 'T', v: '72', active: true },
-                    { h: '50%', d: 'F', v: '32' },
-                    { h: '75%', d: 'S', v: '54' },
-                    { h: '20%', d: 'S', v: '12' },
-                  ].map((bar, i) => (
-                    <div key={i} className="w-full flex flex-col justify-end gap-2 group">
-                      <div
-                        className={`w-full rounded-t-md transition-all duration-300 relative ${
- bar.active
- ? 'bg-[#f99c00] '
- : 'bg-[#f99c00]/20 hover:bg-[#f99c00]/40'
- }`}
-                        style={{ height: bar.h }}
-                      >
-                        <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#2a3441]/95 text-xs text-white px-2.5 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 font-medium">
-                          {bar.v} Qs
+                  {data.weeklyActivity.map((d, i) => {
+                    const isToday = i === data.weeklyActivity.length - 1;
+                    const heightPct = d.questions > 0
+                      ? Math.max(8, Math.round((d.questions / peakWeekly) * 100))
+                      : 4;
+                    return (
+                      <div key={i} className="w-full flex flex-col justify-end gap-2 group h-full">
+                        <div
+                          className={`w-full rounded-t-md transition-all duration-300 relative ${
+                            d.questions === 0
+                              ? 'bg-white/5'
+                              : isToday
+                                ? 'bg-[#f99c00]'
+                                : 'bg-[#f99c00]/30 hover:bg-[#f99c00]/60'
+                          }`}
+                          style={{ height: `${heightPct}%` }}
+                        >
+                          <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#2a3441]/95 text-xs text-white px-2.5 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 font-medium">
+                            {d.questions} Qs · {d.minutes}m
+                          </div>
                         </div>
+                        <span className={`text-xs text-center font-semibold ${isToday ? 'text-[#f99c00]' : 'text-slate-500'}`}>
+                          {d.label.charAt(0)}
+                        </span>
                       </div>
-                      <span className={`text-xs text-center font-semibold ${bar.active ? 'text-[#f99c00]' : 'text-slate-500'}`}>
-                        {bar.d}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Recent Sessions */}
+              {/* Recent Sessions (real attempts) */}
               <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-white/10 transition-all">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-semibold tracking-tight text-white">{t('dashboard.recentSessions')}</h3>
-                  <button className="text-sm text-[#f99c00] hover:text-[#f99c00]/80 font-medium transition-colors">
+                  <Link to="/analytics" className="text-sm text-[#f99c00] hover:text-[#f99c00]/80 font-medium transition-colors">
                     {t('dashboard.viewAll')}
-                  </button>
+                  </Link>
                 </div>
 
-                <div className="space-y-3">
-                  {[
-                    { title: 'Kinematics Practice Test', sub: 'Physics • 25 Qs', icon: 'solar:ruler-cross-pen-linear', score: '92%', time: '2h ago', colorBg: 'bg-blue-500/10', colorText: 'text-blue-500', scoreColor: 'text-emerald-400' },
-                    { title: 'Integration Fundamentals', sub: 'Math • 15 Qs', icon: 'solar:calculator-linear', score: '78%', time: 'Yesterday', colorBg: 'bg-rose-500/10', colorText: 'text-rose-500', scoreColor: 'text-amber-400' },
-                    { title: 'Derivatives Quiz', sub: 'Math • 20 Qs', icon: 'solar:graph-up-linear', score: '100%', time: '3d ago', colorBg: 'bg-purple-500/10', colorText: 'text-purple-500', scoreColor: 'text-emerald-400' },
-                  ].map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between p-4 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 transition-all hover:border-white/10"
+                {recentAttempts.length === 0 ? (
+                  <div className="text-center py-8 text-slate-400">
+                    <Icon icon="solar:notebook-bookmark-linear" width="36" className="mx-auto mb-3 opacity-50" />
+                    <p className="text-sm mb-3">No exam attempts yet.</p>
+                    <Link
+                      to="/mock-exams"
+                      className="inline-block px-4 py-2 bg-[#f99c00] text-[#0B1120] rounded-lg text-sm font-semibold"
                     >
-                      <div className="flex items-center gap-4 overflow-hidden">
-                        <div className={`w-10 h-10 rounded-lg ${item.colorBg} flex items-center justify-center ${item.colorText} shrink-0`}>
-                          <Icon icon={item.icon} width="20" />
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="text-sm font-medium text-white mb-1 truncate">{item.title}</h4>
-                          <p className="text-xs text-slate-500 truncate">{item.sub}</p>
-                        </div>
-                      </div>
-                      <div className="text-right pl-3 shrink-0">
-                        <span className={`block text-sm font-semibold ${item.scoreColor} mb-1`}>{item.score}</span>
-                        <span className="block text-xs text-slate-500">{item.time}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                      Take your first exam
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {recentAttempts.map(a => {
+                      const isMath = a.subject === 'Mathematics';
+                      const colorBg = isMath ? 'bg-rose-500/10' : 'bg-blue-500/10';
+                      const colorText = isMath ? 'text-rose-400' : 'text-blue-400';
+                      const scoreColor = a.percentage >= 80 ? 'text-emerald-400'
+                                       : a.percentage >= 60 ? 'text-[#f99c00]' : 'text-rose-400';
+                      const icon = isMath ? 'solar:calculator-linear' : 'solar:atom-linear';
+                      return (
+                        <Link
+                          key={a.id}
+                          to={`/exam/results/${a.id}`}
+                          className="flex items-center justify-between p-4 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 transition-all hover:border-white/10"
+                        >
+                          <div className="flex items-center gap-4 overflow-hidden">
+                            <div className={`w-10 h-10 rounded-lg ${colorBg} flex items-center justify-center ${colorText} shrink-0`}>
+                              <Icon icon={icon} width="20" />
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="text-sm font-medium text-white mb-1 truncate">{a.title}</h4>
+                              <p className="text-xs text-slate-500 truncate">{a.subject} • {a.breakdown?.length || 0} Qs • {formatStudyTime(a.durationMin)}</p>
+                            </div>
+                          </div>
+                          <div className="text-right pl-3 shrink-0">
+                            <span className={`block text-sm font-semibold ${scoreColor} mb-1`}>{a.percentage}%</span>
+                            <span className="block text-xs text-slate-500">{relativeTime(a.submittedAt)}</span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -227,42 +219,47 @@ export default function DashboardUI() {
                   <h3 className="text-lg font-semibold text-white mb-2">{t('dashboard.dailyGoal')}</h3>
                   <p className="text-sm text-slate-400 mb-6">{t('dashboard.completeDailyQuestions')}</p>
                   <div className="flex items-end gap-2 mb-3">
-                    <span className="text-3xl font-semibold text-white leading-none">32</span>
-                    <span className="text-sm text-slate-500 leading-relaxed mb-1">/ 50</span>
+                    <span className="text-3xl font-semibold text-white leading-none">{todayQuestions}</span>
+                    <span className="text-sm text-slate-500 leading-relaxed mb-1">/ {DAILY_GOAL}</span>
                   </div>
                   <div className="h-2.5 w-full bg-white/10 rounded-full overflow-hidden mb-3 border border-white/5">
-                    <div className="h-full bg-gradient-to-r from-[#f99c00] to-[#f88c00] rounded-full" style={{ width: '64%' }} />
+                    <div className="h-full bg-gradient-to-r from-[#f99c00] to-[#f88c00] rounded-full transition-all" style={{ width: `${dailyProgress}%` }} />
                   </div>
-                  <p className="text-sm font-medium text-[#f99c00]">18 {t('dashboard.questionsRemaining')}</p>
+                  <p className="text-sm font-medium text-[#f99c00]">
+                    {todayQuestions >= DAILY_GOAL
+                      ? `Goal reached — great work!`
+                      : `${DAILY_GOAL - todayQuestions} ${t('dashboard.questionsRemaining')}`}
+                  </p>
                 </div>
               </div>
 
-              {/* Subject Mastery */}
+              {/* Subject Mastery (real per-subject accuracy) */}
               <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-white/10 transition-all">
                 <h3 className="text-lg font-semibold text-white mb-6">{t('dashboard.subjectMastery')}</h3>
                 <div className="space-y-6">
-                  <div>
-                    <div className="flex items-center justify-between mb-2.5">
-                      <span className="text-sm font-medium text-slate-300">Physics</span>
-                      <span className="text-sm font-semibold text-white bg-blue-500/10 px-3 py-1 rounded-full">74%</span>
-                    </div>
-                    <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden border border-white/5">
-                      <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full" style={{ width: '74%' }} />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2.5">
-                      <span className="text-sm font-medium text-slate-300">Mathematics</span>
-                      <span className="text-sm font-semibold text-white bg-rose-500/10 px-3 py-1 rounded-full">88%</span>
-                    </div>
-                    <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden border border-white/5">
-                      <div className="h-full bg-gradient-to-r from-rose-500 to-rose-600 rounded-full" style={{ width: '88%' }} />
-                    </div>
-                  </div>
+                  <MasteryRow
+                    name="Physics"
+                    pct={physics?.mastery || 0}
+                    sub={physics?.total ? `${physics.correct}/${physics.total} correct` : 'No data yet'}
+                    pillBg="bg-blue-500/10"
+                    barFrom="from-blue-500"
+                    barTo="to-blue-600"
+                  />
+                  <MasteryRow
+                    name="Mathematics"
+                    pct={maths?.mastery || 0}
+                    sub={maths?.total ? `${maths.correct}/${maths.total} correct` : 'No data yet'}
+                    pillBg="bg-rose-500/10"
+                    barFrom="from-rose-500"
+                    barTo="to-rose-600"
+                  />
                 </div>
-                <button className="w-full mt-6 py-3 rounded-lg border border-white/10 hover:border-[#f99c00]/30 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-all active:scale-95">
+                <Link
+                  to="/practice"
+                  className="block w-full mt-6 py-3 rounded-lg border border-white/10 hover:border-[#f99c00]/30 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-all active:scale-95 text-center"
+                >
                   {t('dashboard.viewDetailedSyllabus')}
-                </button>
+                </Link>
               </div>
 
               {/* Study Reminders Toggle */}
@@ -290,42 +287,38 @@ export default function DashboardUI() {
         </div>
       </div>
 
-      {/* Resume Practice Modal */}
+      {/* Resume Practice Modal — driven by your real recent attempts */}
       {showPracticeModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6">
           <div className="bg-[#0B1120] border border-white/5 rounded-t-2xl sm:rounded-xl w-full sm:max-w-md md:max-w-lg p-4 sm:p-6 md:p-8 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-4">Resume Your Practice</h2>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1">Resume your practice</h2>
+            <p className="text-xs text-slate-400 mb-5">Pick a recent attempt to review, or start a new exam.</p>
 
             <div className="space-y-2 mb-6">
-              {[
-                { title: 'Kinematics - Motion in 2D', progress: 65, lastStudied: '2 hours ago' },
-                { title: 'Integration Fundamentals', progress: 42, lastStudied: 'Yesterday' },
-                { title: 'Derivatives Quiz', progress: 100, lastStudied: '3 days ago' },
-              ].map((item, idx) => (
+              {recentAttempts.map(a => (
                 <button
-                  key={idx}
+                  key={a.id}
                   onClick={() => {
-                    handleSessionClick(item);
-                    alert(`Resuming: ${item.title}`);
                     setShowPracticeModal(false);
+                    navigate(`/exam/results/${a.id}`);
                   }}
                   className="w-full p-4 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:border-[#f99c00]/30 transition-all text-left group active:scale-95"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-white group-hover:text-[#f99c00] transition-colors">
-                      {item.title}
+                    <h4 className="text-sm font-medium text-white group-hover:text-[#f99c00] transition-colors truncate pr-2">
+                      {a.title}
                     </h4>
-                    <span className="text-xs font-semibold text-slate-400 group-hover:text-[#f99c00]">
-                      {item.progress}%
+                    <span className="text-xs font-semibold text-slate-400 group-hover:text-[#f99c00] shrink-0">
+                      {a.percentage}%
                     </span>
                   </div>
                   <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden mb-2">
                     <div
                       className="h-full bg-gradient-to-r from-[#f99c00] to-[#f88c00] rounded-full"
-                      style={{ width: `${item.progress}%` }}
+                      style={{ width: `${a.percentage}%` }}
                     />
                   </div>
-                  <p className="text-xs text-slate-500">Last studied: {item.lastStudied}</p>
+                  <p className="text-xs text-slate-500">{a.subject} • {relativeTime(a.submittedAt)}</p>
                 </button>
               ))}
             </div>
@@ -339,12 +332,12 @@ export default function DashboardUI() {
               </button>
               <button
                 onClick={() => {
-                  alert('Opening Practice Mode');
                   setShowPracticeModal(false);
+                  navigate('/mock-exams');
                 }}
                 className="flex-1 px-4 py-2.5 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] rounded-lg font-semibold transition-all text-sm min-h-[40px]"
               >
-                Start New
+                Start new exam
               </button>
             </div>
           </div>
@@ -352,4 +345,68 @@ export default function DashboardUI() {
       )}
     </div>
   );
+}
+
+/* ---------- helpers ---------- */
+
+function StatCard({ onClick, icon, tone, label, value, badge }) {
+  const tones = {
+    blue:   { bg: 'bg-blue-500/10',   text: 'text-blue-400' },
+    purple: { bg: 'bg-purple-500/10', text: 'text-purple-400' },
+    rose:   { bg: 'bg-rose-500/10',   text: 'text-rose-400' },
+    amber:  { bg: 'bg-amber-500/10',  text: 'text-amber-400' },
+  };
+  const c = tones[tone] || tones.blue;
+  const badgeClass = badge?.tone === 'good'
+    ? 'text-emerald-400 bg-emerald-500/10'
+    : badge?.tone === 'bad'
+      ? 'text-rose-300 bg-rose-500/10'
+      : 'text-slate-400 bg-white/5';
+  return (
+    <button
+      onClick={onClick}
+      className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 hover:border-[#f99c00]/20 transition-all text-left group active:scale-95"
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div className={`w-12 h-12 rounded-lg ${c.bg} flex items-center justify-center ${c.text} group-hover:scale-110 transition-transform`}>
+          <Icon icon={icon} width="24" />
+        </div>
+        {badge && (
+          <span className={`text-xs font-bold ${badgeClass} px-2.5 py-1 rounded-full`}>{badge.text}</span>
+        )}
+      </div>
+      <p className="text-xs text-slate-400 mb-1">{label}</p>
+      <h3 className="text-2xl font-bold text-white">{value}</h3>
+    </button>
+  );
+}
+
+function MasteryRow({ name, pct, sub, pillBg, barFrom, barTo }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="flex flex-col">
+          <span className="text-sm font-medium text-slate-300">{name}</span>
+          <span className="text-[11px] text-slate-500">{sub}</span>
+        </div>
+        <span className={`text-sm font-semibold text-white ${pillBg} px-3 py-1 rounded-full`}>{pct}%</span>
+      </div>
+      <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden border border-white/5">
+        <div className={`h-full bg-gradient-to-r ${barFrom} ${barTo} rounded-full transition-all`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function relativeTime(iso) {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `${d}d ago`;
+  return new Date(iso).toLocaleDateString();
 }

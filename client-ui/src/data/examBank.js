@@ -1,20 +1,22 @@
 // Real UNEB-style question bank for dynamic exam generation.
+// Subjects: Physics & Mathematics only.
 // Each question has: id, subject, level, topic, difficulty, type, prompt,
-// options (for mcq), answer, explanation, marks.
+// options (mcq), answer, explanation, marks, optional context (for scenarios).
 
-export const SUBJECTS = ['Physics', 'Mathematics', 'Chemistry', 'Biology', 'English'];
+export const SUBJECTS = ['Physics', 'Mathematics'];
 export const LEVELS = ['O-Level', 'A-Level', 'UACE'];
 export const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
 
+// ---------- Multiple-choice / numeric question pool ----------
 export const questionBank = [
-  // ---------- PHYSICS ----------
+  // -------- PHYSICS --------
   {
     id: 'phy-ol-001', subject: 'Physics', level: 'O-Level', topic: 'Mechanics',
     difficulty: 'Easy', type: 'mcq', marks: 1,
     prompt: 'A car accelerates uniformly from rest to 20 m/s in 5 seconds. What is its acceleration?',
     options: ['2 m/s²', '4 m/s²', '5 m/s²', '10 m/s²'],
     answer: '4 m/s²',
-    explanation: 'a = (v - u) / t = (20 - 0) / 5 = 4 m/s².'
+    explanation: 'a = (v − u) / t = (20 − 0) / 5 = 4 m/s².'
   },
   {
     id: 'phy-ol-002', subject: 'Physics', level: 'O-Level', topic: 'Mechanics',
@@ -27,9 +29,8 @@ export const questionBank = [
   {
     id: 'phy-ol-003', subject: 'Physics', level: 'O-Level', topic: 'Mechanics',
     difficulty: 'Medium', type: 'numeric', marks: 2,
-    prompt: 'A 2 kg object is lifted to a height of 5 m. How much gravitational potential energy does it gain? (g = 10 m/s²) Answer in Joules.',
-    answer: 100,
-    tolerance: 0.5,
+    prompt: 'A 2 kg object is lifted to a height of 5 m. How much gravitational potential energy does it gain in Joules? (g = 10 m/s²)',
+    answer: 100, tolerance: 0.5,
     explanation: 'PE = mgh = 2 × 10 × 5 = 100 J.'
   },
   {
@@ -38,7 +39,7 @@ export const questionBank = [
     prompt: 'Sound waves travel fastest through which medium?',
     options: ['Vacuum', 'Air', 'Water', 'Steel'],
     answer: 'Steel',
-    explanation: 'Sound travels fastest in solids because the particles are tightly packed, allowing vibrations to propagate quickly.'
+    explanation: 'Sound travels fastest in solids — particles are tightly packed, so vibrations propagate quickly.'
   },
   {
     id: 'phy-ol-005', subject: 'Physics', level: 'O-Level', topic: 'Electricity',
@@ -46,14 +47,13 @@ export const questionBank = [
     prompt: 'Ohm\'s law states that V equals:',
     options: ['I / R', 'I × R', 'R / I', 'I + R'],
     answer: 'I × R',
-    explanation: 'V = IR, where V is voltage, I is current, and R is resistance.'
+    explanation: 'V = IR — voltage equals current times resistance.'
   },
   {
     id: 'phy-ol-006', subject: 'Physics', level: 'O-Level', topic: 'Electricity',
     difficulty: 'Medium', type: 'numeric', marks: 2,
     prompt: 'A circuit has a 12 V battery and a 4 Ω resistor. What is the current in amperes?',
-    answer: 3,
-    tolerance: 0.05,
+    answer: 3, tolerance: 0.05,
     explanation: 'I = V / R = 12 / 4 = 3 A.'
   },
   {
@@ -62,62 +62,74 @@ export const questionBank = [
     prompt: 'Which of the following is NOT a method of heat transfer?',
     options: ['Conduction', 'Convection', 'Radiation', 'Diffusion'],
     answer: 'Diffusion',
-    explanation: 'Heat transfers via conduction, convection, and radiation. Diffusion is the movement of particles from high to low concentration.'
+    explanation: 'Heat transfers via conduction, convection, and radiation. Diffusion moves particles, not heat directly.'
+  },
+  {
+    id: 'phy-ol-008', subject: 'Physics', level: 'O-Level', topic: 'Mechanics',
+    difficulty: 'Easy', type: 'mcq', marks: 1,
+    prompt: 'Which quantity is a vector?',
+    options: ['Mass', 'Distance', 'Velocity', 'Time'],
+    answer: 'Velocity',
+    explanation: 'Velocity has both magnitude and direction; mass, distance and time are scalars.'
   },
   {
     id: 'phy-al-001', subject: 'Physics', level: 'A-Level', topic: 'Classical Mechanics',
     difficulty: 'Hard', type: 'numeric', marks: 3,
-    prompt: 'An object moves in a circle of radius 2 m at a constant speed of 4 m/s. What is the centripetal acceleration in m/s²?',
-    answer: 8,
-    tolerance: 0.1,
-    explanation: 'a = v² / r = (4)² / 2 = 16 / 2 = 8 m/s².'
+    prompt: 'An object moves in a circle of radius 2 m at constant 4 m/s. What is the centripetal acceleration in m/s²?',
+    answer: 8, tolerance: 0.1,
+    explanation: 'a = v² / r = 16 / 2 = 8 m/s².'
   },
   {
     id: 'phy-al-002', subject: 'Physics', level: 'A-Level', topic: 'Optics',
     difficulty: 'Hard', type: 'mcq', marks: 2,
-    prompt: 'Light passes from air (n=1.0) into glass (n=1.5) at an angle of incidence of 30°. What is the angle of refraction (sin⁻¹(1/3))?',
-    options: ['Approximately 19.5°', 'Approximately 30°', 'Approximately 45°', 'Approximately 60°'],
-    answer: 'Approximately 19.5°',
-    explanation: 'By Snell\'s law: n1·sin(θ1) = n2·sin(θ2) → 1·sin(30°) = 1.5·sin(θ2) → sin(θ2) = 0.5/1.5 = 1/3 → θ2 ≈ 19.47°.'
+    prompt: 'Light passes from air (n=1.0) into glass (n=1.5) at 30°. The refraction angle is approximately:',
+    options: ['19.5°', '30°', '45°', '60°'],
+    answer: '19.5°',
+    explanation: 'Snell: sin(30°) = 1.5·sin(θ) → sin(θ) = 1/3 → θ ≈ 19.47°.'
   },
   {
     id: 'phy-al-003', subject: 'Physics', level: 'A-Level', topic: 'Modern Physics',
     difficulty: 'Hard', type: 'mcq', marks: 2,
-    prompt: 'Which scientist proposed that energy is quantized in discrete packets?',
+    prompt: 'Who proposed that energy is quantized in discrete packets?',
     options: ['Newton', 'Einstein', 'Planck', 'Bohr'],
     answer: 'Planck',
-    explanation: 'Max Planck proposed energy quantization in 1900, giving rise to quantum theory: E = hf.'
+    explanation: 'Max Planck proposed energy quantization (E = hf) in 1900, founding quantum theory.'
+  },
+  {
+    id: 'phy-al-004', subject: 'Physics', level: 'A-Level', topic: 'Classical Mechanics',
+    difficulty: 'Hard', type: 'numeric', marks: 3,
+    prompt: 'A satellite orbits Earth at radius 7000 km with orbital speed 7500 m/s. What is its centripetal acceleration in m/s²? Round to 1 dp.',
+    answer: 8.0, tolerance: 0.3,
+    explanation: 'a = v² / r = (7500)² / 7,000,000 = 56,250,000 / 7,000,000 ≈ 8.04 m/s².'
   },
   {
     id: 'phy-uace-001', subject: 'Physics', level: 'UACE', topic: 'Modern Physics',
     difficulty: 'Hard', type: 'numeric', marks: 3,
-    prompt: 'A photon has a frequency of 5 × 10¹⁴ Hz. What is its energy in 10⁻¹⁹ Joules? (h = 6.63 × 10⁻³⁴ J·s) Round to 1 dp.',
-    answer: 3.3,
-    tolerance: 0.2,
-    explanation: 'E = hf = (6.63 × 10⁻³⁴)(5 × 10¹⁴) = 3.315 × 10⁻¹⁹ J ≈ 3.3 × 10⁻¹⁹ J.'
+    prompt: 'A photon has frequency 5 × 10¹⁴ Hz. What is its energy in 10⁻¹⁹ J? (h = 6.63 × 10⁻³⁴ J·s) Round to 1 dp.',
+    answer: 3.3, tolerance: 0.2,
+    explanation: 'E = hf = 6.63e−34 × 5e14 = 3.315e−19 J ≈ 3.3 × 10⁻¹⁹ J.'
   },
 
-  // ---------- MATHEMATICS ----------
+  // -------- MATHEMATICS --------
   {
     id: 'mat-ol-001', subject: 'Mathematics', level: 'O-Level', topic: 'Algebra',
     difficulty: 'Easy', type: 'mcq', marks: 1,
     prompt: 'Solve for x: 2x + 5 = 17.',
     options: ['x = 4', 'x = 6', 'x = 8', 'x = 11'],
     answer: 'x = 6',
-    explanation: '2x = 17 - 5 = 12, so x = 6.'
+    explanation: '2x = 12, so x = 6.'
   },
   {
     id: 'mat-ol-002', subject: 'Mathematics', level: 'O-Level', topic: 'Algebra',
     difficulty: 'Medium', type: 'numeric', marks: 2,
-    prompt: 'If x² - 5x + 6 = 0, what is the larger root?',
-    answer: 3,
-    tolerance: 0.01,
-    explanation: 'Factor: (x - 2)(x - 3) = 0, so x = 2 or x = 3. The larger root is 3.'
+    prompt: 'If x² − 5x + 6 = 0, what is the larger root?',
+    answer: 3, tolerance: 0.01,
+    explanation: '(x − 2)(x − 3) = 0, so x = 2 or 3. Larger root is 3.'
   },
   {
     id: 'mat-ol-003', subject: 'Mathematics', level: 'O-Level', topic: 'Geometry & Trigonometry',
     difficulty: 'Medium', type: 'mcq', marks: 1,
-    prompt: 'In a right triangle, if one angle is 30° and the hypotenuse is 10, what is the side opposite the 30° angle?',
+    prompt: 'In a right triangle, one angle is 30° and the hypotenuse is 10. The side opposite the 30° angle is:',
     options: ['5', '5√2', '5√3', '10'],
     answer: '5',
     explanation: 'sin(30°) = opposite / hypotenuse → opposite = 10 × 0.5 = 5.'
@@ -126,8 +138,7 @@ export const questionBank = [
     id: 'mat-ol-004', subject: 'Mathematics', level: 'O-Level', topic: 'Statistics & Probability',
     difficulty: 'Easy', type: 'numeric', marks: 1,
     prompt: 'What is the mean of: 4, 8, 15, 16, 23, 42?',
-    answer: 18,
-    tolerance: 0.5,
+    answer: 18, tolerance: 0.5,
     explanation: 'Sum = 108. Mean = 108 / 6 = 18.'
   },
   {
@@ -136,15 +147,22 @@ export const questionBank = [
     prompt: 'A bag contains 3 red and 5 blue marbles. What is the probability of drawing a red marble?',
     options: ['1/8', '3/8', '3/5', '5/8'],
     answer: '3/8',
-    explanation: 'P(red) = number of red / total = 3 / (3 + 5) = 3/8.'
+    explanation: 'P(red) = 3 / (3 + 5) = 3/8.'
   },
   {
     id: 'mat-ol-006', subject: 'Mathematics', level: 'O-Level', topic: 'Calculus Basics',
     difficulty: 'Medium', type: 'mcq', marks: 1,
-    prompt: 'What is the derivative of f(x) = 3x² + 2x - 5?',
-    options: ['6x + 2', '3x + 2', '6x - 5', '3x² + 2'],
+    prompt: 'What is the derivative of f(x) = 3x² + 2x − 5?',
+    options: ['6x + 2', '3x + 2', '6x − 5', '3x² + 2'],
     answer: '6x + 2',
-    explanation: 'd/dx(3x²) = 6x; d/dx(2x) = 2; d/dx(-5) = 0. So f\'(x) = 6x + 2.'
+    explanation: 'd/dx(3x²) = 6x; d/dx(2x) = 2; constant → 0. f\'(x) = 6x + 2.'
+  },
+  {
+    id: 'mat-ol-007', subject: 'Mathematics', level: 'O-Level', topic: 'Geometry & Trigonometry',
+    difficulty: 'Easy', type: 'numeric', marks: 1,
+    prompt: 'What is the area in square units of a circle with radius 7? (Use π = 22/7.)',
+    answer: 154, tolerance: 0.5,
+    explanation: 'A = πr² = 22/7 × 49 = 154.'
   },
   {
     id: 'mat-al-001', subject: 'Mathematics', level: 'A-Level', topic: 'Pure Mathematics',
@@ -152,247 +170,196 @@ export const questionBank = [
     prompt: 'What is the modulus of the complex number z = 3 + 4i?',
     options: ['3', '4', '5', '7'],
     answer: '5',
-    explanation: '|z| = √(3² + 4²) = √(9 + 16) = √25 = 5.'
+    explanation: '|z| = √(3² + 4²) = √25 = 5.'
   },
   {
     id: 'mat-al-002', subject: 'Mathematics', level: 'A-Level', topic: 'Pure Mathematics',
     difficulty: 'Hard', type: 'numeric', marks: 3,
-    prompt: 'Evaluate the integral of (2x + 3) from x = 0 to x = 4.',
-    answer: 28,
-    tolerance: 0.1,
-    explanation: '∫(2x + 3)dx = x² + 3x. Evaluated: (16 + 12) - (0 + 0) = 28.'
+    prompt: 'Evaluate ∫₀⁴ (2x + 3) dx.',
+    answer: 28, tolerance: 0.1,
+    explanation: '∫(2x + 3)dx = x² + 3x. (16 + 12) − 0 = 28.'
   },
   {
     id: 'mat-al-003', subject: 'Mathematics', level: 'A-Level', topic: 'Statistics & Probability',
     difficulty: 'Hard', type: 'mcq', marks: 2,
-    prompt: 'For a standard normal distribution, what percentage of values fall within one standard deviation of the mean?',
-    options: ['Approximately 50%', 'Approximately 68%', 'Approximately 95%', 'Approximately 99%'],
-    answer: 'Approximately 68%',
+    prompt: 'For a standard normal distribution, what % of values fall within one standard deviation of the mean?',
+    options: ['~50%', '~68%', '~95%', '~99%'],
+    answer: '~68%',
     explanation: 'The 68-95-99.7 rule: ~68% within 1σ, ~95% within 2σ, ~99.7% within 3σ.'
   },
   {
     id: 'mat-uace-001', subject: 'Mathematics', level: 'UACE', topic: 'Applied Mathematics',
     difficulty: 'Hard', type: 'numeric', marks: 3,
-    prompt: 'A particle moves so that its position at time t is s(t) = t³ - 6t² + 9t. At what time t > 0 (in seconds) is the velocity zero for the first time?',
-    answer: 1,
-    tolerance: 0.05,
-    explanation: 'v(t) = ds/dt = 3t² - 12t + 9 = 3(t² - 4t + 3) = 3(t - 1)(t - 3). v = 0 at t = 1 or t = 3. First time t > 0 is t = 1 s.'
+    prompt: 'A particle moves with position s(t) = t³ − 6t² + 9t. At what time t > 0 (seconds) is the velocity first zero?',
+    answer: 1, tolerance: 0.05,
+    explanation: 'v(t) = 3t² − 12t + 9 = 3(t − 1)(t − 3). First zero at t = 1 s.'
   },
-
-  // ---------- CHEMISTRY ----------
-  {
-    id: 'che-ol-001', subject: 'Chemistry', level: 'O-Level', topic: 'Atomic Structure',
-    difficulty: 'Easy', type: 'mcq', marks: 1,
-    prompt: 'How many protons does a carbon atom have?',
-    options: ['4', '6', '8', '12'],
-    answer: '6',
-    explanation: 'Carbon has atomic number 6, meaning it has 6 protons.'
-  },
-  {
-    id: 'che-ol-002', subject: 'Chemistry', level: 'O-Level', topic: 'Acids & Bases',
-    difficulty: 'Easy', type: 'mcq', marks: 1,
-    prompt: 'What is the pH of pure water at 25°C?',
-    options: ['0', '7', '10', '14'],
-    answer: '7',
-    explanation: 'Pure water is neutral, with a pH of exactly 7 at 25°C.'
-  },
-  {
-    id: 'che-ol-003', subject: 'Chemistry', level: 'O-Level', topic: 'Stoichiometry',
-    difficulty: 'Medium', type: 'numeric', marks: 2,
-    prompt: 'How many moles are in 36 g of water (H₂O, M = 18 g/mol)?',
-    answer: 2,
-    tolerance: 0.05,
-    explanation: 'moles = mass / molar mass = 36 / 18 = 2 mol.'
-  },
-  {
-    id: 'che-ol-004', subject: 'Chemistry', level: 'O-Level', topic: 'Periodic Table',
-    difficulty: 'Medium', type: 'mcq', marks: 1,
-    prompt: 'Which group of the periodic table contains the noble gases?',
-    options: ['Group 1', 'Group 7', 'Group 0 (or 18)', 'Group 4'],
-    answer: 'Group 0 (or 18)',
-    explanation: 'Noble gases (He, Ne, Ar, etc.) sit in group 0 (also labelled group 18) and have full outer electron shells.'
-  },
-  {
-    id: 'che-al-001', subject: 'Chemistry', level: 'A-Level', topic: 'Organic Chemistry',
-    difficulty: 'Hard', type: 'mcq', marks: 2,
-    prompt: 'Which functional group is present in ethanoic acid (CH₃COOH)?',
-    options: ['Hydroxyl (-OH)', 'Carbonyl (C=O)', 'Carboxyl (-COOH)', 'Amine (-NH₂)'],
-    answer: 'Carboxyl (-COOH)',
-    explanation: 'Ethanoic acid contains the carboxylic acid functional group (-COOH).'
-  },
-  {
-    id: 'che-al-002', subject: 'Chemistry', level: 'A-Level', topic: 'Equilibrium',
-    difficulty: 'Hard', type: 'mcq', marks: 2,
-    prompt: 'According to Le Chatelier\'s principle, increasing pressure on the equilibrium N₂ + 3H₂ ⇌ 2NH₃ will:',
-    options: [
-      'Shift the equilibrium left',
-      'Shift the equilibrium right',
-      'Have no effect',
-      'Stop the reaction'
-    ],
-    answer: 'Shift the equilibrium right',
-    explanation: 'Increasing pressure shifts equilibrium toward the side with fewer moles of gas. Right side has 2 moles vs left side\'s 4 moles.'
-  },
-
-  // ---------- BIOLOGY ----------
-  {
-    id: 'bio-ol-001', subject: 'Biology', level: 'O-Level', topic: 'Cell Biology',
-    difficulty: 'Easy', type: 'mcq', marks: 1,
-    prompt: 'Which organelle is known as the "powerhouse of the cell"?',
-    options: ['Nucleus', 'Mitochondria', 'Ribosome', 'Golgi apparatus'],
-    answer: 'Mitochondria',
-    explanation: 'Mitochondria produce ATP via cellular respiration, providing energy for the cell.'
-  },
-  {
-    id: 'bio-ol-002', subject: 'Biology', level: 'O-Level', topic: 'Genetics',
-    difficulty: 'Medium', type: 'mcq', marks: 1,
-    prompt: 'Which molecule carries genetic information in most organisms?',
-    options: ['Protein', 'Lipid', 'DNA', 'Carbohydrate'],
-    answer: 'DNA',
-    explanation: 'DNA (deoxyribonucleic acid) stores genetic information in nearly all living organisms.'
-  },
-  {
-    id: 'bio-ol-003', subject: 'Biology', level: 'O-Level', topic: 'Photosynthesis',
-    difficulty: 'Medium', type: 'mcq', marks: 1,
-    prompt: 'Which gas is produced as a by-product of photosynthesis?',
-    options: ['Carbon dioxide', 'Nitrogen', 'Oxygen', 'Hydrogen'],
-    answer: 'Oxygen',
-    explanation: '6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂. Oxygen is released as a by-product.'
-  },
-  {
-    id: 'bio-ol-004', subject: 'Biology', level: 'O-Level', topic: 'Human Body',
-    difficulty: 'Easy', type: 'mcq', marks: 1,
-    prompt: 'How many chambers does a human heart have?',
-    options: ['2', '3', '4', '5'],
-    answer: '4',
-    explanation: 'Human heart has 4 chambers: two atria (upper) and two ventricles (lower).'
-  },
-  {
-    id: 'bio-al-001', subject: 'Biology', level: 'A-Level', topic: 'Genetics',
-    difficulty: 'Hard', type: 'mcq', marks: 2,
-    prompt: 'In a monohybrid cross between two heterozygous parents (Aa × Aa), what fraction of offspring are expected to be homozygous recessive?',
-    options: ['1/4', '1/2', '3/4', '1'],
-    answer: '1/4',
-    explanation: 'Punnett square gives 1 AA : 2 Aa : 1 aa. So 1/4 are homozygous recessive (aa).'
-  },
-  {
-    id: 'bio-al-002', subject: 'Biology', level: 'A-Level', topic: 'Ecology',
-    difficulty: 'Hard', type: 'mcq', marks: 2,
-    prompt: 'Approximately what percentage of energy is transferred from one trophic level to the next in a food chain?',
-    options: ['1%', '10%', '50%', '90%'],
-    answer: '10%',
-    explanation: 'The 10% rule: only about 10% of energy is transferred up each trophic level; the rest is lost as heat or used in metabolism.'
-  },
-
-  // ---------- ENGLISH ----------
-  {
-    id: 'eng-ol-001', subject: 'English', level: 'O-Level', topic: 'Grammar',
-    difficulty: 'Easy', type: 'mcq', marks: 1,
-    prompt: 'Choose the correct sentence:',
-    options: [
-      'She don\'t like mangoes.',
-      'She doesn\'t likes mangoes.',
-      'She doesn\'t like mangoes.',
-      'She not like mangoes.'
-    ],
-    answer: 'She doesn\'t like mangoes.',
-    explanation: '"Doesn\'t" (third person singular) is followed by the base form of the verb ("like"), not "likes".'
-  },
-  {
-    id: 'eng-ol-002', subject: 'English', level: 'O-Level', topic: 'Vocabulary',
-    difficulty: 'Easy', type: 'mcq', marks: 1,
-    prompt: 'What is the antonym of "abundant"?',
-    options: ['Plentiful', 'Scarce', 'Generous', 'Rich'],
-    answer: 'Scarce',
-    explanation: '"Abundant" means existing in large quantities; "scarce" means in short supply — direct opposites.'
-  },
-  {
-    id: 'eng-ol-003', subject: 'English', level: 'O-Level', topic: 'Comprehension',
-    difficulty: 'Medium', type: 'mcq', marks: 1,
-    prompt: 'Read: "Despite the heavy rain, the children continued playing outside." What does the word "despite" indicate?',
-    options: ['A cause', 'A contrast', 'A condition', 'A result'],
-    answer: 'A contrast',
-    explanation: '"Despite" introduces a contrast — playing outside happened in spite of the rain.'
-  },
-  {
-    id: 'eng-ol-004', subject: 'English', level: 'O-Level', topic: 'Grammar',
-    difficulty: 'Medium', type: 'mcq', marks: 1,
-    prompt: 'Identify the correct passive form of: "The teacher marked the books."',
-    options: [
-      'The books are marked by the teacher.',
-      'The books were marked by the teacher.',
-      'The books have marked by the teacher.',
-      'The books being marked by the teacher.'
-    ],
-    answer: 'The books were marked by the teacher.',
-    explanation: 'Past simple active "marked" → past simple passive "were marked".'
-  },
-  {
-    id: 'eng-al-001', subject: 'English', level: 'A-Level', topic: 'Literature',
-    difficulty: 'Hard', type: 'mcq', marks: 2,
-    prompt: 'In literature, "irony" most accurately refers to:',
-    options: [
-      'A figure of speech using exaggeration',
-      'A contrast between expectation and reality',
-      'A direct comparison using "like" or "as"',
-      'A repeated sound at the start of words'
-    ],
-    answer: 'A contrast between expectation and reality',
-    explanation: 'Irony involves a discrepancy between what is expected and what actually happens (or is meant).'
-  },
-  {
-    id: 'eng-al-002', subject: 'English', level: 'A-Level', topic: 'Literature',
-    difficulty: 'Hard', type: 'mcq', marks: 2,
-    prompt: '"All the world\'s a stage, and all the men and women merely players." This is an example of:',
-    options: ['Simile', 'Metaphor', 'Personification', 'Onomatopoeia'],
-    answer: 'Metaphor',
-    explanation: 'A metaphor directly equates one thing to another without "like" or "as". The world IS a stage.'
-  }
 ];
 
-// Build a deterministic exam from a config:
-// { subject, level, difficulty, count, topics? }
-// Falls back gracefully when filters return too few items.
-export function buildExam({ subject, level, difficulty, count = 10, topics = null } = {}) {
-  let pool = [...questionBank];
+// ---------- Scenario-based questions (Uganda context) ----------
+// These mix a real-world context block with a calculation prompt.
+// They are mixed into mock exams to test applied understanding.
+export const scenarioBank = [
+  {
+    id: 'sce-phy-ol-001', subject: 'Physics', level: 'O-Level', topic: 'Kinematics',
+    difficulty: 'Easy', type: 'numeric', marks: 3,
+    context: 'A taxi leaves Kampala and travels along the Kampala–Entebbe expressway, a distance of 40 km. The driver completes the journey in 30 minutes at a steady speed.',
+    prompt: 'What is the average speed of the taxi in km/h?',
+    answer: 80, tolerance: 1,
+    explanation: 'speed = distance / time = 40 km / 0.5 h = 80 km/h.'
+  },
+  {
+    id: 'sce-phy-ol-002', subject: 'Physics', level: 'O-Level', topic: 'Mechanics — Buoyancy',
+    difficulty: 'Medium', type: 'mcq', marks: 2,
+    context: 'A wooden boat floats on Lake Victoria. The boat displaces 200 litres of water. Density of water is 1000 kg/m³ and g = 10 m/s².',
+    prompt: 'What is the upward buoyant force acting on the boat?',
+    options: ['200 N', '500 N', '2000 N', '20,000 N'],
+    answer: '2000 N',
+    explanation: 'Buoyant force = ρ × V × g. Volume = 200 L = 0.2 m³. F = 1000 × 0.2 × 10 = 2000 N.'
+  },
+  {
+    id: 'sce-phy-ol-003', subject: 'Physics', level: 'O-Level', topic: 'Energy & Power',
+    difficulty: 'Medium', type: 'numeric', marks: 3,
+    context: 'A boda boda rider with a mass of 60 kg climbs Naguru hill, gaining 50 m of vertical height in 2 minutes. Take g = 10 m/s².',
+    prompt: 'What average power (in watts) did the rider develop just to gain that height?',
+    answer: 250, tolerance: 5,
+    explanation: 'Work = mgh = 60 × 10 × 50 = 30,000 J. Time = 120 s. Power = 30,000 / 120 = 250 W.'
+  },
+  {
+    id: 'sce-phy-al-001', subject: 'Physics', level: 'A-Level', topic: 'Energy & Power',
+    difficulty: 'Hard', type: 'numeric', marks: 4,
+    context: 'Murchison Falls drops the River Nile through a vertical height of about 43 m. Suppose 200 kg of water falls every second. Take g = 10 m/s².',
+    prompt: 'What is the maximum power (in kW) that could in principle be extracted from this water?',
+    answer: 86, tolerance: 2,
+    explanation: 'Power = (mass/sec) × g × h = 200 × 10 × 43 = 86,000 W = 86 kW.'
+  },
+  {
+    id: 'sce-phy-al-002', subject: 'Physics', level: 'A-Level', topic: 'Gas Laws',
+    difficulty: 'Hard', type: 'mcq', marks: 2,
+    context: 'A climber ascends Mt. Rwenzori. At sea level the atmospheric pressure is 100 kPa. As she climbs, the air becomes thinner.',
+    prompt: 'Which statement best describes what happens to atmospheric pressure as altitude increases?',
+    options: [
+      'Pressure increases linearly with altitude',
+      'Pressure decreases (roughly exponentially) with altitude',
+      'Pressure stays constant',
+      'Pressure first increases then decreases'
+    ],
+    answer: 'Pressure decreases (roughly exponentially) with altitude',
+    explanation: 'Atmospheric pressure decreases with altitude because there is less air above. The relationship is approximately exponential (barometric formula).'
+  },
 
+  {
+    id: 'sce-mat-ol-001', subject: 'Mathematics', level: 'O-Level', topic: 'Algebra & Percentages',
+    difficulty: 'Easy', type: 'numeric', marks: 2,
+    context: 'A trader at Owino market buys 50 kg of maize flour at UGX 2,500 per kg and sells it at UGX 3,000 per kg.',
+    prompt: 'What is the trader’s percentage profit on each kilogram? (Enter as a number, e.g. 25 for 25%.)',
+    answer: 20, tolerance: 0.5,
+    explanation: 'Profit per kg = 3000 − 2500 = 500. % profit = (500 / 2500) × 100 = 20%.'
+  },
+  {
+    id: 'sce-mat-ol-002', subject: 'Mathematics', level: 'O-Level', topic: 'Exponential Functions',
+    difficulty: 'Medium', type: 'numeric', marks: 3,
+    context: 'Kampala’s population is approximately 1,500,000 and is growing at about 3.5% per year, compounded annually.',
+    prompt: 'Estimate the population (to the nearest 100,000) after 10 years.',
+    answer: 2100000, tolerance: 100000,
+    explanation: 'P = 1,500,000 × (1.035)¹⁰ ≈ 1,500,000 × 1.4106 ≈ 2,116,000 → ≈ 2,100,000.'
+  },
+  {
+    id: 'sce-mat-ol-003', subject: 'Mathematics', level: 'O-Level', topic: 'Trigonometry',
+    difficulty: 'Medium', type: 'numeric', marks: 3,
+    context: 'A bus travels 80 km east from Kampala to Jinja, then turns and travels 60 km north toward Mbale.',
+    prompt: 'What is the straight-line distance (in km) from Kampala to the bus’s current position?',
+    answer: 100, tolerance: 0.5,
+    explanation: 'Pythagoras: d = √(80² + 60²) = √(6400 + 3600) = √10000 = 100 km.'
+  },
+  {
+    id: 'sce-mat-al-001', subject: 'Mathematics', level: 'A-Level', topic: 'Statistics & Probability',
+    difficulty: 'Hard', type: 'mcq', marks: 2,
+    context: 'Makerere University admitted 8,400 students out of 12,000 applicants this year. A new applicant is selected at random.',
+    prompt: 'What is the probability that this applicant is admitted?',
+    options: ['0.30', '0.50', '0.70', '0.84'],
+    answer: '0.70',
+    explanation: 'P = 8400 / 12000 = 0.70 (or 70%).'
+  },
+  {
+    id: 'sce-mat-al-002', subject: 'Mathematics', level: 'A-Level', topic: 'Calculus Applications',
+    difficulty: 'Hard', type: 'numeric', marks: 4,
+    context: 'A water tank in Mbarara is being filled at a rate r(t) = 6t² + 2 litres per minute, where t is minutes since the pump started.',
+    prompt: 'How many litres flow into the tank during the first 5 minutes?',
+    answer: 260, tolerance: 1,
+    explanation: 'Volume = ∫₀⁵ (6t² + 2) dt = [2t³ + 2t]₀⁵ = 2(125) + 10 = 250 + 10 = 260 L.'
+  },
+];
+
+// ---------- Build / score ----------
+
+// Build an exam.
+// config: { subject, level, difficulty, count, topics?, scenarioCount? }
+//   - count is the total number of questions
+//   - scenarioCount (default 0) reserves N slots for scenario-based questions
+export function buildExam({
+  subject,
+  level,
+  difficulty,
+  count = 10,
+  topics = null,
+  scenarioCount = 0,
+} = {}) {
+  // ---- pick scenarios first ----
+  const scenarios = pickScenarios({ subject, level, scenarioCount, count });
+
+  // ---- pick MCQ/numeric questions to fill the rest ----
+  const targetMcq = Math.max(0, count - scenarios.length);
+  const mcqs = pickFromBank({ subject, level, difficulty, topics, count: targetMcq });
+
+  // Combine: scenarios first (good warm-up framing), then MCQ pool
+  const merged = [...scenarios, ...mcqs].slice(0, count);
+
+  return merged.map((q, idx) => ({ ...q, position: idx + 1 }));
+}
+
+function pickScenarios({ subject, level, scenarioCount, count }) {
+  if (!scenarioCount || scenarioCount <= 0) return [];
+  let pool = [...scenarioBank];
   if (subject) pool = pool.filter(q => q.subject === subject);
-  if (level) pool = pool.filter(q => q.level === level);
+  if (level)   pool = pool.filter(q => q.level === level);
+  // If too few, widen by removing level filter.
+  if (pool.length < scenarioCount && subject) {
+    pool = scenarioBank.filter(q => q.subject === subject);
+  }
+  if (pool.length === 0) return [];
+  const wanted = Math.min(scenarioCount, count, pool.length);
+  return seededShuffle(pool, `sce-${subject}-${level}-${Date.now()}`).slice(0, wanted);
+}
+
+function pickFromBank({ subject, level, difficulty, topics, count }) {
+  if (count <= 0) return [];
+  let pool = [...questionBank];
+  if (subject) pool = pool.filter(q => q.subject === subject);
+  if (level)   pool = pool.filter(q => q.level === level);
   if (topics && topics.length > 0) pool = pool.filter(q => topics.includes(q.topic));
 
-  // Difficulty: prefer exact match, then progressively widen.
   if (difficulty) {
     const exact = pool.filter(q => q.difficulty === difficulty);
-    if (exact.length >= Math.min(count, 3)) {
-      pool = exact;
-    } else {
-      // Keep current pool (already filtered by subject/level) — widen difficulty.
-    }
+    if (exact.length >= Math.min(count, 3)) pool = exact;
   }
 
-  // If still not enough, relax the topic filter, then the level, then the subject.
+  // Relax progressively if we don't have enough
   if (pool.length < count && topics) {
     pool = questionBank.filter(q =>
-      (!subject || q.subject === subject) &&
-      (!level || q.level === level)
+      (!subject || q.subject === subject) && (!level || q.level === level)
     );
   }
   if (pool.length < count && level) {
     pool = questionBank.filter(q => !subject || q.subject === subject);
   }
-  if (pool.length < count) {
-    pool = [...questionBank];
-  }
+  if (pool.length < count) pool = [...questionBank];
 
-  // Deterministic shuffle (seeded by subject+level so results feel stable per session)
   const seed = `${subject || 'mix'}-${level || 'all'}-${difficulty || 'any'}-${Date.now()}`;
-  const shuffled = seededShuffle(pool, seed).slice(0, count);
-
-  return shuffled.map((q, idx) => ({ ...q, position: idx + 1 }));
+  return seededShuffle(pool, seed).slice(0, count);
 }
 
 // Score a completed exam.
-// answers: { [questionId]: userAnswer }
 export function scoreExam(questions, answers) {
   let earned = 0;
   let totalMarks = 0;
@@ -418,20 +385,22 @@ export function scoreExam(questions, answers) {
     breakdown.push({
       id: q.id,
       prompt: q.prompt,
+      context: q.context || null,
       topic: q.topic,
+      subject: q.subject,
       difficulty: q.difficulty,
       type: q.type,
       userAnswer: user ?? null,
       correctAnswer: q.answer,
       explanation: q.explanation,
       correct,
-      marks: q.marks || 1
+      marks: q.marks || 1,
+      isScenario: !!q.context,
     });
   }
 
   const percentage = totalMarks > 0 ? Math.round((earned / totalMarks) * 100) : 0;
 
-  // Per-topic accuracy
   const byTopic = {};
   breakdown.forEach(b => {
     if (!byTopic[b.topic]) byTopic[b.topic] = { correct: 0, total: 0 };
@@ -442,13 +411,13 @@ export function scoreExam(questions, answers) {
     topic,
     accuracy: Math.round((v.correct / v.total) * 100),
     correct: v.correct,
-    total: v.total
+    total: v.total,
   }));
 
   return { earned, totalMarks, percentage, breakdown, topicAccuracy };
 }
 
-// Tiny seeded shuffle (mulberry32) so the same seed returns the same order.
+// ---- seeded shuffle helpers ----
 function seededShuffle(arr, seedStr) {
   const seed = hashString(seedStr);
   let a = seed >>> 0;
@@ -466,7 +435,6 @@ function seededShuffle(arr, seedStr) {
   }
   return out;
 }
-
 function hashString(str) {
   let h = 2166136261;
   for (let i = 0; i < str.length; i++) {
@@ -476,25 +444,143 @@ function hashString(str) {
   return h >>> 0;
 }
 
-// Persistence: store exam attempts in localStorage so users can review later.
+// ---------- Persistence ----------
 const ATTEMPTS_KEY = 'eduPractice_examAttempts';
 
 export function saveAttempt(attempt) {
   const existing = listAttempts();
   existing.unshift(attempt);
-  // Cap at most recent 25 attempts
-  const capped = existing.slice(0, 25);
-  localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(capped));
+  localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(existing.slice(0, 50)));
 }
-
 export function listAttempts() {
-  try {
-    return JSON.parse(localStorage.getItem(ATTEMPTS_KEY) || '[]');
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem(ATTEMPTS_KEY) || '[]'); }
+  catch { return []; }
 }
-
 export function getAttempt(id) {
   return listAttempts().find(a => a.id === id) || null;
+}
+
+// ---------- Analytics derived from real attempts ----------
+// Accepts an optional period in days (e.g., 7, 30, 90). null = all-time.
+export function deriveAnalytics({ days = null } = {}) {
+  const all = listAttempts();
+  const now = Date.now();
+  const cutoff = days ? now - days * 86400000 : 0;
+  const attempts = days ? all.filter(a => new Date(a.submittedAt).getTime() >= cutoff) : all;
+
+  const totalQuestions = attempts.reduce((s, a) => s + (a.breakdown?.length || 0), 0);
+  const totalCorrect   = attempts.reduce((s, a) => s + (a.breakdown?.filter(b => b.correct).length || 0), 0);
+  const totalMinutes   = attempts.reduce((s, a) => s + (a.durationMin || 0), 0);
+  const avgScore = attempts.length
+    ? Math.round(attempts.reduce((s, a) => s + a.percentage, 0) / attempts.length)
+    : 0;
+
+  // Per-subject performance (only Physics & Mathematics)
+  const subjectStats = {};
+  SUBJECTS.forEach(s => { subjectStats[s] = { correct: 0, total: 0, attempts: 0, minutes: 0 }; });
+  attempts.forEach(a => {
+    (a.breakdown || []).forEach(b => {
+      const s = b.subject || a.subject;
+      if (subjectStats[s]) {
+        subjectStats[s].total += 1;
+        if (b.correct) subjectStats[s].correct += 1;
+      }
+    });
+    if (subjectStats[a.subject]) {
+      subjectStats[a.subject].attempts += 1;
+      subjectStats[a.subject].minutes += a.durationMin || 0;
+    }
+  });
+  const subjectPerformance = SUBJECTS.map(s => {
+    const v = subjectStats[s];
+    return {
+      subject: s,
+      mastery: v.total ? Math.round((v.correct / v.total) * 100) : 0,
+      attempts: v.attempts,
+      minutes: v.minutes,
+      total: v.total,
+      correct: v.correct,
+    };
+  });
+
+  // Daily activity for the last 7 days (Mon..Sun in local time)
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const week = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    week.push({
+      key: d.toISOString().slice(0, 10),
+      label: d.toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 3),
+      questions: 0, correct: 0, minutes: 0,
+    });
+  }
+  const weekIndex = Object.fromEntries(week.map((w, i) => [w.key, i]));
+  all.forEach(a => {
+    const key = new Date(a.submittedAt).toISOString().slice(0, 10);
+    if (key in weekIndex) {
+      const w = week[weekIndex[key]];
+      w.questions += a.breakdown?.length || 0;
+      w.correct   += a.breakdown?.filter(b => b.correct).length || 0;
+      w.minutes   += a.durationMin || 0;
+    }
+  });
+
+  // Streak: distinct days with at least one attempt, ending today/yesterday
+  const dayKeys = new Set(all.map(a => new Date(a.submittedAt).toISOString().slice(0, 10)));
+  let streak = 0;
+  const cursor = new Date(); cursor.setHours(0, 0, 0, 0);
+  // Allow today OR yesterday to start the streak
+  if (!dayKeys.has(cursor.toISOString().slice(0, 10))) cursor.setDate(cursor.getDate() - 1);
+  while (dayKeys.has(cursor.toISOString().slice(0, 10))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  // Longest streak (over all time)
+  const sortedDays = [...dayKeys].sort();
+  let longest = 0, current = 0, lastDate = null;
+  sortedDays.forEach(key => {
+    const d = new Date(key);
+    if (lastDate && (d - lastDate) === 86400000) current += 1;
+    else current = 1;
+    if (current > longest) longest = current;
+    lastDate = d;
+  });
+
+  // Improvement: compare avg of first 3 vs last 3 attempts (within period)
+  const sortedAttempts = [...attempts].sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt));
+  let improvement = 0;
+  if (sortedAttempts.length >= 3) {
+    const first3 = sortedAttempts.slice(0, 3).reduce((s, a) => s + a.percentage, 0) / 3;
+    const last3  = sortedAttempts.slice(-3).reduce((s, a) => s + a.percentage, 0) / 3;
+    improvement = Math.round(last3 - first3);
+  }
+
+  // Latest attempt (for "resume" buttons)
+  const latest = all.length ? all[0] : null;
+
+  return {
+    period: days,
+    attempts,
+    totalAttempts: attempts.length,
+    totalQuestions,
+    totalCorrect,
+    avgScore,
+    accuracyOverall: totalQuestions ? Math.round((totalCorrect / totalQuestions) * 100) : 0,
+    studyMinutes: totalMinutes,
+    subjectPerformance,
+    weeklyActivity: week,
+    streak,
+    longestStreak: longest,
+    improvement,
+    latest,
+  };
+}
+
+export function formatStudyTime(mins) {
+  if (!mins || mins <= 0) return '0m';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
 }

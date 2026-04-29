@@ -40,6 +40,7 @@ export default function ExamRunner() {
       difficulty: config.difficulty,
       count: config.count || 10,
       topics: config.topics || null,
+      scenarioCount: config.scenarioCount || 0,
     });
     return {
       title: config.title || `${config.subject || 'Mixed'} Practice`,
@@ -242,7 +243,29 @@ export default function ExamRunner() {
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-7">
-            <p className="text-xs text-slate-400 mb-2">{q.topic}</p>
+            <div className="flex items-center gap-2 mb-2">
+              <p className="text-xs text-slate-400">{q.topic}</p>
+              {q.context && (
+                <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  Scenario
+                </span>
+              )}
+            </div>
+
+            {q.context && (
+              <div className="mb-5 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 sm:p-5">
+                <div className="flex items-start gap-3">
+                  <Icon icon="solar:map-point-wave-linear" width="20" className="text-amber-300 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider font-semibold text-amber-300 mb-1.5">
+                      Read the scenario
+                    </p>
+                    <p className="text-sm sm:text-base text-slate-200 leading-relaxed">{q.context}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <h2 className="text-lg sm:text-xl font-semibold leading-relaxed mb-6">{q.prompt}</h2>
 
             {q.type === 'mcq' && (
