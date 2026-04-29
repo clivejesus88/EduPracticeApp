@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
+import { useUser } from '../contexts/UserContext';
 import { getMetrics } from '../utils/analyticsTracker';
 
 export default function DashboardUI() {
   const { t, translate } = useLocalization();
+  const { getFirstName } = useUser();
   const [metrics, setMetrics] = useState(null);
   const [showPracticeModal, setShowPracticeModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
@@ -41,7 +43,7 @@ export default function DashboardUI() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-white">
-                  {translate('dashboard.welcomeBack', { name: 'Sarah' })}
+                  {translate('dashboard.welcomeBack', { name: getFirstName() })}
                 </h1>
                 <p className="text-slate-400 text-sm mt-1">{t('dashboard.keepingMomentum')}</p>
               </div>

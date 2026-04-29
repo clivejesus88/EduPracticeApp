@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
+import { useUser } from '../contexts/UserContext';
 import Avatar from '../components/Avatar';
 import SearchModal from '../components/SearchModal';
 
 export default function Layout() {
   const location = useLocation();
   const { t } = useLocalization();
+  const { user } = useUser();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -122,9 +124,9 @@ export default function Layout() {
         {/* Bottom User Profile */}
         <div className="p-4 border-t border-white/5">
           <Link to="/profile" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-all group">
-            <Avatar name="Sarah K." size={40} />
+            <Avatar name={user.fullName} size={40} />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">Sarah K.</p>
+              <p className="text-sm font-semibold text-white truncate">{user.fullName}</p>
               <p className="text-xs text-slate-500 truncate">{t('sidebar.freeplan')}</p>
             </div>
             <Icon icon="solar:alt-arrow-right-linear" width="20" height="20" className="text-slate-500 group-hover:text-[#f99c00] transition-colors" style={{ strokeWidth: 1 }} />
@@ -203,8 +205,12 @@ export default function Layout() {
       <aside className={`md:hidden fixed top-0 left-0 w-64 h-[100dvh] pb-[60px] bg-gradient-to-b from-[#0B1120] to-[#0D0F1B] border-r border-white/5 flex flex-col z-40 transform transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto`}>
         <div className="h-20 px-6 flex items-center border-b border-white/5 sticky top-0 bg-[#0B1120]/95 backdrop-blur">
           <Link to="/" className="flex items-center gap-3 group w-full" onClick={() => setIsMobileSidebarOpen(false)}>
-            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-[#0B1120] transition-all group-hover:scale-110">
-              <Icon icon="lucide:graduation-cap" width="24" height="24" />
+            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center transition-all group-hover:scale-110">
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0B1120" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
+                <path d="M22 10v6"/>
+                <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>
+              </svg>
             </div>
             <span className="text-xl font-bold tracking-tight text-white">EduPractice</span>
           </Link>
@@ -250,9 +256,9 @@ export default function Layout() {
 
         <div className="p-4 border-t border-white/5 sticky bottom-0 bg-[#0B1120]/95 backdrop-blur">
           <Link to="/profile" onClick={() => setIsMobileSidebarOpen(false)} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-all group">
-            <Avatar name="Sarah K." size={40} />
+            <Avatar name={user.fullName} size={40} />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">Sarah K.</p>
+              <p className="text-sm font-semibold text-white truncate">{user.fullName}</p>
               <p className="text-xs text-slate-500 truncate">{t('sidebar.freeplan')}</p>
             </div>
             <Icon icon="solar:alt-arrow-right-linear" width="20" height="20" className="text-slate-500 group-hover:text-[#f99c00] transition-colors" style={{ strokeWidth: 1 }} />

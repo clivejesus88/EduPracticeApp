@@ -15,6 +15,11 @@ A React + Vite + TypeScript single-page app for the EduPractice study platform. 
 ## Deployment
 - Configured as autoscale static deployment: build with `cd client-ui && npm run build`, serve `client-ui/dist`.
 
+## State Management
+- `UserContext` (`src/contexts/UserContext.jsx`) holds the user profile (name, email, school, exam level, prefs) with localStorage persistence (key `eduPractice_user`). Mounted globally in `App.jsx` via `<UserProvider>`. Components consume it through `useUser()` (`user`, `updateUser`, `getFirstName`, `getInitials`).
+- `Profile.jsx` initializes its form from the context, syncs back via `updateUser(formData)` on save, and re-syncs from context if the user changes elsewhere while not editing.
+- `DashboardUI` welcome heading and `Layout` sidebar (avatar + name) all read live from `useUser()`, so any name edit on the Profile page propagates instantly across the app.
+
 ## Recent UI Changes
 - Practice page redesigned with examdojo-inspired clean look: bigger headlines, generous spacing, single-column → multi-column responsive grids, pill-shaped CTAs, consistent rounded card system, mobile-friendly workboard with sticky-safe bottom padding.
 - Workboard reserves right-side room for the chat sidebar only when chat is open (`lg:pr-[400px]` conditionally) instead of an invalid hard-coded class.

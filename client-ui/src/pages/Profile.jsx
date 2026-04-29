@@ -1,21 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
+import { useUser } from '../contexts/UserContext';
 import Avatar from '../components/Avatar';
 
 export default function Profile() {
   const { t } = useLocalization();
+  const { user, updateUser } = useUser();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
   const [formData, setFormData] = useState({
-    fullName: 'Sarah K.',
-    email: 'sarah.k@example.com',
-    schoolName: 'Makerere University',
-    examLevel: 'A-Level',
-    dailyGoal: 50,
-    notifications: true,
-    twoFactor: false
+    fullName: user.fullName,
+    email: user.email,
+    schoolName: user.schoolName,
+    examLevel: user.examLevel,
+    dailyGoal: user.dailyGoal,
+    notifications: user.notifications,
+    twoFactor: user.twoFactor,
   });
+
+  // Keep local form in sync when the user context changes from elsewhere
+  useEffect(() => {
+    if (!isEditing) {
+      setFormData({
+        fullName: user.fullName,
+        email: user.email,
+        schoolName: user.schoolName,
+        examLevel: user.examLevel,
+        dailyGoal: user.dailyGoal,
+        notifications: user.notifications,
+        twoFactor: user.twoFactor,
+      });
+    }
+  }, [user, isEditing]);
 
   const stats = [
     { icon: 'solar:checklist-minimalistic-linear', label: t('profile.questionsAttempted'), value: '1,248', color: 'blue' },
@@ -40,8 +57,8 @@ export default function Profile() {
   };
 
   const handleSave = () => {
+    updateUser(formData);
     setIsEditing(false);
-    // In production, this would send data to backend
   };
 
   const colorMap = {

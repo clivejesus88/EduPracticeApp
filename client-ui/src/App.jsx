@@ -9,13 +9,15 @@ import Profile from './pages/Profile';
 import Layout from './pages/Layout';
 import ProtectedRoute from './auth/ProtectedRoute';
 import { LocalizationProvider } from './contexts/LocalizationContext';
+import { UserProvider } from './contexts/UserContext';
 
 import './App.css';
 
 function App() {
   return (
     <LocalizationProvider>
-      <Router>
+      <UserProvider>
+        <Router>
         <Routes>
           {/* Protected Routes - All routes require authentication */}
           {/* Unauthorized users are redirected to https://edupractice.vercel.app/login */}
@@ -30,7 +32,8 @@ function App() {
             </Route>
           </Route>
         </Routes>
-      </Router>
+        </Router>
+      </UserProvider>
     </LocalizationProvider>
   )
 }
