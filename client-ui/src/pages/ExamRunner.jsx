@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { buildExam, scoreExam, saveAttempt } from '../data/examBank';
 import { trackExamStart, trackExamCompletion } from '../utils/analyticsTracker';
+import FocusAudio from '../components/FocusAudio';
 
 const DRAFT_KEY = 'eduPractice_examDraft';
 
@@ -203,9 +204,16 @@ export default function ExamRunner() {
             <Icon icon="solar:arrow-left-linear" width="22" />
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-sm sm:text-base font-bold truncate">{exam.title}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm sm:text-base font-bold truncate">{exam.title}</h1>
+              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                <Icon icon="solar:bolt-linear" width="10" />
+                Focus mode
+              </span>
+            </div>
             <p className="text-xs text-slate-400 truncate">{exam.subtitle}</p>
           </div>
+          <FocusAudio />
           <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-semibold tabular-nums ${
             lowTime
               ? 'bg-red-500/15 border-red-500/30 text-red-300 animate-pulse'
