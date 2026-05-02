@@ -4,6 +4,7 @@ import { useLocalization } from '../contexts/LocalizationContext';
 import { useUser } from '../contexts/UserContext';
 import Avatar from '../components/Avatar';
 import useAnalyticsData from '../hooks/useAnalyticsData';
+import BadgeArt from '../components/BadgeArt';
 
 function fmtMinutes(mins) {
   if (!mins) return '0m';
@@ -435,28 +436,30 @@ export default function Profile() {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {badges.map((badge, idx) => (
                   <div key={idx} className="group relative">
-                    <div className={`rounded-2xl p-4 sm:p-5 transition-all text-center border ${
+                    <div className={`rounded-2xl p-4 sm:p-5 transition-all text-center border group-hover:scale-105 ${
                       badge.unlocked
-                        ? 'bg-[#f99c00]/5 border-[#f99c00]/20 hover:border-[#f99c00]/40 hover:scale-105 cursor-default'
-                        : 'bg-white/[0.02] border-white/[0.06] opacity-50'
+                        ? 'bg-white/[0.03] border-white/10 hover:border-white/20 cursor-default'
+                        : 'bg-white/[0.01] border-white/[0.05]'
                     }`}>
-                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform ${
-                        badge.unlocked
-                          ? 'bg-[#f99c00]/15 text-[#f99c00] group-hover:scale-110'
-                          : 'bg-white/5 text-slate-600'
-                      }`}>
-                        <Icon icon={badge.unlocked ? badge.icon : 'solar:lock-linear'} width="22" />
+                      {/* Badge SVG artwork */}
+                      <div className="flex justify-center mb-3">
+                        <BadgeArt name={badge.name} unlocked={badge.unlocked} size={64} />
                       </div>
-                      <h4 className={`text-xs font-bold mb-1 leading-tight ${badge.unlocked ? 'text-white' : 'text-slate-600'}`}>
+                      <h4 className={`text-xs font-bold mb-1 leading-tight ${badge.unlocked ? 'text-white' : 'text-slate-700'}`}>
                         {badge.name}
                       </h4>
                       <p className={`text-[10px] leading-snug ${badge.unlocked ? 'text-slate-500' : 'text-slate-700'}`}>
                         {badge.desc}
                       </p>
-                      {badge.unlocked && (
+                      {badge.unlocked ? (
                         <div className="mt-2 flex items-center justify-center gap-1">
                           <Icon icon="solar:check-circle-bold" width="12" className="text-emerald-400" />
                           <span className="text-[10px] font-semibold text-emerald-400">Earned</span>
+                        </div>
+                      ) : (
+                        <div className="mt-2 flex items-center justify-center gap-1">
+                          <Icon icon="solar:lock-linear" width="11" className="text-slate-700" />
+                          <span className="text-[10px] text-slate-700">Locked</span>
                         </div>
                       )}
                     </div>
