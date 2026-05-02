@@ -229,7 +229,7 @@ export default function Practice() {
   // ─────────────────────────────────────────────────────────────────────────────
   if (step === 'selectLevel') {
     return (
-      <div className="flex-1 overflow-y-auto bg-[#0D0F14] px-4 sm:px-8 py-10 sm:py-16">
+      <div className="flex-1 overflow-y-auto bg-[#0D0F14] px-4 sm:px-8 pt-10 sm:pt-16 pb-[88px] sm:pb-16">
         <div className="max-w-4xl mx-auto">
 
           {/* Hero header */}
@@ -285,7 +285,7 @@ export default function Practice() {
   if (step === 'topics') {
     return (
       <div className="flex-1 overflow-y-auto bg-[#0D0F14]">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-4">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-[88px] sm:pb-8 space-y-4">
 
           {/* Back */}
           <button
@@ -403,7 +403,7 @@ export default function Practice() {
   // SCREEN 3 — Workboard
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="flex-1 flex flex-col bg-[#0D0F14] overflow-hidden">
+    <div className="flex-1 flex flex-col bg-[#0D0F14] overflow-hidden pb-[60px] md:pb-0">
 
       <input
         ref={inputFileRef}

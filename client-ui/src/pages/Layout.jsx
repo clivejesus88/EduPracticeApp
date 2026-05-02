@@ -193,8 +193,8 @@ export default function Layout() {
         >
           <Outlet />
 
-          {/* Spacer so content isn't permanently hidden behind the nav when visible */}
-          <div className="md:hidden h-[60px] shrink-0" />
+          {/* Spacer keeps content clear of the fixed bottom nav on mobile */}
+          <div className="md:hidden h-[72px] shrink-0" />
         </div>
       </main>
 

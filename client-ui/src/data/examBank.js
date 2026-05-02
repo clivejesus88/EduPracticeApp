@@ -310,9 +310,10 @@ export function getAttempt(id) {
 }
 
 // ---------- Analytics derived from real attempts ----------
+// Pure function — accepts an explicit attempts array (from localStorage OR Supabase).
 // Accepts an optional period in days (e.g., 7, 30, 90). null = all-time.
-export function deriveAnalytics({ days = null } = {}) {
-  const all = listAttempts();
+export function computeAnalytics(allAttempts, { days = null } = {}) {
+  const all = allAttempts;
   const now = Date.now();
   const cutoff = days ? now - days * 86400000 : 0;
   const attempts = days ? all.filter(a => new Date(a.submittedAt).getTime() >= cutoff) : all;
@@ -424,6 +425,11 @@ export function deriveAnalytics({ days = null } = {}) {
     improvement,
     latest,
   };
+}
+
+// Convenience wrapper that reads from localStorage — keeps backward compatibility.
+export function deriveAnalytics({ days = null } = {}) {
+  return computeAnalytics(listAttempts(), { days });
 }
 
 export function formatStudyTime(mins) {

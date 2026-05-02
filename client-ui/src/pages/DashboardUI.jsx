@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { useUser } from '../contexts/UserContext';
-import { deriveAnalytics, formatStudyTime } from '../data/examBank';
+import { formatStudyTime } from '../data/examBank';
+import useAnalyticsData from '../hooks/useAnalyticsData';
 
 const DAILY_GOAL = 30;
 
@@ -13,9 +14,8 @@ export default function DashboardUI() {
   const navigate = useNavigate();
   const [showPracticeModal, setShowPracticeModal] = useState(false);
 
-  // Recompute when modal opens/closes (cheap) so new attempts appear after returning from an exam.
-  const data = useMemo(() => deriveAnalytics({ days: 30 }), [showPracticeModal]);
-  const allTime = useMemo(() => deriveAnalytics({ days: null }), [showPracticeModal]);
+  const { data, refresh: refreshData } = useAnalyticsData({ days: 30 });
+  const { data: allTime } = useAnalyticsData({ days: null });
   const peakWeekly = Math.max(1, ...data.weeklyActivity.map(d => d.questions));
   const todayBucket = data.weeklyActivity[data.weeklyActivity.length - 1];
   const todayQuestions = todayBucket?.questions || 0;
@@ -63,7 +63,7 @@ export default function DashboardUI() {
       </div>
 
       {/* Main Content */}
-      <div className="px-4 sm:px-6 md:px-8 py-8">
+      <div className="px-4 sm:px-6 md:px-8 py-8 pb-[88px] md:pb-8">
         <div className="max-w-7xl mx-auto space-y-8">
 
           {/* Stats Grid (real data from your attempts) */}

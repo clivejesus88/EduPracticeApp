@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
 import { useLocalization } from '../contexts/LocalizationContext';
-import { deriveAnalytics, formatStudyTime } from '../data/examBank';
+import { formatStudyTime } from '../data/examBank';
+import useAnalyticsData from '../hooks/useAnalyticsData';
 
 const PERIODS = [
   { value: '7',   label: 'Last 7 days',  days: 7 },
@@ -21,19 +22,37 @@ export default function Analytics() {
   const [period, setPeriod] = useState('7');
   const days = PERIODS.find(p => p.value === period)?.days ?? null;
 
-  const data = useMemo(() => deriveAnalytics({ days }), [days]);
+  const { data, loading, source, refresh } = useAnalyticsData({ days });
   const hasAny = data.totalAttempts > 0;
 
   const peakWeekly = Math.max(1, ...data.weeklyActivity.map(d => d.questions));
 
   return (
     <div className="flex-1 overflow-y-auto w-full h-full p-4 sm:p-6 md:p-8 bg-[#0B1120]">
-      <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 pb-20 md:pb-8">
+      <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 pb-24 md:pb-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-2">{t('nav.analytics')}</h1>
-            <p className="text-sm text-slate-400">All metrics are calculated from your actual exam attempts.</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm text-slate-400">Metrics calculated from your actual exam attempts.</p>
+              <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                source === 'supabase'
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  : 'bg-white/5 text-slate-500 border border-white/10'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${source === 'supabase' ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
+                {source === 'supabase' ? 'Live · Supabase' : 'Local storage'}
+              </span>
+              <button
+                onClick={refresh}
+                disabled={loading}
+                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+              >
+                <Icon icon="solar:refresh-linear" width="12" className={loading ? 'animate-spin' : ''} />
+                {loading ? 'Refreshing…' : 'Refresh'}
+              </button>
+            </div>
           </div>
 
           <select
