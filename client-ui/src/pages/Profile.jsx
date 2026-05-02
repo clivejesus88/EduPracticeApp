@@ -1,8 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { useUser } from '../contexts/UserContext';
 import Avatar from '../components/Avatar';
+import useAnalyticsData from '../hooks/useAnalyticsData';
+
+function fmtMinutes(mins) {
+  if (!mins) return '0m';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h === 0) return `${m}m`;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
 
 export default function Profile() {
   const { t } = useLocalization();
@@ -19,6 +28,8 @@ export default function Profile() {
     twoFactor: user.twoFactor,
   });
 
+  const { data: analytics, loading: analyticsLoading, source } = useAnalyticsData();
+
   // Keep local form in sync when the user context changes from elsewhere
   useEffect(() => {
     if (!isEditing) {
@@ -34,18 +45,95 @@ export default function Profile() {
     }
   }, [user, isEditing]);
 
-  const stats = [
-    { icon: 'solar:checklist-minimalistic-linear', label: t('profile.questionsAttempted'), value: '1,248', color: 'blue' },
-    { icon: 'solar:target-linear', label: t('profile.averageAccuracyScore'), value: '86.5%', color: 'purple' },
-    { icon: 'solar:clock-circle-linear', label: t('profile.totalStudyTime'), value: '156h 45m', color: 'rose' },
-    { icon: 'solar:cup-star-linear', label: t('profile.achievements'), value: '24', color: 'amber' }
+  const BADGE_DEFINITIONS = [
+    {
+      name: 'First Steps',
+      icon: 'solar:rocket-linear',
+      desc: 'Complete your first exam attempt',
+      earned: (a) => a.totalAttempts >= 1,
+    },
+    {
+      name: 'Consistent Learner',
+      icon: 'solar:fire-linear',
+      desc: 'Maintain a 3-day study streak',
+      earned: (a) => a.streak >= 3,
+    },
+    {
+      name: 'Master of Physics',
+      icon: 'solar:flash-bold',
+      desc: 'Achieve 80 %+ accuracy in Physics',
+      earned: (a) => {
+        const p = a.subjectPerformance?.find(s => s.subject === 'Physics');
+        return p && p.mastery >= 80 && p.total >= 5;
+      },
+    },
+    {
+      name: 'Quick Thinker',
+      icon: 'solar:lightning-bolt-linear',
+      desc: 'Score 75 %+ average across all attempts',
+      earned: (a) => a.avgScore >= 75 && a.totalAttempts >= 3,
+    },
+    {
+      name: 'Maths Wizard',
+      icon: 'solar:calculator-minimalistic-linear',
+      desc: 'Achieve 80 %+ accuracy in Mathematics',
+      earned: (a) => {
+        const m = a.subjectPerformance?.find(s => s.subject === 'Mathematics');
+        return m && m.mastery >= 80 && m.total >= 5;
+      },
+    },
+    {
+      name: 'Century Club',
+      icon: 'solar:medal-ribbons-star-linear',
+      desc: 'Answer 100+ questions in total',
+      earned: (a) => a.totalQuestions >= 100,
+    },
+    {
+      name: 'Iron Streak',
+      icon: 'solar:calendar-mark-linear',
+      desc: 'Study 7 days in a row',
+      earned: (a) => a.streak >= 7,
+    },
+    {
+      name: 'Top Scorer',
+      icon: 'solar:cup-star-linear',
+      desc: 'Score 90 %+ average across 5+ attempts',
+      earned: (a) => a.avgScore >= 90 && a.totalAttempts >= 5,
+    },
   ];
 
-  const badges = [
-    { name: 'First Steps', icon: 'solar:rocket-linear', date: 'Jan 15, 2025' },
-    { name: 'Consistent Learner', icon: 'solar:fire-linear', date: 'Feb 3, 2025' },
-    { name: 'Master of Physics', icon: 'solar:flash-bold', date: 'Feb 20, 2025' },
-    { name: 'Quick Thinker', icon: 'solar:lightning-bolt-linear', date: 'Mar 1, 2025' }
+  const badges = useMemo(() => {
+    if (!analytics) return BADGE_DEFINITIONS.map(b => ({ ...b, unlocked: false }));
+    return BADGE_DEFINITIONS.map(b => ({ ...b, unlocked: b.earned(analytics) }));
+  }, [analytics]);
+
+  const earnedBadges = badges.filter(b => b.unlocked);
+
+  const stats = [
+    {
+      icon: 'solar:checklist-minimalistic-linear',
+      label: t('profile.questionsAttempted'),
+      value: analyticsLoading ? '…' : analytics?.totalQuestions?.toLocaleString() ?? '0',
+      color: 'blue',
+    },
+    {
+      icon: 'solar:target-linear',
+      label: t('profile.averageAccuracyScore'),
+      value: analyticsLoading ? '…' : `${analytics?.accuracyOverall ?? 0}%`,
+      color: 'purple',
+    },
+    {
+      icon: 'solar:clock-circle-linear',
+      label: t('profile.totalStudyTime'),
+      value: analyticsLoading ? '…' : fmtMinutes(analytics?.studyMinutes ?? 0),
+      color: 'rose',
+    },
+    {
+      icon: 'solar:cup-star-linear',
+      label: t('profile.achievements'),
+      value: analyticsLoading ? '…' : `${earnedBadges.length} / ${BADGE_DEFINITIONS.length}`,
+      color: 'amber',
+    },
   ];
 
   const handleChange = (e) => {
@@ -338,16 +426,39 @@ export default function Profile() {
           {/* Achievements Tab */}
           {activeTab === 'achievements' && (
             <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-2xl p-6 sm:p-8">
-              <h3 className="text-lg font-bold text-white mb-6">Earned Badges</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold text-white">Badges</h3>
+                <span className="text-xs font-semibold text-slate-500 bg-white/5 border border-white/10 px-2.5 py-1 rounded-full tabular-nums">
+                  {earnedBadges.length} / {BADGE_DEFINITIONS.length} earned
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {badges.map((badge, idx) => (
                   <div key={idx} className="group relative">
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-[#f99c00]/30 transition-all text-center cursor-pointer hover:scale-105">
-                      <div className="w-12 h-12 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] mx-auto mb-3 group-hover:scale-110 transition-transform">
-                        <Icon icon={badge.icon} width="24" />
+                    <div className={`rounded-2xl p-4 sm:p-5 transition-all text-center border ${
+                      badge.unlocked
+                        ? 'bg-[#f99c00]/5 border-[#f99c00]/20 hover:border-[#f99c00]/40 hover:scale-105 cursor-default'
+                        : 'bg-white/[0.02] border-white/[0.06] opacity-50'
+                    }`}>
+                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform ${
+                        badge.unlocked
+                          ? 'bg-[#f99c00]/15 text-[#f99c00] group-hover:scale-110'
+                          : 'bg-white/5 text-slate-600'
+                      }`}>
+                        <Icon icon={badge.unlocked ? badge.icon : 'solar:lock-linear'} width="22" />
                       </div>
-                      <h4 className="text-sm font-semibold text-white">{badge.name}</h4>
-                      <p className="text-xs text-slate-500 mt-2">{badge.date}</p>
+                      <h4 className={`text-xs font-bold mb-1 leading-tight ${badge.unlocked ? 'text-white' : 'text-slate-600'}`}>
+                        {badge.name}
+                      </h4>
+                      <p className={`text-[10px] leading-snug ${badge.unlocked ? 'text-slate-500' : 'text-slate-700'}`}>
+                        {badge.desc}
+                      </p>
+                      {badge.unlocked && (
+                        <div className="mt-2 flex items-center justify-center gap-1">
+                          <Icon icon="solar:check-circle-bold" width="12" className="text-emerald-400" />
+                          <span className="text-[10px] font-semibold text-emerald-400">Earned</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
