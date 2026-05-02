@@ -388,7 +388,7 @@ export default function Practice() {
                     className="shrink-0 w-9 h-9 rounded-xl border border-white/10 bg-white/[0.04] flex items-center justify-center text-slate-500 hover:border-violet-500/40 hover:bg-violet-500/10 hover:text-violet-400 transition-all active:scale-95"
                     title="Audio Overview"
                   >
-                    <Icon icon="solar:headphones-linear" width="16" />
+                    <Icon icon="solar:headphones-bold" width="16" />
                   </button>
 
                   <button
@@ -464,7 +464,7 @@ export default function Practice() {
           className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl border border-violet-500/20 bg-violet-500/[0.07] text-violet-400 hover:bg-violet-500/15 hover:border-violet-500/40 transition-all text-sm font-semibold shrink-0"
           title="Audio Overview"
         >
-          <Icon icon="solar:headphones-linear" width="16" />
+          <Icon icon="solar:headphones-bold" width="16" />
           Listen
         </button>
 
