@@ -21,7 +21,7 @@ export const ugandaConfig = {
       name: 'A-Level',
       localName: 'UACE - Uganda Advanced Certificate of Education',
       grades: '1-9',
-      years: ['S.6', 'S.7'],
+      years: ['S.6'],
       description: 'Advanced Secondary School Certificate'
     },
     {

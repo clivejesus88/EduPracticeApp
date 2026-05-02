@@ -3,7 +3,7 @@ export const examLevels = {
   ALEVEL: {
     id: 'a-level',
     name: 'A-Level',
-    description: 'Uganda Advanced Certificate of Education - S.6 & S.7',
+    description: 'Uganda Advanced Certificate of Education - S.6',
     color: 'from-purple-500 to-pink-500',
     difficulty: 'Intermediate to Advanced'
   },

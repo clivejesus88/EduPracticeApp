@@ -8,7 +8,7 @@ import { clearExamDraft, loadExamDraft } from '../services/examDraftService';
 
 // Map our level ids to the labels stored on questions/topics.
 const LEVELS = [
-  { id: 'A-Level', name: 'A-Level',        short: 'A-Level', description: 'Advanced Level (S.6 & S.7)',     topicsKey: 'ALEVEL' },
+  { id: 'A-Level', name: 'A-Level',        short: 'A-Level', description: 'Advanced Level (S.6)',          topicsKey: 'ALEVEL' },
   { id: 'UACE',    name: 'UACE',           short: 'UACE',    description: 'Uganda Advanced Certificate of Education', topicsKey: 'ALEVEL' },
 ];
 
