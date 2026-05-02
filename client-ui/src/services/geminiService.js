@@ -1,5 +1,5 @@
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash';
+const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash';
 
 function isAvailable() {
   return Boolean(API_KEY);
