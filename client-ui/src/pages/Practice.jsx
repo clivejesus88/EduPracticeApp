@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '@iconify/react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { AiBrain05Icon } from '@hugeicons/core-free-icons';
+import { AiChat01Icon } from '@hugeicons/core-free-icons';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { examLevels, physicsTopics, mathematicsTopics } from '../data/examStructure';
 import ChatInterface from '../components/ChatInterface';
 import { trackPracticeAttempt, trackTopicView } from '../utils/analyticsTracker';
 import { evaluatePracticeSolution } from '../services/practiceAiService';
 
-// ─── Draft persistence ────────────────────────────────────────────────────────
 const DRAFT_KEY = 'eduPractice_practiceDraft';
 const loadDraft = () => {
   try { const r = localStorage.getItem(DRAFT_KEY); return r ? JSON.parse(r) : null; }
@@ -16,7 +15,6 @@ const loadDraft = () => {
 };
 const saveDraft = (d) => localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
 
-// ─── Scenario data ────────────────────────────────────────────────────────────
 const SCENARIOS = {
   physics: {
     topic: 'Energy & Power',
@@ -71,8 +69,8 @@ const MARK_SCHEME = {
 };
 
 const SUBJECT_COLORS = {
-  physics:     { bar: 'bg-blue-500',  badge: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
-  mathematics: { bar: 'bg-rose-500',  badge: 'text-rose-400 bg-rose-500/10 border-rose-500/20' },
+  physics:     { bar: 'bg-blue-500',  badge: 'text-blue-300 bg-blue-500/15 border-blue-500/30' },
+  mathematics: { bar: 'bg-rose-500',  badge: 'text-rose-300 bg-rose-500/15 border-rose-500/30' },
 };
 
 const AVATAR_COLORS = [
@@ -81,32 +79,26 @@ const AVATAR_COLORS = [
   'bg-teal-600', 'bg-orange-600', 'bg-fuchsia-600', 'bg-lime-600',
 ];
 
-// ─── Difficulty badge ─────────────────────────────────────────────────────────
 function DifficultyBadge({ level = 1 }) {
   const label = level === 1 ? 'Easy' : level === 2 ? 'Medium' : 'Hard';
   const dotColor = level === 1 ? 'bg-emerald-400' : level === 2 ? 'bg-amber-400' : 'bg-red-400';
-  const textColor = level === 1 ? 'text-emerald-400' : level === 2 ? 'text-amber-400' : 'text-red-400';
+  const badgeCls = level === 1
+    ? 'text-emerald-300 bg-emerald-500/15 border-emerald-500/30'
+    : level === 2
+    ? 'text-amber-300 bg-amber-500/15 border-amber-500/30'
+    : 'text-red-300 bg-red-500/15 border-red-500/30';
   return (
-    <div className="flex items-center gap-1.5 shrink-0">
+    <div className="flex items-center gap-2 shrink-0">
       <div className="flex items-center gap-[3px]">
         {[1, 2, 3].map((i) => (
-          <span key={i} className={`w-1.5 h-1.5 rounded-full ${i <= level ? dotColor : 'bg-white/10'}`} />
+          <span key={i} className={`w-2 h-2 rounded-full ${i <= level ? dotColor : 'bg-white/10'}`} />
         ))}
       </div>
-      <span className={`text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border ${
-        level === 1
-          ? 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20'
-          : level === 2
-          ? 'text-amber-400 bg-amber-400/10 border-amber-400/20'
-          : 'text-red-400 bg-red-400/10 border-red-400/20'
-      }`}>
-        {label}
-      </span>
+      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${badgeCls}`}>{label}</span>
     </div>
   );
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function Practice() {
   const { t } = useLocalization();
   const draft = useMemo(() => loadDraft(), []);
@@ -143,7 +135,6 @@ export default function Practice() {
       : selectedExamLevel.toUpperCase().replace('-', '');
     const topics = [];
     let colorIdx = 0;
-
     const addSubtopics = (subtopics, subject, icon) => {
       subtopics.forEach((sub, i) => {
         topics.push({
@@ -158,7 +149,6 @@ export default function Practice() {
         });
       });
     };
-
     if (physicsTopics[levelKey])     addSubtopics(physicsTopics[levelKey],     'physics',     'solar:flash-bold');
     if (mathematicsTopics[levelKey]) addSubtopics(mathematicsTopics[levelKey], 'mathematics', 'solar:calculator-bold');
     return topics;
@@ -168,7 +158,6 @@ export default function Practice() {
     saveDraft({ step, selectedExamLevel, selectedSubject, selectedTopic, solutionText, selectedFileName, feedback, awardedMarks, targetGrade });
   }, [step, selectedExamLevel, selectedSubject, selectedTopic, solutionText, selectedFileName, feedback, awardedMarks, targetGrade]);
 
-  // ─── Handlers ────────────────────────────────────────────────────────────────
   const handleExamLevelSelect = (id) => { setSelectedExamLevel(id); setStep('topics'); };
 
   const handleTopicSelect = (topic) => {
@@ -239,34 +228,48 @@ export default function Practice() {
   // ─────────────────────────────────────────────────────────────────────────────
   if (step === 'selectLevel') {
     return (
-      <div className="flex-1 overflow-y-auto bg-[#0D0F14] px-4 sm:px-8 py-8 sm:py-14">
+      <div className="flex-1 overflow-y-auto bg-[#0D0F14] px-4 sm:px-8 py-10 sm:py-16">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-8 sm:mb-10">
-            <p className="text-xs font-semibold text-amber-400/70 uppercase tracking-widest mb-3">
-              Practice
-            </p>
-            <h1 className="text-2xl sm:text-4xl font-bold text-white tracking-tight mb-2 leading-tight">
+
+          {/* Hero header */}
+          <div className="mb-10 sm:mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 mb-5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              <span className="text-sm font-semibold text-amber-300 uppercase tracking-wider">Practice</span>
+            </div>
+            <h1 className="text-3xl sm:text-5xl font-bold text-white tracking-tight mb-3 leading-tight">
               {t('practice.chooseATopic')}
             </h1>
-            <p className="text-slate-500 text-sm">{t('examLevels.selectLevel')}</p>
+            <p className="text-base text-slate-400">{t('examLevels.selectLevel')}</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Level cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {Object.values(examLevels).map((level) => (
               <button
                 key={level.id}
                 onClick={() => handleExamLevelSelect(level.id)}
-                className="group text-left p-5 sm:p-6 rounded-xl border border-white/[0.06] bg-[#12151C] hover:border-amber-500/30 hover:bg-[#14171F] transition-all duration-200 active:scale-[0.98]"
+                className="group text-left p-6 sm:p-7 rounded-2xl border border-white/10 bg-[#12151C] hover:border-amber-500/50 hover:bg-[#15181F] transition-all duration-200 active:scale-[0.98] relative overflow-hidden"
               >
-                <div className="flex items-start justify-between mb-4 sm:mb-5">
-                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${level.color} flex items-center justify-center`}>
-                    <Icon icon="solar:book-2-bold" width="18" className="text-white" />
+                {/* Subtle gradient glow on hover */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-gradient-to-br from-amber-500/[0.04] to-transparent rounded-2xl" />
+
+                <div className="flex items-start justify-between mb-5">
+                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${level.color} flex items-center justify-center shadow-lg`}>
+                    <Icon icon="solar:book-2-bold" width="22" className="text-white" />
                   </div>
-                  <Icon icon="solar:arrow-right-linear" width="14" className="text-white/20 group-hover:text-amber-400 transition-colors mt-1" />
+                  <div className="w-8 h-8 rounded-lg border border-white/10 group-hover:border-amber-500/40 flex items-center justify-center transition-colors">
+                    <Icon icon="solar:arrow-right-linear" width="15" className="text-white/30 group-hover:text-amber-400 transition-colors" />
+                  </div>
                 </div>
-                <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-amber-400 transition-colors mb-1">{level.name}</h3>
-                <p className="text-xs text-slate-500 leading-relaxed mb-4">{level.description}</p>
-                <span className="text-[10px] font-medium uppercase tracking-wide text-white/20">{level.difficulty}</span>
+
+                <h3 className="text-lg sm:text-xl font-bold text-white group-hover:text-amber-300 transition-colors mb-1.5">{level.name}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed mb-5">{level.description}</p>
+
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/30 group-hover:text-amber-400/60 transition-colors uppercase tracking-wide">
+                  <span className="w-1 h-1 rounded-full bg-current" />
+                  {level.difficulty}
+                </span>
               </button>
             ))}
           </div>
@@ -281,88 +284,88 @@ export default function Practice() {
   if (step === 'topics') {
     return (
       <div className="flex-1 overflow-y-auto bg-[#0D0F14]">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-6 space-y-3 sm:space-y-4">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-4">
 
+          {/* Back */}
           <button
             onClick={() => setStep('selectLevel')}
-            className="inline-flex items-center gap-1.5 text-slate-500 hover:text-slate-300 transition-colors text-xs font-medium group"
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors group"
           >
-            <Icon icon="solar:alt-arrow-left-linear" width="13" className="group-hover:-translate-x-0.5 transition-transform" />
-            Back
+            <Icon icon="solar:alt-arrow-left-linear" width="16" className="group-hover:-translate-x-0.5 transition-transform" />
+            Back to levels
           </button>
 
           {/* Header card */}
-          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 sm:p-5">
+          <div className="bg-[#12151C] rounded-2xl border border-white/10 p-5 sm:p-6">
             <div className="flex items-start justify-between gap-3 mb-5">
               <div>
-                <h2 className="text-sm sm:text-base font-bold text-white">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Exam level</p>
+                <h2 className="text-lg sm:text-xl font-bold text-white">
                   {selectedExamLevel?.toUpperCase().replace('-', ' ')} Practice
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">Select a topic to begin</p>
+                <p className="text-sm text-slate-400 mt-0.5">Select a topic below to start your session</p>
               </div>
               <button
                 onClick={() => setStep('selectLevel')}
-                className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold transition-colors shrink-0"
+                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-sm font-semibold transition-colors shrink-0"
               >
                 Change
               </button>
             </div>
 
-            {/* Grade target slider 1–7 */}
+            {/* Grade target slider */}
             <div>
-              <div className="flex items-center justify-between mb-1.5 px-0.5">
+              <div className="flex items-center justify-between mb-2 px-0.5">
                 {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                  <span key={n} className={`text-[10px] font-semibold select-none ${targetGrade === n ? 'text-amber-400' : 'text-white/20'}`}>
+                  <span key={n} className={`text-xs font-semibold select-none ${targetGrade === n ? 'text-amber-400' : 'text-white/20'}`}>
                     {n}
                   </span>
                 ))}
               </div>
-              <div className="relative h-8 flex items-center">
-                <div className="absolute inset-x-0 h-1.5 rounded-full bg-white/[0.06]" />
+              <div className="relative h-9 flex items-center">
+                <div className="absolute inset-x-0 h-2 rounded-full bg-white/[0.07]" />
                 <div
-                  className="absolute left-0 h-1.5 rounded-full bg-amber-500/60 transition-all"
+                  className="absolute left-0 h-2 rounded-full bg-amber-500/70 transition-all"
                   style={{ width: `${((targetGrade - 1) / 6) * 100}%` }}
                 />
                 <div
-                  className="absolute w-4 h-4 bg-amber-500 rounded-full shadow-lg shadow-amber-500/30 transition-all pointer-events-none z-20"
-                  style={{ left: `calc(${((targetGrade - 1) / 6) * 100}% - 8px)` }}
+                  className="absolute w-5 h-5 bg-amber-500 rounded-full shadow-lg shadow-amber-500/40 transition-all pointer-events-none z-20 border-2 border-amber-300/40"
+                  style={{ left: `calc(${((targetGrade - 1) / 6) * 100}% - 10px)` }}
                 />
                 <input
                   type="range" min={1} max={7} step={1}
                   value={targetGrade}
                   onChange={(e) => setTargetGrade(Number(e.target.value))}
-                  className="absolute inset-x-0 w-full h-8 opacity-0 cursor-pointer z-30"
+                  className="absolute inset-x-0 w-full h-9 opacity-0 cursor-pointer z-30"
                   style={{ touchAction: 'none' }}
                 />
               </div>
-              <p className="text-[10px] text-slate-600 mt-1">Target grade: {targetGrade}</p>
+              <p className="text-sm text-slate-500 mt-1.5">Target grade: <span className="text-amber-400 font-semibold">{targetGrade}</span></p>
             </div>
           </div>
 
           {/* Topic list */}
-          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] overflow-hidden divide-y divide-white/[0.04]">
+          <div className="bg-[#12151C] rounded-2xl border border-white/10 overflow-hidden divide-y divide-white/[0.06]">
             {allTopics.length === 0 ? (
-              <p className="py-12 text-center text-xs text-slate-600">No topics found for this level.</p>
+              <p className="py-14 text-center text-sm text-slate-500">No topics found for this level.</p>
             ) : allTopics.map((topic) => {
               const subjectColors = SUBJECT_COLORS[topic.subject] || {};
               return (
-                <div key={topic.id} className="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-white/[0.02] transition-colors">
-                  {/* Icon */}
-                  <div className={`w-9 h-9 rounded-lg ${topic.color} flex items-center justify-center shrink-0`}>
-                    <Icon icon={topic.icon} width="16" className="text-white" />
+                <div key={topic.id} className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4 hover:bg-white/[0.03] transition-colors">
+
+                  <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl ${topic.color} flex items-center justify-center shrink-0 shadow-sm`}>
+                    <Icon icon={topic.icon} width="18" className="text-white" />
                   </div>
 
-                  {/* Name + progress */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                      <p className="text-xs font-semibold text-white truncate">{topic.code} – {topic.name}</p>
-                      <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded border shrink-0 ${subjectColors.badge}`}>
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                      <p className="text-sm font-semibold text-white truncate">{topic.code} – {topic.name}</p>
+                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border shrink-0 ${subjectColors.badge}`}>
                         {topic.subject === 'physics' ? 'PHY' : 'MTH'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="relative flex-1 h-[5px] rounded-full bg-white/[0.06] overflow-hidden">
-                        <div className="absolute top-1/2 left-1/2 -translate-y-1/2 w-px h-3 bg-white/10 z-10" />
+                    <div className="flex items-center gap-2.5">
+                      <div className="relative flex-1 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
                         {topic.progress > 0 && (
                           <div
                             className={`absolute inset-y-0 left-0 rounded-full ${subjectColors.bar} transition-all duration-500`}
@@ -370,16 +373,15 @@ export default function Practice() {
                           />
                         )}
                       </div>
-                      <span className="text-[10px] text-slate-600 w-7 text-right shrink-0 tabular-nums">
+                      <span className="text-xs text-slate-500 w-8 text-right shrink-0 tabular-nums">
                         {topic.progress > 0 ? `${topic.progress}%` : '–'}
                       </span>
                     </div>
                   </div>
 
-                  {/* Start button */}
                   <button
                     onClick={() => handleTopicSelect(topic)}
-                    className="shrink-0 px-3 sm:px-4 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] text-xs font-semibold text-white/60 hover:border-amber-500/40 hover:bg-amber-500/10 hover:text-amber-400 transition-all active:scale-95"
+                    className="shrink-0 px-4 py-2 rounded-xl border border-white/10 bg-white/[0.04] text-sm font-semibold text-white/70 hover:border-amber-500/50 hover:bg-amber-500/10 hover:text-amber-300 transition-all active:scale-95"
                   >
                     Start
                   </button>
@@ -388,7 +390,7 @@ export default function Practice() {
             })}
           </div>
 
-          <p className="text-center text-[10px] text-slate-700 pb-4">
+          <p className="text-center text-xs text-slate-600 pb-4">
             {allTopics.length} topics · {selectedExamLevel?.toUpperCase().replace('-', ' ')}
           </p>
         </div>
@@ -410,96 +412,89 @@ export default function Practice() {
         onChange={handleFileChange}
       />
 
-      {/* ── Top bar ────────────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 px-4 sm:px-6 py-2.5 border-b border-white/[0.06] shrink-0 bg-[#0D0F14]">
-        <span className="text-xs text-slate-500 shrink-0">
-          Max:&nbsp;<span className="text-white font-semibold">{scenario?.totalMarks}</span>&nbsp;marks
-        </span>
+      {/* ── Top bar ── */}
+      <div className="flex items-center gap-3 px-4 sm:px-6 py-3 border-b border-white/10 shrink-0 bg-[#0D0F14]">
+        <div className="flex items-center gap-2.5 shrink-0">
+          <span className="text-sm text-slate-400">Max:</span>
+          <span className="text-sm font-bold text-white tabular-nums">{scenario?.totalMarks}</span>
+          <span className="text-sm text-slate-400">marks</span>
+        </div>
 
         <div className="flex-1" />
 
         <DifficultyBadge level={scenario?.difficulty || 1} />
 
-        {/* Desktop icon row */}
-        <div className="hidden sm:flex items-center gap-1 ml-1">
-          <div className="w-px h-4 bg-white/[0.08] mr-1" />
-          <button className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] rounded-lg transition-all" title="Notes">
-            <Icon icon="solar:pen-2-linear" width="15" />
+        <div className="hidden sm:flex items-center gap-1 pl-2 border-l border-white/10 ml-1">
+          <button className="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-slate-200 hover:bg-white/[0.07] rounded-xl transition-all" title="Notes">
+            <Icon icon="solar:pen-2-linear" width="17" />
           </button>
-          <button className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] rounded-lg transition-all" title="Save">
-            <Icon icon="solar:bookmark-linear" width="15" />
+          <button className="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-slate-200 hover:bg-white/[0.07] rounded-xl transition-all" title="Save">
+            <Icon icon="solar:bookmark-linear" width="17" />
           </button>
-          <button className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] rounded-lg transition-all" title="Flag">
-            <Icon icon="solar:flag-linear" width="15" />
+          <button className="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-slate-200 hover:bg-white/[0.07] rounded-xl transition-all" title="Flag">
+            <Icon icon="solar:flag-linear" width="17" />
           </button>
         </div>
 
-        {/* Ask Maestro — desktop only */}
         <button
           onClick={() => setIsChatOpen(!isChatOpen)}
-          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-violet-500/20 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-all text-xs font-semibold shrink-0"
+          className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl border border-violet-500/30 bg-violet-500/10 text-violet-300 hover:bg-violet-500/20 hover:border-violet-500/50 transition-all text-sm font-semibold shrink-0"
         >
-          <HugeiconsIcon icon={AiBrain05Icon} size={12} strokeWidth={2} />
+          <HugeiconsIcon icon={AiChat01Icon} size={16} strokeWidth={1.5} />
           Ask Maestro
         </button>
       </div>
 
-      {/* ── Body ───────────────────────────────────────────────────────────────── */}
+      {/* ── Body ── */}
       <div className="flex-1 flex overflow-hidden">
 
-        {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-10 py-5 sm:py-8">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-8">
 
-            {/* Breadcrumb nav */}
-            <div className="flex items-center gap-2 mb-5 flex-wrap">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 mb-6 flex-wrap">
               <button
                 onClick={handleEndPractice}
-                className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-400 transition-colors text-xs font-medium group shrink-0"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-300 transition-colors group shrink-0"
               >
-                <Icon icon="solar:alt-arrow-left-linear" width="11" className="group-hover:-translate-x-0.5 transition-transform" />
+                <Icon icon="solar:alt-arrow-left-linear" width="14" className="group-hover:-translate-x-0.5 transition-transform" />
                 Topics
               </button>
-              <span className="text-white/10 text-xs">›</span>
-              <span className="text-xs text-slate-600 truncate">
-                {selectedTopic?.code} · {scenario?.topic}
-              </span>
+              <span className="text-white/15 text-sm">›</span>
+              <span className="text-sm text-slate-500 truncate">{selectedTopic?.code} · {scenario?.topic}</span>
             </div>
 
-            <div className="border-t border-white/[0.06] mb-6" />
+            <div className="border-t border-white/[0.08] mb-7" />
 
             {aiState !== 'feedback' ? (
-              /* ── QUESTION ─────────────────────────────────────────────────── */
-              <div className="space-y-5">
+              /* ── QUESTION ── */
+              <div className="space-y-6">
                 {scenario?.stem && (
-                  <p className="text-sm text-slate-300 leading-relaxed">{scenario.stem}</p>
+                  <div className="px-4 py-4 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+                    <p className="text-base text-slate-300 leading-relaxed">{scenario.stem}</p>
+                  </div>
                 )}
 
-                <div className="space-y-5">
+                <div className="space-y-6">
                   {scenario?.parts.map((part) => (
-                    <div key={part.label} className="space-y-2">
-                      <div className="flex items-start gap-2">
-                        {/* Part label */}
-                        <span className="text-sm text-amber-400/60 font-semibold shrink-0 w-5 pt-px">({part.label})</span>
-
-                        {/* Question text */}
-                        <p className="text-sm text-slate-300 leading-relaxed flex-1 min-w-0">{part.text}</p>
-
-                        {/* Marks + hint */}
-                        <div className="shrink-0 flex flex-col items-end gap-1 ml-1 pt-px">
-                          <span className="text-[10px] text-slate-600 whitespace-nowrap tabular-nums">[{part.marks}]</span>
+                    <div key={part.label} className="space-y-2.5">
+                      <div className="flex items-start gap-3">
+                        <span className="text-base text-amber-400 font-bold shrink-0 w-6 pt-0.5">({part.label})</span>
+                        <p className="text-base text-slate-200 leading-relaxed flex-1 min-w-0">{part.text}</p>
+                        <div className="shrink-0 flex flex-col items-end gap-1.5 ml-1 pt-0.5">
+                          <span className="text-xs text-slate-500 whitespace-nowrap tabular-nums font-medium">[{part.marks} mark{part.marks > 1 ? 's' : ''}]</span>
                           <button
                             onClick={() => setShowHint(prev => ({ ...prev, [part.label]: !prev[part.label] }))}
-                            className="flex items-center gap-0.5 text-[10px] font-semibold text-violet-400 hover:text-violet-300 transition-colors whitespace-nowrap"
+                            className="flex items-center gap-1 text-xs font-semibold text-violet-400 hover:text-violet-300 transition-colors whitespace-nowrap"
                           >
-                            <Icon icon="solar:magic-stick-3-linear" width="10" />
+                            <Icon icon="solar:magic-stick-3-linear" width="12" />
                             Hint
                           </button>
                         </div>
                       </div>
 
                       {showHint[part.label] && (
-                        <div className="ml-7 px-3 py-2.5 rounded-lg bg-violet-500/[0.08] border border-violet-500/15 text-xs text-violet-300 leading-relaxed">
+                        <div className="ml-9 px-4 py-3 rounded-xl bg-violet-500/[0.08] border border-violet-500/20 text-sm text-violet-300 leading-relaxed">
                           Think about the fundamental formula linking this quantity to the given values. Show each substitution step explicitly.
                         </div>
                       )}
@@ -508,71 +503,74 @@ export default function Practice() {
                 </div>
 
                 {/* Working space */}
-                <div className="mt-6 space-y-2">
-                  <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Your Working</p>
+                <div className="mt-7 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Icon icon="solar:pen-2-linear" width="15" className="text-slate-500" />
+                    <p className="text-sm font-semibold text-slate-400 uppercase tracking-wide">Your Working</p>
+                  </div>
                   <textarea
                     value={solutionText}
                     onChange={(e) => setSolutionText(e.target.value)}
                     placeholder="Write your working and answer here…"
-                    className="w-full min-h-44 sm:min-h-56 text-sm text-slate-300 placeholder:text-white/10 bg-[#12151C] border border-white/[0.06] rounded-xl p-4 resize-none focus:outline-none focus:border-amber-500/30 leading-relaxed transition-colors"
+                    className="w-full min-h-48 sm:min-h-60 text-base text-slate-200 placeholder:text-white/20 bg-[#12151C] border border-white/10 rounded-2xl p-5 resize-none focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20 leading-relaxed transition-all"
                   />
 
-                  {/* Attached file pill */}
                   {selectedFileName && (
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/[0.08] border border-amber-500/15">
-                      <Icon icon="solar:file-bold" width="13" className="text-amber-400 shrink-0" />
-                      <span className="text-xs text-amber-400 truncate min-w-0 flex-1">{selectedFileName}</span>
+                    <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-amber-500/[0.08] border border-amber-500/20">
+                      <Icon icon="solar:file-bold" width="15" className="text-amber-400 shrink-0" />
+                      <span className="text-sm text-amber-300 truncate min-w-0 flex-1 font-medium">{selectedFileName}</span>
                       <button
                         onClick={() => setSelectedFileName('')}
                         className="shrink-0 text-amber-400/50 hover:text-amber-400 transition-colors"
                       >
-                        <Icon icon="solar:close-circle-bold" width="13" />
+                        <Icon icon="solar:close-circle-bold" width="15" />
                       </button>
                     </div>
                   )}
 
                   {error && (
-                    <p className="text-xs text-red-400 flex items-center gap-1.5">
-                      <Icon icon="solar:danger-circle-bold" width="13" />
-                      {error}
-                    </p>
+                    <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-red-500/[0.08] border border-red-500/20">
+                      <Icon icon="solar:danger-circle-bold" width="16" className="text-red-400 mt-0.5 shrink-0" />
+                      <p className="text-sm text-red-300">{error}</p>
+                    </div>
                   )}
                 </div>
               </div>
+
             ) : (
-              /* ── FEEDBACK ─────────────────────────────────────────────────── */
-              <div className="space-y-4">
+              /* ── FEEDBACK ── */
+              <div className="space-y-5">
 
                 {/* Score banner */}
-                <div className={`rounded-xl p-4 sm:p-5 border ${
-                  scorePercent >= 70 ? 'bg-emerald-500/[0.08] border-emerald-500/20' :
-                  scorePercent >= 40 ? 'bg-amber-500/[0.08] border-amber-500/20' :
-                                       'bg-red-500/[0.08] border-red-500/20'
+                <div className={`rounded-2xl p-5 sm:p-6 border ${
+                  scorePercent >= 70 ? 'bg-emerald-500/[0.08] border-emerald-500/25' :
+                  scorePercent >= 40 ? 'bg-amber-500/[0.08] border-amber-500/25' :
+                                       'bg-red-500/[0.08] border-red-500/25'
                 }`}>
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center font-bold shrink-0 border text-sm sm:text-base tabular-nums ${
-                      scorePercent >= 70 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
-                      scorePercent >= 40 ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
-                                           'bg-red-500/20 text-red-400 border-red-500/30'
+                  <div className="flex items-center gap-4">
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center font-bold shrink-0 border-2 text-lg tabular-nums ${
+                      scorePercent >= 70 ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' :
+                      scorePercent >= 40 ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' :
+                                           'bg-red-500/15 text-red-300 border-red-500/30'
                     }`}>
                       {scorePercent}%
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className={`font-bold text-xs sm:text-sm ${
-                        scorePercent >= 70 ? 'text-emerald-400' :
-                        scorePercent >= 40 ? 'text-amber-400' : 'text-red-400'
+                      <p className={`font-bold text-base ${
+                        scorePercent >= 70 ? 'text-emerald-300' :
+                        scorePercent >= 40 ? 'text-amber-300' : 'text-red-300'
                       }`}>
-                        {scorePercent >= 70 ? 'Great work' : scorePercent >= 40 ? 'Good effort' : 'Keep practising'}
+                        {scorePercent >= 70 ? 'Great work!' : scorePercent >= 40 ? 'Good effort' : 'Keep practising'}
                       </p>
-                      <p className="text-xs text-slate-500 mt-0.5 leading-snug">{feedback?.summary}</p>
+                      <p className="text-sm text-slate-400 mt-1 leading-snug">{feedback?.summary}</p>
                     </div>
 
                     <div className="shrink-0 text-right">
-                      <p className="text-xl sm:text-2xl font-bold text-white tabular-nums">
-                        {totalScore}<span className="text-slate-600 text-sm sm:text-base"> / {maxScore}</span>
+                      <p className="text-2xl sm:text-3xl font-bold text-white tabular-nums">
+                        {totalScore}<span className="text-slate-500 text-lg"> / {maxScore}</span>
                       </p>
-                      <p className="text-[10px] uppercase tracking-wide text-slate-600">marks</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mt-0.5">marks</p>
                     </div>
                   </div>
                 </div>
@@ -580,28 +578,28 @@ export default function Practice() {
                 {/* Mark scheme toggle */}
                 <button
                   onClick={() => setShowMarkScheme(!showMarkScheme)}
-                  className="flex items-center gap-2 text-xs font-semibold text-violet-400 hover:text-violet-300 transition-colors"
+                  className="flex items-center gap-2 text-sm font-semibold text-violet-400 hover:text-violet-300 transition-colors"
                 >
-                  <Icon icon={showMarkScheme ? 'solar:eye-closed-linear' : 'solar:eye-linear'} width="13" />
+                  <Icon icon={showMarkScheme ? 'solar:eye-closed-linear' : 'solar:eye-linear'} width="15" />
                   {showMarkScheme ? 'Hide' : 'Show'} mark scheme
                 </button>
 
                 {showMarkScheme && (
-                  <div className="rounded-xl border border-white/[0.06] overflow-hidden text-xs">
-                    <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/[0.06] flex justify-between items-center">
-                      <span className="font-semibold text-slate-400 uppercase tracking-wide text-[10px]">Mark Scheme</span>
-                      <span className="text-slate-600 tabular-nums">{totalScore} / {maxScore}</span>
+                  <div className="rounded-2xl border border-white/10 overflow-hidden">
+                    <div className="px-5 py-3 bg-white/[0.04] border-b border-white/[0.08] flex justify-between items-center">
+                      <span className="text-sm font-semibold text-slate-300 uppercase tracking-wide">Mark Scheme</span>
+                      <span className="text-sm text-slate-500 tabular-nums">{totalScore} / {maxScore}</span>
                     </div>
-                    <div className="divide-y divide-white/[0.04]">
+                    <div className="divide-y divide-white/[0.06]">
                       {(awardedMarks || markScheme).map((item, i) => (
-                        <div key={i} className="flex items-start gap-3 px-4 py-3">
-                          <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 mt-0.5 ${
-                            item.marks > 0 ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/10 text-red-500/50'
+                        <div key={i} className="flex items-start gap-3 px-5 py-3.5">
+                          <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                            item.marks > 0 ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/10 text-red-400/50'
                           }`}>
-                            <Icon icon={item.marks > 0 ? 'solar:check-circle-bold' : 'solar:close-circle-bold'} width="12" />
+                            <Icon icon={item.marks > 0 ? 'solar:check-circle-bold' : 'solar:close-circle-bold'} width="14" />
                           </div>
-                          <p className="flex-1 text-slate-500 leading-snug min-w-0">{item.criterion}</p>
-                          <span className={`font-semibold shrink-0 ml-2 tabular-nums ${item.marks > 0 ? 'text-emerald-400' : 'text-white/10'}`}>
+                          <p className="flex-1 text-sm text-slate-400 leading-snug min-w-0">{item.criterion}</p>
+                          <span className={`text-sm font-bold shrink-0 ml-2 tabular-nums ${item.marks > 0 ? 'text-emerald-400' : 'text-white/15'}`}>
                             {item.marks}/{item.max}
                           </span>
                         </div>
@@ -612,12 +610,15 @@ export default function Practice() {
 
                 {/* Strengths */}
                 {feedback?.strengths?.length > 0 && (
-                  <div className="rounded-xl bg-emerald-500/[0.05] border border-emerald-500/10 p-4">
-                    <p className="text-[10px] font-semibold text-emerald-400/60 uppercase tracking-wide mb-3">What you did well</p>
-                    <ul className="space-y-2">
+                  <div className="rounded-2xl bg-emerald-500/[0.06] border border-emerald-500/15 p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Icon icon="solar:star-bold" width="15" className="text-emerald-400" />
+                      <p className="text-sm font-bold text-emerald-300 uppercase tracking-wide">What you did well</p>
+                    </div>
+                    <ul className="space-y-2.5">
                       {feedback.strengths.map((s, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-slate-400">
-                          <Icon icon="solar:check-circle-linear" width="13" className="text-emerald-500 shrink-0 mt-0.5" />
+                        <li key={i} className="flex items-start gap-2.5 text-sm text-slate-300">
+                          <Icon icon="solar:check-circle-linear" width="15" className="text-emerald-400 shrink-0 mt-0.5" />
                           {s}
                         </li>
                       ))}
@@ -627,12 +628,15 @@ export default function Practice() {
 
                 {/* Improvements */}
                 {feedback?.improvements?.length > 0 && (
-                  <div className="rounded-xl bg-amber-500/[0.05] border border-amber-500/10 p-4">
-                    <p className="text-[10px] font-semibold text-amber-400/60 uppercase tracking-wide mb-3">Improve next time</p>
-                    <ul className="space-y-2">
+                  <div className="rounded-2xl bg-amber-500/[0.06] border border-amber-500/15 p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Icon icon="solar:chart-2-bold" width="15" className="text-amber-400" />
+                      <p className="text-sm font-bold text-amber-300 uppercase tracking-wide">Improve next time</p>
+                    </div>
+                    <ul className="space-y-2.5">
                       {feedback.improvements.map((s, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-slate-400">
-                          <Icon icon="solar:arrow-up-circle-linear" width="13" className="text-amber-500 shrink-0 mt-0.5" />
+                        <li key={i} className="flex items-start gap-2.5 text-sm text-slate-300">
+                          <Icon icon="solar:arrow-up-circle-linear" width="15" className="text-amber-400 shrink-0 mt-0.5" />
                           {s}
                         </li>
                       ))}
@@ -642,9 +646,12 @@ export default function Practice() {
 
                 {/* Model answer */}
                 {feedback?.modelAnswer && (
-                  <div className="rounded-xl bg-[#12151C] border border-white/[0.06] p-4">
-                    <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide mb-2">Model answer outline</p>
-                    <p className="text-xs text-slate-500 leading-relaxed">{feedback.modelAnswer}</p>
+                  <div className="rounded-2xl bg-[#12151C] border border-white/10 p-5">
+                    <div className="flex items-center gap-2 mb-2.5">
+                      <Icon icon="solar:document-text-linear" width="15" className="text-slate-400" />
+                      <p className="text-sm font-bold text-slate-400 uppercase tracking-wide">Model answer outline</p>
+                    </div>
+                    <p className="text-sm text-slate-400 leading-relaxed">{feedback.modelAnswer}</p>
                   </div>
                 )}
 
@@ -654,28 +661,26 @@ export default function Practice() {
           </div>
         </div>
 
-        {/* ── Right sidebar — desktop only ──────────────────────────────────── */}
+        {/* ── Right sidebar (desktop) ── */}
         {aiState !== 'feedback' && (
-          <div className="hidden sm:flex flex-col items-center gap-3 px-2 py-5 border-l border-white/[0.06] bg-[#0D0F14] shrink-0 w-12">
+          <div className="hidden sm:flex flex-col items-center gap-3 px-2 py-6 border-l border-white/10 bg-[#0D0F14] shrink-0 w-14">
             <button
-              className="w-8 h-8 rounded-lg border border-white/[0.06] bg-[#12151C] flex items-center justify-center text-slate-600 hover:text-slate-300 hover:border-white/20 transition-all"
+              className="w-10 h-10 rounded-xl border border-white/10 bg-[#12151C] flex items-center justify-center text-slate-500 hover:text-slate-200 hover:border-white/20 transition-all"
               title="Scan / take photo"
             >
-              <Icon icon="solar:camera-linear" width="16" />
+              <Icon icon="solar:camera-linear" width="18" />
             </button>
-
             <button
               onClick={() => inputFileRef.current?.click()}
-              className="w-8 h-8 rounded-lg border border-white/[0.06] bg-[#12151C] flex items-center justify-center text-slate-600 hover:text-slate-300 hover:border-white/20 transition-all"
+              className="w-10 h-10 rounded-xl border border-white/10 bg-[#12151C] flex items-center justify-center text-slate-500 hover:text-slate-200 hover:border-white/20 transition-all"
               title="Upload working"
             >
-              <Icon icon="solar:file-upload-linear" width="16" />
+              <Icon icon="solar:file-upload-linear" width="18" />
             </button>
-
             {selectedFileName && (
-              <div className="flex flex-col items-center gap-0.5">
-                <Icon icon="solar:file-bold" width="12" className="text-amber-400" />
-                <span className="text-[7px] text-amber-400 text-center leading-tight break-all px-0.5">
+              <div className="flex flex-col items-center gap-0.5 px-0.5">
+                <Icon icon="solar:file-bold" width="13" className="text-amber-400" />
+                <span className="text-[8px] text-amber-400 text-center leading-tight break-all">
                   {selectedFileName.length > 7 ? selectedFileName.slice(0, 6) + '…' : selectedFileName}
                 </span>
               </div>
@@ -684,35 +689,33 @@ export default function Practice() {
         )}
       </div>
 
-      {/* ── Bottom bar ─────────────────────────────────────────────────────────── */}
-      <div className="shrink-0 flex items-center justify-between gap-2 px-4 sm:px-6 py-3 border-t border-white/[0.06] bg-[#0D0F14]">
+      {/* ── Bottom bar ── */}
+      <div className="shrink-0 flex items-center justify-between gap-3 px-4 sm:px-6 py-3.5 border-t border-white/10 bg-[#0D0F14]">
 
         <button
           onClick={handleEndPractice}
-          className="text-xs font-semibold text-red-500/60 hover:text-red-400 transition-colors shrink-0"
+          className="text-sm font-semibold text-red-400/70 hover:text-red-400 transition-colors shrink-0"
         >
           End practice
         </button>
 
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Mobile-only: upload */}
+        <div className="flex items-center gap-2">
           {aiState !== 'feedback' && (
             <button
               onClick={() => inputFileRef.current?.click()}
-              className="sm:hidden w-9 h-9 rounded-lg border border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-slate-300 active:scale-95 transition-all shrink-0"
+              className="sm:hidden w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center text-slate-400 hover:text-slate-200 active:scale-95 transition-all shrink-0"
               title="Upload working"
             >
-              <Icon icon="solar:file-upload-linear" width="16" />
+              <Icon icon="solar:file-upload-linear" width="17" />
             </button>
           )}
 
-          {/* Mobile-only: Maestro */}
           <button
             onClick={() => setIsChatOpen(!isChatOpen)}
-            className="sm:hidden w-9 h-9 rounded-lg border border-violet-500/20 bg-violet-500/10 flex items-center justify-center text-violet-400 active:scale-95 transition-all shrink-0"
+            className="sm:hidden w-10 h-10 rounded-xl border border-violet-500/30 bg-violet-500/10 flex items-center justify-center text-violet-300 active:scale-95 transition-all shrink-0"
             title="Ask Maestro"
           >
-            <HugeiconsIcon icon={AiBrain05Icon} size={16} strokeWidth={2} />
+            <HugeiconsIcon icon={AiChat01Icon} size={18} strokeWidth={1.5} />
           </button>
 
           {aiState === 'feedback' ? (
@@ -725,13 +728,13 @@ export default function Practice() {
                   setSolutionText('');
                   setShowMarkScheme(false);
                 }}
-                className="px-3 sm:px-4 py-2 rounded-lg border border-white/[0.08] bg-white/[0.04] text-xs font-semibold text-slate-400 hover:text-white hover:border-white/20 transition-all whitespace-nowrap"
+                className="px-4 sm:px-5 py-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-sm font-semibold text-slate-300 hover:text-white hover:border-white/20 transition-all whitespace-nowrap"
               >
                 Try again
               </button>
               <button
                 onClick={handleEndPractice}
-                className="px-4 sm:px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-amber-500/20"
+                className="px-5 sm:px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-sm font-bold transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-amber-500/25"
               >
                 Next →
               </button>
@@ -740,18 +743,18 @@ export default function Practice() {
             <button
               onClick={handleSubmit}
               disabled={aiState !== 'idle'}
-              className="px-4 sm:px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:bg-white/[0.06] disabled:text-white/20 disabled:cursor-not-allowed text-black text-xs font-semibold transition-all flex items-center gap-1.5 active:scale-95 whitespace-nowrap shadow-lg shadow-amber-500/20"
+              className="px-5 sm:px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:bg-white/[0.07] disabled:text-white/20 disabled:cursor-not-allowed text-black text-sm font-bold transition-all flex items-center gap-2 active:scale-95 whitespace-nowrap shadow-lg shadow-amber-500/25"
             >
               {aiState === 'analyzing' ? (
                 <>
-                  <Icon icon="solar:loader-bold" width="12" className="animate-spin shrink-0" />
+                  <Icon icon="solar:loader-bold" width="14" className="animate-spin shrink-0" />
                   <span>Marking…</span>
                 </>
               ) : (
                 <>
                   <span className="hidden sm:inline">Submit for grading</span>
                   <span className="sm:hidden">Submit</span>
-                  <span>&nbsp;→</span>
+                  <span>→</span>
                 </>
               )}
             </button>
