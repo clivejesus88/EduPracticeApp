@@ -438,9 +438,7 @@ export default function Practice() {
           </button>
         </div>
 
-        <div className="hidden sm:block">
-          <FocusAudio />
-        </div>
+        <FocusAudio />
 
         <button
           onClick={() => setIsChatOpen(!isChatOpen)}
@@ -493,7 +491,7 @@ export default function Practice() {
                             onClick={() => setShowHint(prev => ({ ...prev, [part.label]: !prev[part.label] }))}
                             className="flex items-center gap-1 text-xs font-semibold text-violet-400 hover:text-violet-300 transition-colors whitespace-nowrap"
                           >
-                            <Icon icon="solar:magic-stick-3-linear" width="12" />
+                            <Icon icon="solar:magic-stick-2-linear" width="12" />
                             Hint
                           </button>
                         </div>
