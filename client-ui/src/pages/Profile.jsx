@@ -216,7 +216,34 @@ export default function Profile() {
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white mb-1 sm:mb-2 break-words">{t('profile.myProfile')}</h1>
             <p className="text-xs sm:text-sm text-slate-400">Manage your account settings and learning preferences</p>
           </div>
-          {!isEditing && (
+          {isEditing ? (
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => {
+                  setFormData({
+                    fullName: user.fullName,
+                    email: user.email,
+                    schoolName: user.schoolName,
+                    examLevel: user.examLevel,
+                    dailyGoal: user.dailyGoal,
+                    notifications: user.notifications,
+                    twoFactor: user.twoFactor,
+                  });
+                  setIsEditing(false);
+                }}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 border border-white/15 text-slate-300 hover:text-white hover:bg-white/5 px-4 sm:px-5 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all active:scale-95 min-h-[44px] sm:min-h-[40px]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all active:scale-95 min-h-[44px] sm:min-h-[40px] shrink-0"
+              >
+                <Icon icon="solar:check-circle-linear" width="16" style={{ strokeWidth: 1 }} />
+                <span>Save</span>
+              </button>
+            </div>
+          ) : (
             <button
               onClick={() => setIsEditing(true)}
               className="w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all active:scale-95 min-h-[44px] sm:min-h-[40px] shrink-0"

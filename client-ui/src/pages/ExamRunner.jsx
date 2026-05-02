@@ -62,6 +62,7 @@ export default function ExamRunner() {
   const [secondsLeft, setSecondsLeft] = useState(exam?.durationSec || 0);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showOverview, setShowOverview] = useState(false);
+  const [showAbandonModal, setShowAbandonModal] = useState(false);
   const startedAtRef = useRef(Date.now());
 
   // Restore draft if user refreshes mid-exam.
@@ -180,11 +181,7 @@ export default function ExamRunner() {
     navigate(`/exam/results/${id}`, { replace: true });
   }
 
-  const handleAbandon = () => {
-    if (window.confirm('Leave this exam? Your progress will be saved so you can resume later.')) {
-      navigate('/mock-exams');
-    }
-  };
+  const handleAbandon = () => setShowAbandonModal(true);
 
   return (
     <div className="min-h-screen bg-[#0B1120] text-white flex flex-col">
@@ -419,6 +416,37 @@ export default function ExamRunner() {
             >
               Submit exam
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Abandon confirm modal */}
+      {showAbandonModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-[#111827] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-6 border border-white/10">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <Icon icon="solar:exit-linear" width="20" className="text-amber-400" />
+              </div>
+              <h3 className="text-xl font-bold">Leave this exam?</h3>
+            </div>
+            <p className="text-sm text-slate-400 mb-5">
+              Your progress has been auto-saved. You can resume from where you left off by returning to Mock Exams.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowAbandonModal(false)}
+                className="flex-1 px-4 py-2.5 border border-white/10 text-slate-200 rounded-lg font-semibold hover:bg-white/5 transition-all"
+              >
+                Keep going
+              </button>
+              <button
+                onClick={() => { setShowAbandonModal(false); navigate('/mock-exams'); }}
+                className="flex-1 px-4 py-2.5 bg-amber-500/15 border border-amber-500/30 text-amber-300 rounded-lg font-semibold hover:bg-amber-500/25 transition-all"
+              >
+                Leave exam
+              </button>
+            </div>
           </div>
         </div>
       )}

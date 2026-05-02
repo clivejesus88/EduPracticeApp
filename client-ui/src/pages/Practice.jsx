@@ -31,6 +31,62 @@ const AVATAR_COLORS = [
   'bg-teal-600', 'bg-orange-600', 'bg-fuchsia-600', 'bg-lime-600',
 ];
 
+function WorkboardNotesButton({ scenario }) {
+  const [flagged, setFlagged] = useState(() => {
+    if (!scenario?.id) return false;
+    try { return JSON.parse(localStorage.getItem(`flag_${scenario.id}`) || 'false'); }
+    catch { return false; }
+  });
+  const [saved, setSaved] = useState(() => {
+    if (!scenario?.id) return false;
+    try { return JSON.parse(localStorage.getItem(`save_${scenario.id}`) || 'false'); }
+    catch { return false; }
+  });
+
+  const toggleFlag = () => {
+    const next = !flagged;
+    setFlagged(next);
+    if (scenario?.id) {
+      try { localStorage.setItem(`flag_${scenario.id}`, JSON.stringify(next)); } catch {}
+    }
+  };
+
+  const toggleSave = () => {
+    const next = !saved;
+    setSaved(next);
+    if (scenario?.id) {
+      try { localStorage.setItem(`save_${scenario.id}`, JSON.stringify(next)); } catch {}
+    }
+  };
+
+  return (
+    <>
+      <button
+        onClick={toggleSave}
+        className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all ${
+          saved
+            ? 'text-[#f99c00] bg-[#f99c00]/10 border border-[#f99c00]/30'
+            : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.07] border border-transparent'
+        }`}
+        title={saved ? 'Saved' : 'Save question'}
+      >
+        <Icon icon={saved ? 'solar:bookmark-bold' : 'solar:bookmark-linear'} width="17" />
+      </button>
+      <button
+        onClick={toggleFlag}
+        className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all ${
+          flagged
+            ? 'text-amber-300 bg-amber-500/10 border border-amber-500/30'
+            : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.07] border border-transparent'
+        }`}
+        title={flagged ? 'Flagged for review' : 'Flag for review'}
+      >
+        <Icon icon={flagged ? 'solar:flag-bold' : 'solar:flag-linear'} width="17" />
+      </button>
+    </>
+  );
+}
+
 function DifficultyBadge({ level = 1 }) {
   const label = level === 1 ? 'Easy' : level === 2 ? 'Medium' : 'Hard';
   const dotColor = level === 1 ? 'bg-emerald-400' : level === 2 ? 'bg-amber-400' : 'bg-red-400';
@@ -398,15 +454,7 @@ export default function Practice() {
         <DifficultyBadge level={scenario?.difficulty || 1} />
 
         <div className="hidden sm:flex items-center gap-1 pl-2 border-l border-white/10 ml-1">
-          <button className="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-slate-200 hover:bg-white/[0.07] rounded-xl transition-all" title="Notes">
-            <Icon icon="solar:pen-2-linear" width="17" />
-          </button>
-          <button className="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-slate-200 hover:bg-white/[0.07] rounded-xl transition-all" title="Save">
-            <Icon icon="solar:bookmark-linear" width="17" />
-          </button>
-          <button className="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-slate-200 hover:bg-white/[0.07] rounded-xl transition-all" title="Flag">
-            <Icon icon="solar:flag-linear" width="17" />
-          </button>
+          <WorkboardNotesButton scenario={scenario} />
         </div>
 
         <FocusAudio />

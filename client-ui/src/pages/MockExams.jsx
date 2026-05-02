@@ -183,7 +183,8 @@ export default function MockExams() {
                     <button
                       onClick={() => {
                         clearExamDraft();
-                        window.location.reload();
+                        setConfirmExam(null);
+                        window.location.href = window.location.href;
                       }}
                       className="px-5 py-3 border border-white/10 text-slate-300 rounded-lg font-semibold hover:bg-white/5"
                     >

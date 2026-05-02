@@ -8,6 +8,42 @@ import useAnalyticsData from '../hooks/useAnalyticsData';
 
 const DAILY_GOAL = 30;
 
+function RemindersToggle() {
+  const [enabled, setEnabled] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('eduPractice_reminders') ?? 'true'); }
+    catch { return true; }
+  });
+
+  const toggle = () => {
+    const next = !enabled;
+    setEnabled(next);
+    try { localStorage.setItem('eduPractice_reminders', JSON.stringify(next)); } catch {}
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 flex items-center justify-between hover:border-white/10 transition-all">
+      <div>
+        <h4 className="text-sm font-semibold text-white mb-1">Study Reminders</h4>
+        <p className="text-xs text-slate-500">Daily practice alerts</p>
+      </div>
+      <button
+        role="switch"
+        aria-checked={enabled}
+        onClick={toggle}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full border transition-colors duration-200 shrink-0 ${
+          enabled ? 'bg-[#f99c00] border-[#f99c00]' : 'bg-slate-700 border-slate-600'
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
+            enabled ? 'translate-x-6' : 'translate-x-1'
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
 export default function DashboardUI() {
   const { t, translate } = useLocalization();
   const { getFirstName } = useUser();
@@ -263,25 +299,7 @@ export default function DashboardUI() {
               </div>
 
               {/* Study Reminders Toggle */}
-              <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-xl p-6 flex items-center justify-between hover:border-white/10 transition-all -white/5">
-                <div>
-                  <h4 className="text-sm font-semibold text-white mb-1">{t('dashboard.studyReminders')}</h4>
-                  <p className="text-xs text-slate-500">{t('dashboard.dailyPracticeAlerts')}</p>
-                </div>
-                <div className="relative inline-block w-11 h-6 align-middle select-none">
-                  <input
-                    type="checkbox"
-                    name="toggle"
-                    id="toggle"
-                    defaultChecked
-                    className="absolute block w-6 h-6 rounded-full bg-white border-2 border-slate-600 appearance-none cursor-pointer z-10 transition-all duration-300 checked:bg-[#f99c00] checked:border-[#f99c00] checked:translate-x-5"
-                  />
-                  <label
-                    htmlFor="toggle"
-                    className="block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"
-                  />
-                </div>
-              </div>
+              <RemindersToggle />
             </div>
           </div>
         </div>

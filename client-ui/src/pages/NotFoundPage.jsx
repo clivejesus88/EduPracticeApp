@@ -26,12 +26,6 @@ export default function NotFoundPage() {
       className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center px-6"
       style={{ background: "#0B1120", fontFamily: "'DM Sans', sans-serif" }}
     >
-      {/* ── Google Font ── */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap"
-        rel="stylesheet"
-      />
-
       {/* ── Ambient grid ── */}
       <div
         className="pointer-events-none absolute inset-0"
@@ -64,7 +58,7 @@ export default function NotFoundPage() {
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/5">
         <div className="h-full bg-[#f99c00]" style={{ width: "38%" }} />
         <div
-          className="absolute top-0 h-0.5 w-24 bg-linear-to-r from-transparent to-[#f99c00]"
+          className="absolute top-0 h-0.5 w-24 bg-gradient-to-r from-transparent to-[#f99c00]"
           style={{ left: "calc(38% - 6rem)", filter: "blur(3px)" }}
         />
       </div>

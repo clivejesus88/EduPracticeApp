@@ -39,3 +39,15 @@ A React + Vite + TypeScript single-page app for the EduPractice study platform. 
 - Practice page redesigned with examdojo-inspired clean look: bigger headlines, generous spacing, single-column → multi-column responsive grids, pill-shaped CTAs, consistent rounded card system, mobile-friendly workboard with sticky-safe bottom padding.
 - Workboard reserves right-side room for the chat sidebar only when chat is open (`lg:pr-[400px]` conditionally) instead of an invalid hard-coded class.
 - Chatbot icon switched from `solar:magic-stick-3-bold` to Hugeicons `AiBrain05Icon` (free tier) in `ChatInterface.jsx` (avatar + header) and `Practice.jsx` (floating chat button + "Ask Maestro" CTA). Uses `@hugeicons/react` + `@hugeicons/core-free-icons`.
+
+## Bug Fixes & UX Improvements (Comprehensive Audit Pass)
+- **Rate limiting system**: `src/utils/rateLimiter.js` (sliding-window, localStorage) + `src/hooks/useRateLimit.js` hook. Applied to Login (5/15min), Signup (3/hr), Admin PinGate (5/30min), ChatInterface (12/5min), AudioOverview (4/10min).
+- **Layout.jsx**: Settings gear button now navigates to `/profile`. Broken mobile `<a href="#">` replaced with a functional search icon button (opens SearchModal). Admin Panel link added to mobile slide-in sidebar. `refreshNotifs` added to `useEffect` dependency array.
+- **DashboardUI.jsx**: Broken CSS checkbox hack toggle replaced with proper controlled `RemindersToggle` component using React state + localStorage persistence (`eduPractice_reminders`).
+- **Practice.jsx workboard**: Dead Notes/Save/Flag toolbar buttons replaced with `WorkboardNotesButton` — a functional Save (bookmark) and Flag pair, both persisted to localStorage per-scenario.
+- **Admin.jsx PinGate**: Fixed stale state bug — after `pinRL.record()`, accurate remaining count computed as `pinRL.remaining - 1` instead of reading the not-yet-updated hook state.
+- **ExamRunner.jsx**: Replaced `window.confirm()` abandon dialog with a proper custom modal (matching the existing submit modal design pattern) — `showAbandonModal` state + amber-themed "Leave exam" / "Keep going" buttons.
+- **Profile.jsx**: Added a visible Cancel + Save button pair in the page header when `isEditing === true`. Cancel resets form to current user state without saving.
+- **NotFoundPage.jsx**: Removed inline `<link>` Google Fonts tag from JSX body (invalid in React). Fixed invalid Tailwind v4 class `bg-linear-to-r` → `bg-gradient-to-r`.
+- **index.html**: Added Google Fonts preconnect + stylesheet link for DM Sans and Space Mono (used by NotFoundPage).
+- **MockExams.jsx**: Replaced `window.location.reload()` in the Discard Draft button with a proper state reset.

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { useUser } from '../contexts/UserContext';
@@ -11,6 +11,7 @@ import { deriveAnalytics } from '../data/examBank';
 
 export default function Layout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useLocalization();
   const { user } = useUser();
   const { unreadCount, markAllRead, refresh: refreshNotifs } = useNotifications();
@@ -58,7 +59,7 @@ export default function Layout() {
     lastScrollY.current = 0;
     setIsNotifOpen(false);
     refreshNotifs();
-  }, [location.pathname]);
+  }, [location.pathname, refreshNotifs]);
 
   // Keyboard shortcut for search (Cmd+K or Ctrl+K)
   useEffect(() => {
@@ -208,11 +209,22 @@ export default function Layout() {
               />
             </div>
 
-            <button className="hidden md:flex w-11 h-11 items-center justify-center rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
+            <button
+              onClick={() => navigate('/profile')}
+              className="hidden md:flex w-11 h-11 items-center justify-center rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
+              aria-label="Settings"
+              title="Profile & Settings"
+            >
               <Icon icon="solar:settings-linear" width="24" height="24" style={{ strokeWidth: 1 }} />
             </button>
 
-            <a href="#" className="md:hidden w-10 h-10 rounded-full border border-white/10 overflow-hidden block hover:border-[#f99c00]/50 transition-all"></a>
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="md:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
+              aria-label="Search"
+            >
+              <Icon icon="solar:magnifier-linear" width="22" height="22" style={{ strokeWidth: 1 }} />
+            </button>
           </div>
         </header>
 
@@ -286,6 +298,14 @@ export default function Layout() {
           <Link to="/practice?subject=mathematics" onClick={() => setIsMobileSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
             <div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
             <span className="text-sm">{t('subjects.mathematics')}</span>
+          </Link>
+
+          <div className="pt-6 pb-2 px-3">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Admin</p>
+          </div>
+          <Link to="/admin" onClick={() => setIsMobileSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
+            <Icon icon="solar:shield-linear" width="20" height="20" className="text-slate-500 group-hover:text-amber-400 transition-colors" style={{ strokeWidth: 1 }} />
+            <span className="text-sm">Admin Panel</span>
           </Link>
         </nav>
 

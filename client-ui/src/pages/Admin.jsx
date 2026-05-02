@@ -62,10 +62,12 @@ function PinGate({ onVerified }) {
       onVerified();
     } else {
       pinRL.record();
-      const fresh = pinRL.blocked;
-      setErr(fresh
-        ? pinRL.message
-        : `Incorrect PIN. ${pinRL.remaining > 0 ? `${pinRL.remaining} attempt${pinRL.remaining !== 1 ? 's' : ''} remaining.` : ''}`
+      // remaining before this attempt minus 1 = accurate remaining after recording
+      const remainingAfter = Math.max(0, pinRL.remaining - 1);
+      const willBeBlocked = remainingAfter === 0;
+      setErr(willBeBlocked
+        ? 'Too many incorrect attempts. Access is temporarily locked.'
+        : `Incorrect PIN. ${remainingAfter} attempt${remainingAfter !== 1 ? 's' : ''} remaining.`
       );
       setPin('');
       inputRef.current?.focus();
