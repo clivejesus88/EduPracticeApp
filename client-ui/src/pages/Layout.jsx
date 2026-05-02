@@ -131,6 +131,14 @@ export default function Layout() {
             <div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
             <span className="text-sm">{t('subjects.mathematics')}</span>
           </Link>
+
+          <div className="pt-6 pb-2 px-3">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Admin</p>
+          </div>
+          <Link to="/admin" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all group font-medium ${location.pathname === '/admin' ? 'bg-amber-500/15 text-amber-400' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
+            <Icon icon="solar:shield-bold" width="20" height="20" className="group-hover:text-white transition-colors" />
+            <span className="text-sm">Admin Panel</span>
+          </Link>
         </nav>
 
         {/* Bottom User Profile */}

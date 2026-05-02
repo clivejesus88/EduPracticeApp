@@ -2,6 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import DashboardUI from './pages/DashboardUI';
+import Admin from './pages/Admin';
 import Practice from './pages/Practice';
 import Analytics from './pages/Analytics';
 import MockExams from './pages/MockExams';
@@ -48,6 +49,7 @@ function App() {
                   <Route path="/analytics" element={<Analytics />} />
                   <Route path="/mock-exams" element={<MockExams />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/admin" element={<Admin />} />
                 </Route>
                 {/* Distraction-free exam routes (no sidebar) */}
                 <Route path="/exam/run" element={<ExamRunner />} />

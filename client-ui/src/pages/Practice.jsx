@@ -4,6 +4,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { AiChat01Icon } from '@hugeicons/core-free-icons';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { examLevels, physicsTopics, mathematicsTopics } from '../data/examStructure';
+import { pickScenarioForTopic } from '../data/practiceScenarios';
 import ChatInterface from '../components/ChatInterface';
 import AudioOverview from '../components/AudioOverview';
 import MarkdownText from '../components/MarkdownText';
@@ -18,58 +19,6 @@ const loadDraft = () => {
 };
 const saveDraft = (d) => localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
 
-const SCENARIOS = {
-  physics: {
-    topic: 'Energy & Power',
-    difficulty: 2,
-    totalMarks: 10,
-    stem: 'A recently excavated spherical marble artifact has diameter of 2.4 × 10³ mm',
-    parts: [
-      { label: 'a', text: 'Write down the radius of the artifact.', marks: 1 },
-      { label: 'b', text: 'Murchison Falls drops water through a height of 43 m. If 200 kg of water passes over the falls each second, derive the expression for the power available and calculate the maximum power output assuming g = 10 m/s².', marks: 4 },
-      { label: 'c', text: 'Calculate the maximum theoretical power output. Take g = 10 m s⁻².', marks: 3 },
-      { label: 'd', text: 'Suggest two reasons why the actual power output of a hydroelectric turbine at this location would be less than your answer in (c).', marks: 2 },
-    ],
-  },
-  mathematics: {
-    topic: 'Calculus Applications',
-    difficulty: 3,
-    totalMarks: 10,
-    stem: 'A water tank in Mbarara is filled at a rate r(t) = 6t² + 2 litres per minute, where t is measured in minutes.',
-    parts: [
-      { label: 'a', text: 'Write down the definite integral that represents the total volume added in the first 5 minutes.', marks: 2 },
-      { label: 'b', text: 'Evaluate the integral from part (a), showing all working.', marks: 4 },
-      { label: 'c', text: 'Determine the rate of change of r(t) at t = 3 minutes and interpret your answer in context.', marks: 2 },
-      { label: 'd', text: 'Sketch the graph of r(t) for 0 ≤ t ≤ 5, labelling all key features.', marks: 2 },
-    ],
-  },
-};
-
-const MARK_SCHEME = {
-  physics: [
-    { criterion: 'Identifies gravitational potential energy', marks: 1, max: 1 },
-    { criterion: 'States P = ΔE/Δt', marks: 1, max: 1 },
-    { criterion: 'Substitutes ΔE = mgh correctly', marks: 1, max: 1 },
-    { criterion: 'Derives P = ṁgh with units verified', marks: 1, max: 1 },
-    { criterion: 'Correct substitution of ṁ = 200, g = 10, h = 43', marks: 1, max: 1 },
-    { criterion: 'P = 86 000 W / 86 kW stated', marks: 1, max: 1 },
-    { criterion: 'Correct unit stated (W or kW)', marks: 1, max: 1 },
-    { criterion: 'Valid reason 1 (e.g. friction / turbine inefficiency)', marks: 1, max: 1 },
-    { criterion: 'Valid reason 2 (e.g. heat loss / water splashing)', marks: 1, max: 1 },
-    { criterion: 'Both reasons are distinct and scientifically valid', marks: 1, max: 1 },
-  ],
-  mathematics: [
-    { criterion: 'Correct integral limits (0 to 5)', marks: 1, max: 1 },
-    { criterion: 'Correct integrand ∫(6t² + 2) dt written', marks: 1, max: 1 },
-    { criterion: 'Antiderivative: 2t³ + 2t', marks: 2, max: 2 },
-    { criterion: 'Correct substitution of limits', marks: 1, max: 1 },
-    { criterion: 'Final answer 260 litres', marks: 1, max: 1 },
-    { criterion: 'Correct derivative r′(t) = 12t', marks: 1, max: 1 },
-    { criterion: 'r′(3) = 36 with units and contextual interpretation', marks: 1, max: 1 },
-    { criterion: 'Correct shape (increasing, concave up)', marks: 1, max: 1 },
-    { criterion: 'Labelled axes with r(0) = 2 and r(5) = 152 shown', marks: 1, max: 1 },
-  ],
-};
 
 const SUBJECT_COLORS = {
   physics:     { bar: 'bg-blue-500',  badge: 'text-blue-300 bg-blue-500/15 border-blue-500/30' },
@@ -126,8 +75,11 @@ export default function Practice() {
   const inputFileRef       = useRef(null);
   const workboardStartedAt = useRef(Date.now());
 
-  const scenario   = useMemo(() => selectedSubject ? SCENARIOS[selectedSubject] : null,  [selectedSubject]);
-  const markScheme = useMemo(() => selectedSubject ? MARK_SCHEME[selectedSubject] : [],  [selectedSubject]);
+  const scenario   = useMemo(() => {
+    if (!selectedSubject) return null;
+    return pickScenarioForTopic(selectedSubject, selectedTopic?.name || '');
+  }, [selectedSubject, selectedTopic]);
+  const markScheme = useMemo(() => scenario?.markScheme || [], [scenario]);
   const totalScore   = awardedMarks ? awardedMarks.reduce((s, m) => s + m.marks, 0) : 0;
   const maxScore     = markScheme.reduce((s, m) => s + m.max, 0);
   const scorePercent = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
