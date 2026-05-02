@@ -4,8 +4,7 @@ import { Icon } from '@iconify/react';
 import { buildExam, scoreExam, saveAttempt } from '../data/examBank';
 import { trackExamStart, trackExamCompletion } from '../utils/analyticsTracker';
 import FocusAudio from '../components/FocusAudio';
-
-const DRAFT_KEY = 'eduPractice_examDraft';
+import { clearExamDraft, loadExamDraft, saveExamDraft } from '../services/examDraftService';
 
 function parseDurationToSeconds(str) {
   if (!str) return 30 * 60;
@@ -30,11 +29,16 @@ function formatTime(secs) {
 export default function ExamRunner() {
   const navigate = useNavigate();
   const location = useLocation();
-  const config = location.state?.config;
+  const incomingConfig = location.state?.config;
+  const existingDraft = useMemo(() => loadExamDraft(), []);
+  const config = incomingConfig || existingDraft?.config || null;
 
   // Build the question set once on mount, based on the incoming config.
   const exam = useMemo(() => {
     if (!config) return null;
+    if (!incomingConfig && existingDraft?.exam) {
+      return existingDraft.exam;
+    }
     const questions = buildExam({
       subject: config.subject,
       level: config.level,
@@ -50,7 +54,7 @@ export default function ExamRunner() {
       durationSec: parseDurationToSeconds(config.duration ?? config.count * 90),
       questions,
     };
-  }, [config]);
+  }, [config, incomingConfig, existingDraft]);
 
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -63,21 +67,14 @@ export default function ExamRunner() {
   // Restore draft if user refreshes mid-exam.
   useEffect(() => {
     if (!exam) return;
-    const draft = localStorage.getItem(DRAFT_KEY);
-    if (draft) {
-      try {
-        const d = JSON.parse(draft);
-        if (d.examTitle === exam.title && Array.isArray(d.questionIds) &&
-            d.questionIds.length === exam.questions.length &&
-            d.questionIds.every((id, i) => id === exam.questions[i].id)) {
-          setAnswers(d.answers || {});
-          setFlagged(d.flagged || {});
-          if (typeof d.secondsLeft === 'number') setSecondsLeft(d.secondsLeft);
-          if (typeof d.current === 'number') setCurrent(d.current);
-          startedAtRef.current = d.startedAt || Date.now();
-          return;
-        }
-      } catch {/* ignore */}
+    const draft = loadExamDraft();
+    if (draft && draft.exam?.title === exam.title) {
+      setAnswers(draft.answers || {});
+      setFlagged(draft.flagged || {});
+      if (typeof draft.secondsLeft === 'number') setSecondsLeft(draft.secondsLeft);
+      if (typeof draft.current === 'number') setCurrent(draft.current);
+      startedAtRef.current = draft.startedAt || Date.now();
+      return;
     }
     setSecondsLeft(exam.durationSec);
     startedAtRef.current = Date.now();
@@ -87,14 +84,13 @@ export default function ExamRunner() {
   // Persist draft whenever state changes.
   useEffect(() => {
     if (!exam) return;
-    const draft = {
-      examTitle: exam.title,
-      questionIds: exam.questions.map(q => q.id),
+    saveExamDraft({
+      config,
+      exam,
       answers, flagged, secondsLeft, current,
       startedAt: startedAtRef.current,
-    };
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-  }, [exam, answers, flagged, secondsLeft, current]);
+    });
+  }, [exam, config, answers, flagged, secondsLeft, current]);
 
   // Countdown timer
   useEffect(() => {
@@ -180,13 +176,12 @@ export default function ExamRunner() {
     };
     saveAttempt(attempt);
     trackExamCompletion(exam.title, result.percentage, durationMin);
-    localStorage.removeItem(DRAFT_KEY);
+    clearExamDraft();
     navigate(`/exam/results/${id}`, { replace: true });
   }
 
   const handleAbandon = () => {
-    if (window.confirm('Leave this exam? Your progress will be cleared.')) {
-      localStorage.removeItem(DRAFT_KEY);
+    if (window.confirm('Leave this exam? Your progress will be saved so you can resume later.')) {
       navigate('/mock-exams');
     }
   };

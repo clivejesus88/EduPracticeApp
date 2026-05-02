@@ -1,23 +1,26 @@
-// components/ProtectedRoute.jsx
 import { useEffect, useState } from 'react';
-import { Outlet, useSearchParams } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { Icon } from '@iconify/react';
 
-// ─── Auth Loader — Linear/Stripe style with completion sequence ───────────────
+/**
+ * AuthLoader Component
+ * Smooth loading animation while authentication state is being verified
+ */
 function AuthLoader({ onDone }) {
-  const [progress, setProgress]     = useState(0);
+  const [progress, setProgress] = useState(0);
   const [completing, setCompleting] = useState(false);
-  const [fadeOut, setFadeOut]       = useState(false);
+  const [fadeOut, setFadeOut] = useState(false);
 
   // Phase 1 — ease from 0 → 85% over 2.4 s
   useEffect(() => {
     let raf;
-    const start    = performance.now();
+    const start = performance.now();
     const DURATION = 2400;
 
     const tick = (now) => {
-      const t      = Math.min((now - start) / DURATION, 1);
-      const eased  = 1 - Math.pow(1 - t, 3);
+      const t = Math.min((now - start) / DURATION, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
       setProgress(eased * 85);
       if (t < 1) raf = requestAnimationFrame(tick);
     };
@@ -35,86 +38,84 @@ function AuthLoader({ onDone }) {
 
   useEffect(() => {
     if (!completing) return;
-    setProgress(100);                                          // snap bar to 100%
-    const t1 = setTimeout(() => setFadeOut(true),   400);    // start fade after bar
-    const t2 = setTimeout(() => onDone?.(),          900);    // unmount after fade
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [completing]);
+    setProgress(100); // snap bar to 100%
+    const t1 = setTimeout(() => setFadeOut(true), 400); // start fade after bar
+    const t2 = setTimeout(() => onDone?.(), 900); // unmount after fade
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [completing, onDone]);
 
   return (
     <div
-      className="fixed inset-0 bg-[#0B1120] flex flex-col items-center justify-center z-[9999]"
+      className="fixed inset-0 bg-[#0B1120] flex flex-col items-center justify-center z-9999"
       style={{
-        opacity:        fadeOut ? 0 : 1,
-        transition:     fadeOut ? 'opacity 500ms ease' : 'none',
-        pointerEvents:  fadeOut ? 'none' : 'auto',
+        opacity: fadeOut ? 0 : 1,
+        transition: fadeOut ? 'opacity 500ms ease' : 'none',
+        pointerEvents: fadeOut ? 'none' : 'auto'
       }}
     >
-      {/* ── Progress bar ── */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/5">
+      {/* Progress bar */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/5">
         <div
           className="h-full bg-[#f99c00]"
           style={{
-            width:      `${progress}%`,
-            transition: completing
-              ? 'width 400ms cubic-bezier(0.4,0,0.2,1)'
-              : 'width 300ms ease-out',
+            width: `${progress}%`,
+            transition: completing ? 'width 400ms cubic-bezier(0.4,0,0.2,1)' : 'width 300ms ease-out'
           }}
         />
         {/* Glowing tip */}
         <div
-          className="absolute top-0 h-[2px] w-24 bg-gradient-to-r from-transparent to-[#f99c00] blur-sm"
+          className="absolute top-0 h-0.5 w-24 bg-linear-to-r from-transparent to-[#f99c00] blur-sm"
           style={{
-            left:       `calc(${progress}% - 6rem)`,
-            transition: completing
-              ? 'left 400ms cubic-bezier(0.4,0,0.2,1)'
-              : 'left 300ms ease-out',
+            left: `calc(${progress}% - 6rem)`,
+            transition: completing ? 'left 400ms cubic-bezier(0.4,0,0.2,1)' : 'left 300ms ease-out'
           }}
         />
       </div>
 
-      {/* ── Center content ── */}
+      {/* Center content */}
       <div
         className="flex flex-col items-center gap-6 select-none"
         style={{
-          opacity:    fadeOut ? 0 : 1,
-          transform:  fadeOut ? 'scale(0.96)' : 'scale(1)',
-          transition: fadeOut ? 'opacity 400ms ease, transform 400ms ease' : 'none',
+          opacity: fadeOut ? 0 : 1,
+          transform: fadeOut ? 'scale(0.96)' : 'scale(1)',
+          transition: fadeOut ? 'opacity 400ms ease, transform 400ms ease' : 'none'
         }}
       >
-        {/* Logo mark — swaps to checkmark on complete */}
+        {/* Logo mark */}
         <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center -black/40"
+          className="w-16 h-16 rounded-2xl flex items-center justify-center"
           style={{
-            background:  completing
+            background: completing
               ? 'linear-gradient(135deg,#f99c00 0%,#f88c00 100%)'
               : 'linear-gradient(135deg,#fff 0%,#e2e8f0 100%)',
-            color:       completing ? '#0B1120' : '#0B1120',
-            transition:  'background 400ms ease',
-            animation:   completing ? 'none' : 'ep-pulse 2s ease-in-out infinite',
+            color: '#0B1120',
+            transition: 'background 400ms ease',
+            animation: completing ? 'none' : 'ep-pulse 2s ease-in-out infinite'
           }}
         >
-          {completing
-            ? <Icon icon="solar:check-circle-bold" width={34} height={34} />
-            : <Icon icon="lucide:graduation-cap"   width={34} height={34} style={{ strokeWidth: 1.25 }} />
-          }
+          {completing ? (
+            <Icon icon="solar:check-circle-bold" width={34} height={34} />
+          ) : (
+            <Icon icon="lucide:graduation-cap" width={34} height={34} style={{ strokeWidth: 1.25 }} />
+          )}
         </div>
 
         {/* Wordmark */}
-        <p className="text-white/90 text-xl font-bold tracking-tight">
-          EduPractice
-        </p>
+        <p className="text-white/90 text-xl font-bold tracking-tight">EduPractice</p>
 
-        {/* Arc spinner — fades out when completing */}
+        {/* Arc spinner */}
         <svg
           viewBox="0 0 24 24"
           fill="none"
           className="w-5 h-5 animate-spin"
           style={{
-            animationDuration:       '800ms',
+            animationDuration: '800ms',
             animationTimingFunction: 'linear',
-            opacity:    completing ? 0 : 0.6,
-            transition: 'opacity 300ms ease',
+            opacity: completing ? 0 : 0.6,
+            transition: 'opacity 300ms ease'
           }}
         >
           <circle cx="12" cy="12" r="10" stroke="rgba(249,156,0,0.2)" strokeWidth="2" />
@@ -133,113 +134,73 @@ function AuthLoader({ onDone }) {
   );
 }
 
-// ─── Protected Route ───────────────────────────────────────────────────────────
+/**
+ * ProtectedRoute Component
+ * 
+ * Security improvements:
+ * - Uses AuthContext for session verification (no URL tokens)
+ * - Redirects to /login on same domain (not external subdomain)
+ * - Session managed by Supabase internally
+ * - No sensitive data in URLs or localStorage (except Supabase session)
+ */
 const ProtectedRoute = () => {
-  const [loading, setLoading]           = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const auth = useAuth();
+  const [showLoader, setShowLoader] = useState(true);
+  const [minLoadTimeElapsed, setMinLoadTimeElapsed] = useState(false);
 
-  const getCookie = (name) => {
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-      cookie = cookie.trim();
-      if (cookie.startsWith(name + '=')) {
-        const value = cookie.substring(name.length + 1);
-        return value ? decodeURIComponent(value) : value;
-      }
-    }
-    return null;
-  };
-
-  const authenticateFromUrlToken = (token) => {
-    if (!token || typeof token !== 'string' || token.trim() === '') {
-      console.warn('URL token is empty or invalid.');
-      return false;
-    }
-    sessionStorage.setItem('auth_token', token);
-    sessionStorage.setItem('login_timestamp', Date.now().toString());
-    searchParams.delete('token');
-    setSearchParams(searchParams, { replace: true });
-    return true;
-  };
-
-  const checkAuth = () => {
-    try {
-      const authToken      = sessionStorage.getItem('auth_token')      || getCookie('auth_token');
-      const loginTimestamp = sessionStorage.getItem('login_timestamp') || getCookie('login_timestamp');
-      if (!authToken) return false;
-      const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
-      if (loginTimestamp) {
-        const timestamp = parseInt(loginTimestamp, 10);
-        if (isNaN(timestamp) || Date.now() - timestamp > THREE_DAYS_MS) {
-          sessionStorage.removeItem('auth_token');
-          sessionStorage.removeItem('login_timestamp');
-          document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-          document.cookie = 'login_timestamp=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-          return false;
-        }
-      }
-      return true;
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      return false;
-    }
-  };
-
+  // Ensure minimum loading time for visual effect
   useEffect(() => {
-    setLoading(true);
-    const startTime = Date.now();
+    const timer = setTimeout(() => {
+      setMinLoadTimeElapsed(true);
+    }, 3000);
 
-    const urlToken = searchParams.get('token');
-    let isAuth = false;
-    if (urlToken) isAuth = authenticateFromUrlToken(urlToken);
-    if (!isAuth)  isAuth = checkAuth();
-    setIsAuthenticated(isAuth);
-
-    // Wait at least 3 s, then fire the completion sequence
-    const elapsed   = Date.now() - startTime;
-    const remaining = Math.max(0, 3000 - elapsed);
-
-    setTimeout(() => {
-      // Trigger the loader's completion animation
-      window.dispatchEvent(new Event('auth-loader-complete'));
-      // onDone callback inside the loader will call setLoading(false) via handleDone
-    }, remaining);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (loading || isAuthenticated) return;
-    const id = setInterval(() => {
-      const isAuth = checkAuth();
-      if (isAuth) { setIsAuthenticated(true); clearInterval(id); }
-    }, 500);
-    return () => clearInterval(id);
-  }, [loading, isAuthenticated]);
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        const isAuth = checkAuth();
-        if (isAuth) setIsAuthenticated(true);
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    return () => clearTimeout(timer);
   }, []);
 
+  // Handle authentication check and redirect
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      const returnUrl = window.location.href;
-      window.location.href = `https://edupractice.vercel.app/login?return=${encodeURIComponent(returnUrl)}`;
+    // Still loading from Supabase
+    if (auth.isLoading) return;
+
+    // Not authenticated and minimum load time has elapsed
+    if (!auth.isAuthenticated && minLoadTimeElapsed) {
+      // Trigger loader completion animation
+      window.dispatchEvent(new Event('auth-loader-complete'));
+
+      // Schedule redirect after animation
+      const redirectTimer = setTimeout(() => {
+        navigate('/login', { replace: true });
+      }, 1000);
+
+      return () => clearTimeout(redirectTimer);
     }
-  }, [loading, isAuthenticated]);
 
-  // Called by AuthLoader after its fade-out finishes
-  const handleDone = () => setLoading(false);
+    // Authenticated - complete the loader
+    if (auth.isAuthenticated && minLoadTimeElapsed) {
+      window.dispatchEvent(new Event('auth-loader-complete'));
+      const hideLoaderTimer = setTimeout(() => {
+        setShowLoader(false);
+      }, 1000);
 
-  if (loading) return <AuthLoader onDone={handleDone} />;
+      return () => clearTimeout(hideLoaderTimer);
+    }
+  }, [auth.isLoading, auth.isAuthenticated, minLoadTimeElapsed, navigate]);
 
-  return isAuthenticated ? <Outlet /> : null;
+  // Only hide loader after fade when signed in; otherwise keep loader until navigate unmounts (avoids flash of blank).
+  const handleLoaderDone = () => {
+    if (auth.isAuthenticated) {
+      setShowLoader(false);
+    }
+  };
+
+  // Show loader while authenticating or if user not authenticated
+  if (showLoader || auth.isLoading) {
+    return <AuthLoader onDone={handleLoaderDone} />;
+  }
+
+  // Show protected content only if authenticated
+  return auth.isAuthenticated ? <Outlet /> : null;
 };
 
 export default ProtectedRoute;

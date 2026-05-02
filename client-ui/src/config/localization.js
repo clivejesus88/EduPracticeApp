@@ -17,14 +17,6 @@ export const ugandaConfig = {
   
   examLevels: [
     {
-      id: 'o-level',
-      name: 'O-Level',
-      localName: 'UCE - Uganda Certificate of Education',
-      grades: '1-9',
-      years: ['S.4', 'S.5'],
-      description: 'Secondary School Certificate'
-    },
-    {
       id: 'a-level',
       name: 'A-Level',
       localName: 'UACE - Uganda Advanced Certificate of Education',
@@ -178,7 +170,6 @@ export const ugandaConfig = {
       }
     ],
     nationalExams: {
-      'O-Level': 'October/November',
       'A-Level': 'May/June',
       'Final A-Level': 'November/December'
     }

@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { listAttempts, SUBJECTS, questionBank } from '../data/examBank';
 import { physicsTopics, mathematicsTopics } from '../data/examStructure';
+import { clearExamDraft, loadExamDraft } from '../services/examDraftService';
 
 // Map our level ids to the labels stored on questions/topics.
 const LEVELS = [
-  { id: 'O-Level', name: 'O-Level (UCE)', short: 'O-Level', description: 'Uganda Certificate of Education', topicsKey: 'OLEVEL' },
   { id: 'A-Level', name: 'A-Level',        short: 'A-Level', description: 'Advanced Level (S.6 & S.7)',     topicsKey: 'ALEVEL' },
   { id: 'UACE',    name: 'UACE',           short: 'UACE',    description: 'Uganda Advanced Certificate of Education', topicsKey: 'ALEVEL' },
 ];
@@ -16,25 +16,11 @@ const LEVELS = [
 // `scenarioCount` reserves N slots for Uganda-context scenario questions.
 const MOCK_EXAMS = [
   {
-    id: 'mock-physics-ol', title: 'Physics — O-Level Full Mock',
-    subject: 'Physics', level: 'O-Level', difficulty: 'Medium',
-    duration: '1h 30m', count: 12, scenarioCount: 3,
-    icon: 'solar:atom-bold', tone: 'sky',
-    description: 'Full-paper timing across mechanics, waves, electricity and thermodynamics. Includes Uganda-context scenarios.'
-  },
-  {
     id: 'mock-physics-al', title: 'Physics — A-Level Mock',
     subject: 'Physics', level: 'A-Level', difficulty: 'Hard',
     duration: '2h', count: 10, scenarioCount: 2,
     icon: 'solar:atom-bold', tone: 'sky',
     description: 'Classical mechanics, optics and modern physics with applied scenarios.'
-  },
-  {
-    id: 'mock-math-ol', title: 'Mathematics — O-Level Full Mock',
-    subject: 'Mathematics', level: 'O-Level', difficulty: 'Medium',
-    duration: '1h 30m', count: 12, scenarioCount: 3,
-    icon: 'solar:calculator-bold', tone: 'violet',
-    description: 'Algebra, geometry, calculus basics and statistics — with real-life Uganda problems.'
   },
   {
     id: 'mock-math-al', title: 'Mathematics — A-Level Mock',
@@ -53,14 +39,15 @@ const TONE = {
 export default function MockExams() {
   const { t } = useLocalization();
   const navigate = useNavigate();
+  const activeDraft = useMemo(() => loadExamDraft(), []);
 
-  const [selectedLevel, setSelectedLevel] = useState('O-Level');
+  const [selectedLevel, setSelectedLevel] = useState('A-Level');
   const [showAllMocks, setShowAllMocks] = useState(false);
   const [showCustomBuilder, setShowCustomBuilder] = useState(false);
   const [confirmExam, setConfirmExam] = useState(null);
   const [customExam, setCustomExam] = useState({
     subject: 'Physics',
-    level: 'O-Level',
+    level: 'A-Level',
     difficulty: 'Medium',
     count: 10,
   });
@@ -141,7 +128,7 @@ export default function MockExams() {
                   Showing exams for <span className="text-white font-semibold">{selectedLevel}</span>
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
                 {LEVELS.map(level => {
                   const active = selectedLevel === level.id;
                   const mockCount = MOCK_EXAMS.filter(e => e.level === level.id).length;
@@ -174,6 +161,39 @@ export default function MockExams() {
             </section>
 
             {/* Recent attempts */}
+            {activeDraft?.exam && (
+              <section>
+                <div className="bg-[#111827] border border-[#f99c00]/25 rounded-2xl p-5 sm:p-6 flex flex-col md:flex-row md:items-center gap-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs uppercase tracking-wider font-semibold text-[#f99c00] mb-1">Resume exam</p>
+                    <h2 className="text-lg sm:text-xl font-bold text-white truncate">{activeDraft.exam.title}</h2>
+                    <p className="text-sm text-slate-400 mt-1">
+                      Question {(activeDraft.current || 0) + 1} of {activeDraft.exam.questions.length}
+                      {' • '}
+                      {Math.ceil((activeDraft.secondsLeft || 0) / 60)} minutes remaining
+                    </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={() => navigate('/exam/run')}
+                      className="px-5 py-3 bg-[#f99c00] hover:bg-[#f99c00]/90 text-[#0B1120] rounded-lg font-semibold"
+                    >
+                      Resume now
+                    </button>
+                    <button
+                      onClick={() => {
+                        clearExamDraft();
+                        window.location.reload();
+                      }}
+                      className="px-5 py-3 border border-white/10 text-slate-300 rounded-lg font-semibold hover:bg-white/5"
+                    >
+                      Discard
+                    </button>
+                  </div>
+                </div>
+              </section>
+            )}
+
             {recent.length > 0 && (
               <section>
                 <h2 className="text-xl sm:text-2xl font-bold text-white mb-5">Recent attempts</h2>
@@ -272,7 +292,7 @@ export default function MockExams() {
               {topicExams.length === 0 ? (
                 <EmptyState
                   title="No topic exams available for this level"
-                  hint="Switch to O-Level or A-Level, or use the custom builder below."
+                  hint="Switch to A-Level or UACE, or use the custom builder below."
                 />
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -438,7 +458,7 @@ export default function MockExams() {
 
 function buildTopicExams(level) {
   // Combine Physics + Maths topics from examStructure (only ones we have content for).
-  const levelKey = level === 'O-Level' ? 'OLEVEL' : level === 'A-Level' || level === 'UACE' ? 'ALEVEL' : null;
+  const levelKey = level === 'A-Level' || level === 'UACE' ? 'ALEVEL' : null;
   if (!levelKey) return [];
   const sources = [
     { subject: 'Physics',     topics: physicsTopics[levelKey] || [] },

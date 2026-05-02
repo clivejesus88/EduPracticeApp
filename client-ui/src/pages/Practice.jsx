@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '@iconify/react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AiBrain05Icon } from '@hugeicons/core-free-icons';
@@ -6,22 +6,64 @@ import { useLocalization } from '../contexts/LocalizationContext';
 import { examLevels, physicsTopics, mathematicsTopics } from '../data/examStructure';
 import ChatInterface from '../components/ChatInterface';
 import { trackPracticeAttempt, trackTopicView } from '../utils/analyticsTracker';
+import { evaluatePracticeSolution } from '../services/practiceAiService';
 
+const PRACTICE_DRAFT_KEY = 'eduPractice_practiceDraft';
+
+function loadPracticeDraft() {
+  try {
+    const raw = localStorage.getItem(PRACTICE_DRAFT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function savePracticeDraft(draft) {
+  localStorage.setItem(PRACTICE_DRAFT_KEY, JSON.stringify(draft));
+}
+
+function getScenarioForSubject(subject) {
+  if (subject === 'physics') {
+    return {
+      title: 'Murchison Falls Energy & Power',
+      topic: 'Energy & Power',
+      maxMark: 10,
+      question:
+        'Murchison Falls drops water through a height of 43 m. If 200 kg of water passes over the falls each second, derive the expression for the power available and calculate the maximum power output assuming g = 10 m/s².',
+    };
+  }
+
+  return {
+    title: 'Applied Mathematics Modelling',
+    topic: 'Calculus Applications',
+    maxMark: 10,
+    question:
+      'A water tank in Mbarara is filled at a rate r(t) = 6t^2 + 2 litres per minute, where t is in minutes. Derive the expression for the total volume added in the first 5 minutes and compute the result.',
+  };
+}
 
 export default function Practice() {
   const { t } = useLocalization();
-  const [step, setStep] = useState('selectLevel'); // selectLevel | topics | workboard
-  const [selectedExamLevel, setSelectedExamLevel] = useState(null);
-  const [selectedSubject, setSelectedSubject] = useState(null);
-  const [selectedTopic, setSelectedTopic] = useState(null);
-  const [aiState, setAiState] = useState('idle'); // idle | analyzing | feedback
+  const draft = useMemo(() => loadPracticeDraft(), []);
+  const [step, setStep] = useState(draft?.step || 'selectLevel'); // selectLevel | topics | workboard
+  const [selectedExamLevel, setSelectedExamLevel] = useState(draft?.selectedExamLevel || null);
+  const [selectedSubject, setSelectedSubject] = useState(draft?.selectedSubject || null);
+  const [selectedTopic, setSelectedTopic] = useState(draft?.selectedTopic || null);
+  const [aiState, setAiState] = useState(draft?.feedback ? 'feedback' : 'idle'); // idle | analyzing | feedback
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [solutionText, setSolutionText] = useState(draft?.solutionText || '');
+  const [selectedFileName, setSelectedFileName] = useState(draft?.selectedFileName || '');
+  const [feedback, setFeedback] = useState(draft?.feedback || null);
+  const [error, setError] = useState('');
+  const inputFileRef = useRef(null);
+  const workboardStartedAt = useRef(Date.now());
 
   // Get topics based on selected exam level
   const getTopics = () => {
     if (!selectedExamLevel) return [];
 
-    const levelKey = selectedExamLevel.toUpperCase().replace('-', '');
+    const levelKey = selectedExamLevel === 'uace' ? 'ALEVEL' : selectedExamLevel.toUpperCase().replace('-', '');
     const topics = [];
 
     if (physicsTopics[levelKey]) {
@@ -33,7 +75,7 @@ export default function Practice() {
         color: 'from-blue-500 to-cyan-500',
         questions: physicsTopics[levelKey].reduce((sum, t) => sum + t.questions, 0),
         subtopics: physicsTopics[levelKey],
-        difficulty: levelKey === 'OLEVEL' ? 'Beginner to Intermediate' : 'Intermediate to Advanced',
+        difficulty: 'Intermediate to Advanced',
       });
     }
 
@@ -46,7 +88,7 @@ export default function Practice() {
         color: 'from-rose-500 to-pink-500',
         questions: mathematicsTopics[levelKey].reduce((sum, t) => sum + t.questions, 0),
         subtopics: mathematicsTopics[levelKey],
-        difficulty: levelKey === 'OLEVEL' ? 'Beginner to Intermediate' : 'Intermediate to Advanced',
+        difficulty: 'Intermediate to Advanced',
       });
     }
 
@@ -54,6 +96,19 @@ export default function Practice() {
   };
 
   const topics = getTopics();
+  const currentScenario = useMemo(() => getScenarioForSubject(selectedSubject), [selectedSubject]);
+
+  useEffect(() => {
+    savePracticeDraft({
+      step,
+      selectedExamLevel,
+      selectedSubject,
+      selectedTopic,
+      solutionText,
+      selectedFileName,
+      feedback,
+    });
+  }, [step, selectedExamLevel, selectedSubject, selectedTopic, solutionText, selectedFileName, feedback]);
 
   const handleExamLevelSelect = (levelId) => {
     setSelectedExamLevel(levelId);
@@ -66,6 +121,11 @@ export default function Practice() {
     setSelectedTopic(topic);
     setSelectedSubject(topic.id);
     trackTopicView(topic.name, topic.id);
+    setSolutionText('');
+    setSelectedFileName('');
+    setFeedback(null);
+    setError('');
+    workboardStartedAt.current = Date.now();
     setStep('workboard');
   };
 
@@ -73,6 +133,10 @@ export default function Practice() {
     setStep('topics');
     setSelectedTopic(null);
     setAiState('idle');
+    setSolutionText('');
+    setSelectedFileName('');
+    setFeedback(null);
+    setError('');
   };
 
   const handleBackToExamLevel = () => {
@@ -80,16 +144,37 @@ export default function Practice() {
     setSelectedExamLevel(null);
     setSelectedSubject(null);
     setAiState('idle');
+    setFeedback(null);
+    setError('');
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (aiState !== 'idle') return;
+    if (!solutionText.trim()) {
+      setError('Write your solution before sending it for evaluation.');
+      return;
+    }
+    setError('');
     setAiState('analyzing');
-    setTimeout(() => {
+
+    try {
+      const result = await evaluatePracticeSolution({
+        subject: selectedTopic?.name || 'Practice',
+        level: selectedExamLevel?.toUpperCase().replace('-', ' ') || 'A-Level',
+        topic: currentScenario.topic,
+        question: currentScenario.question,
+        studentAnswer: solutionText,
+        attachmentName: selectedFileName || null,
+      });
+
+      setFeedback(result);
       setAiState('feedback');
-      const score = Math.floor(Math.random() * (95 - 70 + 1)) + 70;
-      trackPracticeAttempt(selectedTopic?.name || 'Practice', score, 5);
-    }, 2000);
+      const durationMinutes = Math.max(1, Math.round((Date.now() - workboardStartedAt.current) / 60000));
+      trackPracticeAttempt(selectedTopic?.name || 'Practice', result.score, durationMinutes);
+    } catch (err) {
+      setError(err.message || 'AI evaluation failed.');
+      setAiState('idle');
+    }
   };
 
   // Reserve room on the right for the chat sidebar on large screens when chat is open
@@ -114,7 +199,7 @@ export default function Practice() {
             </div>
 
             {/* Exam Level Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
               {Object.values(examLevels).map((level) => (
                 <button
                   key={level.id}
@@ -286,38 +371,57 @@ export default function Practice() {
                 {selectedTopic?.name} Question
               </h1>
               <p className="text-sm text-slate-400">
-                {t('practice.maximumMark')}: <span className="font-semibold text-white">7</span>
+                {t('practice.maximumMark')}: <span className="font-semibold text-white">{currentScenario.maxMark}</span>
               </p>
             </div>
 
             {/* Scenario Card */}
             <div className="bg-[#111827] border border-white/10 rounded-2xl p-5 sm:p-6 md:p-8 space-y-5">
               <p className="text-slate-300 leading-relaxed text-base sm:text-lg">
-                A block of mass <span className="font-mono text-[#f99c00] bg-[#f99c00]/10 px-2 py-0.5 rounded text-sm">m</span> is sliding down a frictionless incline angled at <span className="font-mono text-[#f99c00] bg-[#f99c00]/10 px-2 py-0.5 rounded text-sm">θ</span> to the horizontal. Derive the equation for its acceleration and calculate its final velocity if it starts from rest and travels a distance <span className="font-mono text-[#f99c00] bg-[#f99c00]/10 px-2 py-0.5 rounded text-sm">d</span>.
+                {currentScenario.question}
               </p>
-
-              {/* Reference Image */}
-              <div className="rounded-xl overflow-hidden border border-white/5 bg-white/5">
-                <img
-                  src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/user-files/fd86d650-37a4-4a87-a832-38f8d246494a/c1d8f4a0-dfec-4aba-8c26-7c9d7cb813e2-pr.png?v=1776510287457"
-                  alt="Scenario Reference"
-                  className="w-full object-cover max-h-56 sm:max-h-72 md:max-h-80"
-                />
-              </div>
             </div>
 
             {/* Answer Section */}
             <div className="space-y-5">
               <h3 className="text-xl sm:text-2xl font-bold text-white">{t('practice.yourSolution')}</h3>
 
+              <textarea
+                value={solutionText}
+                onChange={(e) => setSolutionText(e.target.value)}
+                placeholder="Write your derivation, working, substitutions, and final answer here."
+                className="w-full min-h-48 rounded-2xl border border-white/10 bg-[#111827] px-5 py-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#f99c00]/40"
+              />
+
               {/* Upload Area */}
-              <div className="w-full h-52 sm:h-64 md:h-72 rounded-2xl border-2 border-dashed border-white/15 hover:border-[#f99c00]/50 bg-[#111827]/50 flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group px-5">
+              <div
+                onClick={() => inputFileRef.current?.click()}
+                className="w-full h-40 rounded-2xl border-2 border-dashed border-white/15 hover:border-[#f99c00]/50 bg-[#111827]/50 flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group px-5"
+              >
+                <input
+                  ref={inputFileRef}
+                  type="file"
+                  accept=".png,.jpg,.jpeg,.pdf"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    setSelectedFileName(file?.name || '');
+                  }}
+                />
                 <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-[#f99c00]/10 flex items-center justify-center text-slate-400 group-hover:text-[#f99c00] transition-all mb-3">
                   <Icon icon="solar:upload-minimalistic-linear" width="24" />
                 </div>
                 <p className="text-base font-semibold text-white mb-1">{t('practice.clickToUpload')}</p>
-                <p className="text-sm text-slate-500 max-w-xs">{t('practice.uploadDescription')}</p>
+                <p className="text-sm text-slate-500 max-w-xs">
+                  {selectedFileName || `${t('practice.uploadDescription')} Attachment is optional.`}
+                </p>
               </div>
+
+              {error && (
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                  {error}
+                </div>
+              )}
 
               {/* Submit Action */}
               {aiState !== 'feedback' && (
@@ -343,7 +447,7 @@ export default function Practice() {
               )}
 
               {/* Feedback */}
-              {aiState === 'feedback' && (
+              {aiState === 'feedback' && feedback && (
                 <div className="bg-emerald-950/30 border border-emerald-500/30 rounded-2xl p-6 md:p-8 animate-fade-in-up relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
 
@@ -354,19 +458,40 @@ export default function Practice() {
                         {t('practice.solutionEvaluated')}
                       </h3>
                       <div className="text-slate-300 text-sm md:text-base leading-relaxed space-y-3">
-                        <p>Your approach to breaking down the vector components is correct and your derivation for the acceleration is flawless.</p>
-                        <p>However, watch your units in the final substitution step. The final answer should be explicitly written in meters per second squared (<span className="font-mono text-[#f99c00] bg-[#f99c00]/10 px-2 py-0.5 rounded">m/s²</span>).</p>
+                        <p>{feedback.summary}</p>
+                        {feedback.strengths.length > 0 && (
+                          <div>
+                            <p className="font-semibold text-white mb-1">What you did well</p>
+                            <ul className="list-disc pl-5 space-y-1">
+                              {feedback.strengths.map((item) => <li key={item}>{item}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                        {feedback.improvements.length > 0 && (
+                          <div>
+                            <p className="font-semibold text-white mb-1">Improve next time</p>
+                            <ul className="list-disc pl-5 space-y-1">
+                              {feedback.improvements.map((item) => <li key={item}>{item}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                        {feedback.modelAnswer && (
+                          <div className="rounded-xl bg-white/5 border border-white/10 p-4">
+                            <p className="font-semibold text-white mb-1">Model answer outline</p>
+                            <p>{feedback.modelAnswer}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
 
                     <div className="shrink-0 flex flex-col items-center justify-center p-5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 self-center sm:self-auto">
-                      <span className="text-4xl font-bold text-emerald-400 font-mono">85%</span>
+                      <span className="text-4xl font-bold text-emerald-400 font-mono">{feedback.score}%</span>
                       <span className="text-[11px] font-bold text-emerald-500/80 uppercase tracking-widest mt-1">{t('practice.score')}</span>
                     </div>
                   </div>
 
                   <div className="mt-6 pt-5 border-t border-white/10 flex flex-col sm:flex-row gap-3">
-                    <button onClick={() => setAiState('idle')} className="px-6 py-3 rounded-full border border-white/15 hover:border-white/25 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all w-full sm:w-auto active:scale-95">
+                    <button onClick={() => { setAiState('idle'); setFeedback(null); }} className="px-6 py-3 rounded-full border border-white/15 hover:border-white/25 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all w-full sm:w-auto active:scale-95">
                       {t('practice.tryAgain')}
                     </button>
                     <button onClick={() => setIsChatOpen(true)} className="px-6 py-3 rounded-full bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] text-sm font-bold transition-all flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95">

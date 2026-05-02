@@ -4,74 +4,23 @@
 // options (mcq), answer, explanation, marks, optional context (for scenarios).
 
 export const SUBJECTS = ['Physics', 'Mathematics'];
-export const LEVELS = ['O-Level', 'A-Level', 'UACE'];
+export const LEVELS = ['A-Level', 'UACE'];
 export const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
+
+const LEVEL_EQUIVALENTS = {
+  'A-Level': new Set(['A-Level', 'UACE']),
+  UACE: new Set(['A-Level', 'UACE']),
+};
+
+function matchesRequestedLevel(questionLevel, requestedLevel) {
+  if (!requestedLevel) return true;
+  const allowed = LEVEL_EQUIVALENTS[requestedLevel] || new Set([requestedLevel]);
+  return allowed.has(questionLevel);
+}
 
 // ---------- Multiple-choice / numeric question pool ----------
 export const questionBank = [
   // -------- PHYSICS --------
-  {
-    id: 'phy-ol-001', subject: 'Physics', level: 'O-Level', topic: 'Mechanics',
-    difficulty: 'Easy', type: 'mcq', marks: 1,
-    prompt: 'A car accelerates uniformly from rest to 20 m/s in 5 seconds. What is its acceleration?',
-    options: ['2 m/s²', '4 m/s²', '5 m/s²', '10 m/s²'],
-    answer: '4 m/s²',
-    explanation: 'a = (v − u) / t = (20 − 0) / 5 = 4 m/s².'
-  },
-  {
-    id: 'phy-ol-002', subject: 'Physics', level: 'O-Level', topic: 'Mechanics',
-    difficulty: 'Easy', type: 'mcq', marks: 1,
-    prompt: 'The SI unit of force is the:',
-    options: ['Joule', 'Watt', 'Newton', 'Pascal'],
-    answer: 'Newton',
-    explanation: 'Force is measured in Newtons (N). 1 N = 1 kg·m/s².'
-  },
-  {
-    id: 'phy-ol-003', subject: 'Physics', level: 'O-Level', topic: 'Mechanics',
-    difficulty: 'Medium', type: 'numeric', marks: 2,
-    prompt: 'A 2 kg object is lifted to a height of 5 m. How much gravitational potential energy does it gain in Joules? (g = 10 m/s²)',
-    answer: 100, tolerance: 0.5,
-    explanation: 'PE = mgh = 2 × 10 × 5 = 100 J.'
-  },
-  {
-    id: 'phy-ol-004', subject: 'Physics', level: 'O-Level', topic: 'Waves & Sound',
-    difficulty: 'Medium', type: 'mcq', marks: 1,
-    prompt: 'Sound waves travel fastest through which medium?',
-    options: ['Vacuum', 'Air', 'Water', 'Steel'],
-    answer: 'Steel',
-    explanation: 'Sound travels fastest in solids — particles are tightly packed, so vibrations propagate quickly.'
-  },
-  {
-    id: 'phy-ol-005', subject: 'Physics', level: 'O-Level', topic: 'Electricity',
-    difficulty: 'Easy', type: 'mcq', marks: 1,
-    prompt: 'Ohm\'s law states that V equals:',
-    options: ['I / R', 'I × R', 'R / I', 'I + R'],
-    answer: 'I × R',
-    explanation: 'V = IR — voltage equals current times resistance.'
-  },
-  {
-    id: 'phy-ol-006', subject: 'Physics', level: 'O-Level', topic: 'Electricity',
-    difficulty: 'Medium', type: 'numeric', marks: 2,
-    prompt: 'A circuit has a 12 V battery and a 4 Ω resistor. What is the current in amperes?',
-    answer: 3, tolerance: 0.05,
-    explanation: 'I = V / R = 12 / 4 = 3 A.'
-  },
-  {
-    id: 'phy-ol-007', subject: 'Physics', level: 'O-Level', topic: 'Thermodynamics',
-    difficulty: 'Medium', type: 'mcq', marks: 1,
-    prompt: 'Which of the following is NOT a method of heat transfer?',
-    options: ['Conduction', 'Convection', 'Radiation', 'Diffusion'],
-    answer: 'Diffusion',
-    explanation: 'Heat transfers via conduction, convection, and radiation. Diffusion moves particles, not heat directly.'
-  },
-  {
-    id: 'phy-ol-008', subject: 'Physics', level: 'O-Level', topic: 'Mechanics',
-    difficulty: 'Easy', type: 'mcq', marks: 1,
-    prompt: 'Which quantity is a vector?',
-    options: ['Mass', 'Distance', 'Velocity', 'Time'],
-    answer: 'Velocity',
-    explanation: 'Velocity has both magnitude and direction; mass, distance and time are scalars.'
-  },
   {
     id: 'phy-al-001', subject: 'Physics', level: 'A-Level', topic: 'Classical Mechanics',
     difficulty: 'Hard', type: 'numeric', marks: 3,
@@ -112,59 +61,6 @@ export const questionBank = [
 
   // -------- MATHEMATICS --------
   {
-    id: 'mat-ol-001', subject: 'Mathematics', level: 'O-Level', topic: 'Algebra',
-    difficulty: 'Easy', type: 'mcq', marks: 1,
-    prompt: 'Solve for x: 2x + 5 = 17.',
-    options: ['x = 4', 'x = 6', 'x = 8', 'x = 11'],
-    answer: 'x = 6',
-    explanation: '2x = 12, so x = 6.'
-  },
-  {
-    id: 'mat-ol-002', subject: 'Mathematics', level: 'O-Level', topic: 'Algebra',
-    difficulty: 'Medium', type: 'numeric', marks: 2,
-    prompt: 'If x² − 5x + 6 = 0, what is the larger root?',
-    answer: 3, tolerance: 0.01,
-    explanation: '(x − 2)(x − 3) = 0, so x = 2 or 3. Larger root is 3.'
-  },
-  {
-    id: 'mat-ol-003', subject: 'Mathematics', level: 'O-Level', topic: 'Geometry & Trigonometry',
-    difficulty: 'Medium', type: 'mcq', marks: 1,
-    prompt: 'In a right triangle, one angle is 30° and the hypotenuse is 10. The side opposite the 30° angle is:',
-    options: ['5', '5√2', '5√3', '10'],
-    answer: '5',
-    explanation: 'sin(30°) = opposite / hypotenuse → opposite = 10 × 0.5 = 5.'
-  },
-  {
-    id: 'mat-ol-004', subject: 'Mathematics', level: 'O-Level', topic: 'Statistics & Probability',
-    difficulty: 'Easy', type: 'numeric', marks: 1,
-    prompt: 'What is the mean of: 4, 8, 15, 16, 23, 42?',
-    answer: 18, tolerance: 0.5,
-    explanation: 'Sum = 108. Mean = 108 / 6 = 18.'
-  },
-  {
-    id: 'mat-ol-005', subject: 'Mathematics', level: 'O-Level', topic: 'Statistics & Probability',
-    difficulty: 'Medium', type: 'mcq', marks: 1,
-    prompt: 'A bag contains 3 red and 5 blue marbles. What is the probability of drawing a red marble?',
-    options: ['1/8', '3/8', '3/5', '5/8'],
-    answer: '3/8',
-    explanation: 'P(red) = 3 / (3 + 5) = 3/8.'
-  },
-  {
-    id: 'mat-ol-006', subject: 'Mathematics', level: 'O-Level', topic: 'Calculus Basics',
-    difficulty: 'Medium', type: 'mcq', marks: 1,
-    prompt: 'What is the derivative of f(x) = 3x² + 2x − 5?',
-    options: ['6x + 2', '3x + 2', '6x − 5', '3x² + 2'],
-    answer: '6x + 2',
-    explanation: 'd/dx(3x²) = 6x; d/dx(2x) = 2; constant → 0. f\'(x) = 6x + 2.'
-  },
-  {
-    id: 'mat-ol-007', subject: 'Mathematics', level: 'O-Level', topic: 'Geometry & Trigonometry',
-    difficulty: 'Easy', type: 'numeric', marks: 1,
-    prompt: 'What is the area in square units of a circle with radius 7? (Use π = 22/7.)',
-    answer: 154, tolerance: 0.5,
-    explanation: 'A = πr² = 22/7 × 49 = 154.'
-  },
-  {
     id: 'mat-al-001', subject: 'Mathematics', level: 'A-Level', topic: 'Pure Mathematics',
     difficulty: 'Hard', type: 'mcq', marks: 2,
     prompt: 'What is the modulus of the complex number z = 3 + 4i?',
@@ -201,31 +97,6 @@ export const questionBank = [
 // They are mixed into mock exams to test applied understanding.
 export const scenarioBank = [
   {
-    id: 'sce-phy-ol-001', subject: 'Physics', level: 'O-Level', topic: 'Kinematics',
-    difficulty: 'Easy', type: 'numeric', marks: 3,
-    context: 'A taxi leaves Kampala and travels along the Kampala–Entebbe expressway, a distance of 40 km. The driver completes the journey in 30 minutes at a steady speed.',
-    prompt: 'What is the average speed of the taxi in km/h?',
-    answer: 80, tolerance: 1,
-    explanation: 'speed = distance / time = 40 km / 0.5 h = 80 km/h.'
-  },
-  {
-    id: 'sce-phy-ol-002', subject: 'Physics', level: 'O-Level', topic: 'Mechanics — Buoyancy',
-    difficulty: 'Medium', type: 'mcq', marks: 2,
-    context: 'A wooden boat floats on Lake Victoria. The boat displaces 200 litres of water. Density of water is 1000 kg/m³ and g = 10 m/s².',
-    prompt: 'What is the upward buoyant force acting on the boat?',
-    options: ['200 N', '500 N', '2000 N', '20,000 N'],
-    answer: '2000 N',
-    explanation: 'Buoyant force = ρ × V × g. Volume = 200 L = 0.2 m³. F = 1000 × 0.2 × 10 = 2000 N.'
-  },
-  {
-    id: 'sce-phy-ol-003', subject: 'Physics', level: 'O-Level', topic: 'Energy & Power',
-    difficulty: 'Medium', type: 'numeric', marks: 3,
-    context: 'A boda boda rider with a mass of 60 kg climbs Naguru hill, gaining 50 m of vertical height in 2 minutes. Take g = 10 m/s².',
-    prompt: 'What average power (in watts) did the rider develop just to gain that height?',
-    answer: 250, tolerance: 5,
-    explanation: 'Work = mgh = 60 × 10 × 50 = 30,000 J. Time = 120 s. Power = 30,000 / 120 = 250 W.'
-  },
-  {
     id: 'sce-phy-al-001', subject: 'Physics', level: 'A-Level', topic: 'Energy & Power',
     difficulty: 'Hard', type: 'numeric', marks: 4,
     context: 'Murchison Falls drops the River Nile through a vertical height of about 43 m. Suppose 200 kg of water falls every second. Take g = 10 m/s².',
@@ -248,30 +119,6 @@ export const scenarioBank = [
     explanation: 'Atmospheric pressure decreases with altitude because there is less air above. The relationship is approximately exponential (barometric formula).'
   },
 
-  {
-    id: 'sce-mat-ol-001', subject: 'Mathematics', level: 'O-Level', topic: 'Algebra & Percentages',
-    difficulty: 'Easy', type: 'numeric', marks: 2,
-    context: 'A trader at Owino market buys 50 kg of maize flour at UGX 2,500 per kg and sells it at UGX 3,000 per kg.',
-    prompt: 'What is the trader’s percentage profit on each kilogram? (Enter as a number, e.g. 25 for 25%.)',
-    answer: 20, tolerance: 0.5,
-    explanation: 'Profit per kg = 3000 − 2500 = 500. % profit = (500 / 2500) × 100 = 20%.'
-  },
-  {
-    id: 'sce-mat-ol-002', subject: 'Mathematics', level: 'O-Level', topic: 'Exponential Functions',
-    difficulty: 'Medium', type: 'numeric', marks: 3,
-    context: 'Kampala’s population is approximately 1,500,000 and is growing at about 3.5% per year, compounded annually.',
-    prompt: 'Estimate the population (to the nearest 100,000) after 10 years.',
-    answer: 2100000, tolerance: 100000,
-    explanation: 'P = 1,500,000 × (1.035)¹⁰ ≈ 1,500,000 × 1.4106 ≈ 2,116,000 → ≈ 2,100,000.'
-  },
-  {
-    id: 'sce-mat-ol-003', subject: 'Mathematics', level: 'O-Level', topic: 'Trigonometry',
-    difficulty: 'Medium', type: 'numeric', marks: 3,
-    context: 'A bus travels 80 km east from Kampala to Jinja, then turns and travels 60 km north toward Mbale.',
-    prompt: 'What is the straight-line distance (in km) from Kampala to the bus’s current position?',
-    answer: 100, tolerance: 0.5,
-    explanation: 'Pythagoras: d = √(80² + 60²) = √(6400 + 3600) = √10000 = 100 km.'
-  },
   {
     id: 'sce-mat-al-001', subject: 'Mathematics', level: 'A-Level', topic: 'Statistics & Probability',
     difficulty: 'Hard', type: 'mcq', marks: 2,
@@ -322,10 +169,10 @@ function pickScenarios({ subject, level, scenarioCount, count }) {
   if (!scenarioCount || scenarioCount <= 0) return [];
   let pool = [...scenarioBank];
   if (subject) pool = pool.filter(q => q.subject === subject);
-  if (level)   pool = pool.filter(q => q.level === level);
+  if (level) pool = pool.filter(q => matchesRequestedLevel(q.level, level));
   // If too few, widen by removing level filter.
   if (pool.length < scenarioCount && subject) {
-    pool = scenarioBank.filter(q => q.subject === subject);
+    pool = scenarioBank.filter(q => q.subject === subject && matchesRequestedLevel(q.level, level));
   }
   if (pool.length === 0) return [];
   const wanted = Math.min(scenarioCount, count, pool.length);
@@ -336,7 +183,7 @@ function pickFromBank({ subject, level, difficulty, topics, count }) {
   if (count <= 0) return [];
   let pool = [...questionBank];
   if (subject) pool = pool.filter(q => q.subject === subject);
-  if (level)   pool = pool.filter(q => q.level === level);
+  if (level) pool = pool.filter(q => matchesRequestedLevel(q.level, level));
   if (topics && topics.length > 0) pool = pool.filter(q => topics.includes(q.topic));
 
   if (difficulty) {
@@ -347,11 +194,13 @@ function pickFromBank({ subject, level, difficulty, topics, count }) {
   // Relax progressively if we don't have enough
   if (pool.length < count && topics) {
     pool = questionBank.filter(q =>
-      (!subject || q.subject === subject) && (!level || q.level === level)
+      (!subject || q.subject === subject) && matchesRequestedLevel(q.level, level)
     );
   }
   if (pool.length < count && level) {
-    pool = questionBank.filter(q => !subject || q.subject === subject);
+    pool = questionBank.filter(q =>
+      (!subject || q.subject === subject) && matchesRequestedLevel(q.level, level)
+    );
   }
   if (pool.length < count) pool = [...questionBank];
 
