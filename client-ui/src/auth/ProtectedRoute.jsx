@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabaseClient';
 import { Icon } from '@iconify/react';
+
+// If Supabase is not configured (no env vars), skip auth entirely so the app
+// works in development without credentials.
+const AUTH_DISABLED = !supabase;
 
 /**
  * AuthLoader Component
@@ -146,8 +151,11 @@ function AuthLoader({ onDone }) {
 const ProtectedRoute = () => {
   const navigate = useNavigate();
   const auth = useAuth();
-  const [showLoader, setShowLoader] = useState(true);
-  const [minLoadTimeElapsed, setMinLoadTimeElapsed] = useState(false);
+  const [showLoader, setShowLoader] = useState(!AUTH_DISABLED);
+  const [minLoadTimeElapsed, setMinLoadTimeElapsed] = useState(AUTH_DISABLED);
+
+  // Skip all auth logic when Supabase is not configured
+  if (AUTH_DISABLED) return <Outlet />;
 
   // Ensure minimum loading time for visual effect
   useEffect(() => {
