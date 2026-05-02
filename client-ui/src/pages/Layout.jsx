@@ -5,14 +5,19 @@ import { useLocalization } from '../contexts/LocalizationContext';
 import { useUser } from '../contexts/UserContext';
 import Avatar from '../components/Avatar';
 import SearchModal from '../components/SearchModal';
+import NotificationsPanel from '../components/NotificationsPanel';
+import { useNotifications } from '../contexts/NotificationsContext';
 import { deriveAnalytics } from '../data/examBank';
 
 export default function Layout() {
   const location = useLocation();
   const { t } = useLocalization();
   const { user } = useUser();
+  const { unreadCount, markAllRead, refresh: refreshNotifs } = useNotifications();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const bellRef = useRef(null);
 
   // Live streak from real exam attempts. Recompute on every route change so
   // returning from an exam shows the new streak immediately.
@@ -47,10 +52,12 @@ export default function Layout() {
     return () => container.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Always show nav on route change
+  // Always show nav on route change; also refresh notifications
   useEffect(() => {
     setNavVisible(true);
     lastScrollY.current = 0;
+    setIsNotifOpen(false);
+    refreshNotifs();
   }, [location.pathname]);
 
   // Keyboard shortcut for search (Cmd+K or Ctrl+K)
@@ -173,10 +180,25 @@ export default function Layout() {
               <span className="text-xs md:text-sm font-bold text-slate-300">{streak}<span className="hidden sm:inline"> {streak === 1 ? 'Day' : 'Days'}</span></span>
             </div>
 
-            <button className="relative w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
-              <Icon icon="solar:bell-linear" width="24" height="24" style={{ strokeWidth: 1 }} />
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#f99c00] border border-[#0B1120]"></span>
-            </button>
+            <div className="relative" ref={bellRef}>
+              <button
+                onClick={() => setIsNotifOpen(v => !v)}
+                className={`relative w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors ${isNotifOpen ? 'bg-white/5 text-white' : 'text-slate-400 hover:text-white'}`}
+                aria-label="Notifications"
+              >
+                <Icon icon={isNotifOpen ? 'solar:bell-bold' : 'solar:bell-linear'} width="24" height="24" style={{ strokeWidth: 1 }} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 rounded-full bg-[#f99c00] border border-[#0B1120] flex items-center justify-center">
+                    <span className="text-[9px] font-bold text-black px-0.5">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                  </span>
+                )}
+              </button>
+
+              <NotificationsPanel
+                isOpen={isNotifOpen}
+                onClose={() => setIsNotifOpen(false)}
+              />
+            </div>
 
             <button className="hidden md:flex w-11 h-11 items-center justify-center rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
               <Icon icon="solar:settings-linear" width="24" height="24" style={{ strokeWidth: 1 }} />

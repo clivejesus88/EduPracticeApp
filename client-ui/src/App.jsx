@@ -13,6 +13,7 @@ import ProtectedRoute from './auth/ProtectedRoute';
 import { LocalizationProvider } from './contexts/LocalizationContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { UserProvider } from './contexts/UserContext';
+import { NotificationsProvider } from './contexts/NotificationsContext';
 import NotFoundPage from './pages/NotFoundPage';
 
 // Public auth pages
@@ -28,7 +29,8 @@ function App() {
     <LocalizationProvider>
       <AuthProvider>
         <UserProvider>
-          <Router>
+          <NotificationsProvider>
+            <Router>
             <Routes>
               {/* Public Authentication Routes */}
               <Route path="/login" element={<Login />} />
@@ -55,7 +57,8 @@ function App() {
               {/* Unknown URLs (no matching protected child): NotFoundPage. Must stay last; do not add path="*" inside ProtectedRoute or guests would hit login instead of 404. */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
-          </Router>
+            </Router>
+          </NotificationsProvider>
         </UserProvider>
       </AuthProvider>
     </LocalizationProvider>
