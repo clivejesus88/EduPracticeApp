@@ -179,7 +179,7 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
       {/* Chat Panel */}
       <div 
         className={`
- fixed lg:absolute inset-y-0 right-0 z-50
+ fixed lg:absolute top-0 bottom-[60px] lg:bottom-0 right-0 z-50
  w-full sm:w-96 lg:w-[400px]
  bg-[#0a0f1a] border-l border-white/5
  flex flex-col
