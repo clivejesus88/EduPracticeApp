@@ -5,6 +5,7 @@ import { AiChat01Icon } from '@hugeicons/core-free-icons';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { examLevels, physicsTopics, mathematicsTopics } from '../data/examStructure';
 import ChatInterface from '../components/ChatInterface';
+import MarkdownText from '../components/MarkdownText';
 import FocusAudio from '../components/FocusAudio';
 import { trackPracticeAttempt, trackTopicView } from '../utils/analyticsTracker';
 import { evaluatePracticeSolution } from '../services/practiceAiService';
@@ -652,11 +653,11 @@ export default function Practice() {
                 {/* Model answer */}
                 {feedback?.modelAnswer && (
                   <div className="rounded-2xl bg-[#12151C] border border-white/10 p-5">
-                    <div className="flex items-center gap-2 mb-2.5">
+                    <div className="flex items-center gap-2 mb-3">
                       <Icon icon="solar:document-text-linear" width="15" className="text-slate-400" />
                       <p className="text-sm font-bold text-slate-400 uppercase tracking-wide">Model answer outline</p>
                     </div>
-                    <p className="text-sm text-slate-400 leading-relaxed">{feedback.modelAnswer}</p>
+                    <MarkdownText content={feedback.modelAnswer} className="text-sm text-slate-300" />
                   </div>
                 )}
 

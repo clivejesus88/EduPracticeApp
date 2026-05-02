@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AiBrain05Icon } from '@hugeicons/core-free-icons';
+import MarkdownText from './MarkdownText';
 
 const INITIAL_MESSAGES = [
   {
@@ -29,29 +30,23 @@ function Avatar({ role }) {
 
 function MessageBubble({ msg }) {
   const isUser = msg.role === 'user';
-  const parts = msg.text.split('\n').filter(Boolean);
 
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
       <Avatar role={msg.role} />
       <div className={`max-w-[85%] space-y-1 ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
         <div
-          className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
- isUser
- ? 'bg-[#f99c00] text-[#0B1120] rounded-br-md font-medium'
- : 'bg-white/5 border border-white/10 text-slate-200 rounded-bl-md'
- }`}
+          className={`px-4 py-3 rounded-2xl text-sm ${
+            isUser
+              ? 'bg-[#f99c00] text-[#0B1120] rounded-br-md font-medium leading-relaxed'
+              : 'bg-white/[0.06] border border-white/[0.09] text-slate-200 rounded-bl-md'
+          }`}
         >
-          {parts.map((line, i) => {
-            const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#f99c00]">$1</strong>');
-            return (
-              <p
-                key={i}
-                className={i > 0 ? 'mt-2' : ''}
-                dangerouslySetInnerHTML={{ __html: formatted }}
-              />
-            );
-          })}
+          {isUser ? (
+            <p className="leading-relaxed">{msg.text}</p>
+          ) : (
+            <MarkdownText content={msg.text} compact className="text-slate-200" />
+          )}
         </div>
         <span className={`text-[10px] text-slate-500 px-1 ${isUser ? 'text-right' : 'text-left'}`}>
           {msg.time}
