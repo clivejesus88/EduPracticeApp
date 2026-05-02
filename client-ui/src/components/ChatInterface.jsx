@@ -4,6 +4,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { AiBrain05Icon } from '@hugeicons/core-free-icons';
 import MarkdownText from './MarkdownText';
 import { streamGemini, isAvailable } from '../services/geminiService';
+import { checkAndRecord, blockedMessage } from '../utils/rateLimiter';
 
 const INITIAL_MESSAGES = [
   {
@@ -134,6 +135,22 @@ export default function ChatInterface({ isOpen, onClose, initialMessage, context
   const sendMessage = async (overrideText) => {
     const text = (overrideText ?? inputValue).trim();
     if (!text || isStreaming) return;
+
+    // Rate limit: 12 messages per 5 minutes
+    const rl = checkAndRecord('aiChat');
+    if (rl.blocked) {
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          role: 'assistant',
+          text: `You're sending messages too quickly. Please wait ${Math.ceil(rl.retryAfterMs / 1000)} seconds before sending another message.`,
+          time: timeStr,
+        },
+      ]);
+      return;
+    }
 
     const userMsg = {
       id: Date.now(),

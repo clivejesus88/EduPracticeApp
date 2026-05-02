@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Icon } from '@iconify/react';
 import { callGemini, isAvailable } from '../services/geminiService';
+import { checkAndRecord } from '../utils/rateLimiter';
 
 const SPEEDS = [0.8, 1.0, 1.25, 1.5, 1.75];
 
@@ -48,6 +49,12 @@ export default function AudioOverview({ topic, subject, level, description, onCl
     text.match(/[^.!?…]+[.!?…]+[\s]*/g)?.map((s) => s.trim()).filter(Boolean) ?? [text];
 
   const generateScript = useCallback(async () => {
+    const rl = checkAndRecord('audioOverview');
+    if (rl.blocked) {
+      setErrorMsg(`Too many audio overview requests. Please wait ${Math.ceil(rl.retryAfterMs / 60000)} minute(s) before generating another.`);
+      setStatus('error');
+      return;
+    }
     setStatus('loading');
     setErrorMsg('');
     try {

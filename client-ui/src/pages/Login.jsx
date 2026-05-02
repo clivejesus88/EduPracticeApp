@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
 import { GraduationCapIcon, MailIcon, LockIcon } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { useRateLimit } from '../hooks/useRateLimit'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -14,6 +15,9 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [resetEmailSent, setResetEmailSent] = useState(false)
 
+  const loginRL  = useRateLimit('login')
+  const resetRL  = useRateLimit('passwordReset')
+
   // Redirect to dashboard if already authenticated
   useEffect(() => {
     if (auth.isAuthenticated) {
@@ -22,20 +26,26 @@ export default function Login() {
   }, [auth.isAuthenticated, navigate])
 
   // Email + Password sign-in
-  // No tokens passed in URLs - session managed by Supabase internally
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    // Rate-limit check — only count failures, so we check first then decide
+    if (loginRL.blocked) {
+      setError(loginRL.message)
+      return
+    }
+
     setError('')
     setLoading(true)
 
     const result = await auth.signIn(email, password)
 
     if (result.success) {
-      // Session is automatically managed by Supabase
-      // Just navigate to dashboard
+      loginRL.clear()          // Clear failed-attempt counter on success
       navigate('/dashboard')
     } else {
-      setError(result.error)
+      loginRL.record()         // Only record on failure
+      setError(loginRL.blocked ? loginRL.message : result.error)
     }
 
     setLoading(false)
@@ -61,10 +71,16 @@ export default function Login() {
       return
     }
 
+    if (resetRL.blocked) {
+      setError(resetRL.message)
+      return
+    }
+
     setError('')
     setLoading(true)
 
     const result = await auth.requestPasswordReset(email)
+    resetRL.record()
 
     if (result.success) {
       setResetEmailSent(true)

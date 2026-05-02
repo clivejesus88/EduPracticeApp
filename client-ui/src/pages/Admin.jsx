@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from '@iconify/react';
+import { useRateLimit } from '../hooks/useRateLimit';
 import { PRACTICE_SCENARIOS, getCustomScenarios, saveCustomScenario, deleteCustomScenario, getCustomMockExams, saveCustomMockExam, deleteCustomMockExam } from '../data/practiceScenarios';
 
 const ADMIN_PIN_KEY  = 'eduPractice_adminVerified';
@@ -46,14 +47,26 @@ function PinGate({ onVerified }) {
   const [pin, setPin] = useState('');
   const [err, setErr] = useState('');
   const inputRef = useRef(null);
+  const pinRL = useRateLimit('adminPin');
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (pinRL.blocked) {
+      setErr(pinRL.message);
+      return;
+    }
+
     if (pin === CORRECT_PIN) {
       sessionStorage.setItem(ADMIN_PIN_KEY, '1');
       onVerified();
     } else {
-      setErr('Incorrect PIN. Please try again.');
+      pinRL.record();
+      const fresh = pinRL.blocked;
+      setErr(fresh
+        ? pinRL.message
+        : `Incorrect PIN. ${pinRL.remaining > 0 ? `${pinRL.remaining} attempt${pinRL.remaining !== 1 ? 's' : ''} remaining.` : ''}`
+      );
       setPin('');
       inputRef.current?.focus();
     }
@@ -76,18 +89,24 @@ function PinGate({ onVerified }) {
               ref={inputRef}
               type="password"
               value={pin}
-              onChange={e => { setPin(e.target.value); setErr(''); }}
+              onChange={e => { setPin(e.target.value); if (!pinRL.blocked) setErr(''); }}
               placeholder="Admin PIN"
               autoFocus
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:bg-white/[0.07] transition-all text-center text-lg tracking-widest"
+              disabled={pinRL.blocked}
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:bg-white/[0.07] transition-all text-center text-lg tracking-widest disabled:opacity-40 disabled:cursor-not-allowed"
             />
-            {err && <p className="text-red-400 text-xs mt-2 text-center">{err}</p>}
+            {(err || pinRL.blocked) && (
+              <p className="text-red-400 text-xs mt-2 text-center">
+                {pinRL.blocked ? pinRL.message : err}
+              </p>
+            )}
           </div>
           <button
             type="submit"
-            className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm transition-all active:scale-[0.98]"
+            disabled={pinRL.blocked}
+            className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Unlock Admin
+            {pinRL.blocked ? `Locked — try in ${pinRL.countdown}` : 'Unlock Admin'}
           </button>
           <Link to="/" className="block text-center text-sm text-slate-500 hover:text-slate-300 transition-colors">
             ← Back to EduPractice

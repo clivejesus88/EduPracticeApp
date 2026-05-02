@@ -1,3 +1,5 @@
+import { checkAndRecord, blockedMessage } from '../utils/rateLimiter';
+
 const HF_API_URL = 'https://router.huggingface.co/v1/chat/completions';
 const HF_MODEL = import.meta.env.VITE_HF_MODEL || 'Qwen/Qwen2.5-72B-Instruct';
 const HF_API_KEY = import.meta.env.VITE_HF_API_KEY;
@@ -28,6 +30,12 @@ export async function evaluatePracticeSolution({
   studentAnswer,
   attachmentName = null,
 }) {
+  // Rate limit: 6 evaluations per 10 minutes
+  const rl = checkAndRecord('aiEval');
+  if (rl.blocked) {
+    throw new Error(blockedMessage('aiEval', rl.retryAfterMs));
+  }
+
   if (!HF_API_KEY) {
     throw new Error('Missing VITE_HF_API_KEY. Add it to client-ui/.env.local to enable AI evaluation.');
   }

@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { GraduationCapIcon, MailIcon, LockIcon, UserIcon, CheckIcon, CircleAlert } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import * as authService from '../services/authService';
+import { useRateLimit } from '../hooks/useRateLimit';
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -27,6 +28,8 @@ export default function Signup() {
   const [verifying, setVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState('');
   const [verificationMessage, setVerificationMessage] = useState('');
+
+  const signupRL = useRateLimit('signup');
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
@@ -65,7 +68,12 @@ export default function Signup() {
   const handleSignup = async (e) => {
     e.preventDefault();
     setError('');
-    
+
+    if (signupRL.blocked) {
+      setError(signupRL.message);
+      return;
+    }
+
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
@@ -73,6 +81,7 @@ export default function Signup() {
     }
 
     setLoading(true);
+    signupRL.record();
 
     const result = await auth.signUp(formData.email, formData.password, {
       firstName: formData.firstName,
