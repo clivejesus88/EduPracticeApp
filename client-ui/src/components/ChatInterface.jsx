@@ -3,6 +3,7 @@ import { Icon } from '@iconify/react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AiBrain05Icon } from '@hugeicons/core-free-icons';
 import MarkdownText from './MarkdownText';
+import { streamGemini, isAvailable } from '../services/geminiService';
 
 const INITIAL_MESSAGES = [
   {
@@ -73,7 +74,29 @@ function TypingIndicator() {
   );
 }
 
-export default function ChatInterface({ isOpen, onClose, initialMessage }) {
+function buildSystemPrompt(context) {
+  const base = [
+    'You are Maestro, a friendly expert A-Level tutor for Uganda UACE curriculum.',
+    'You specialise in Physics and Mathematics at A-Level / S5–S6 standard.',
+    'Give clear, step-by-step explanations. Use LaTeX notation for formulas (e.g. $F = ma$).',
+    'Reference Uganda exam board marking schemes where relevant.',
+    'Keep answers concise and well-structured using markdown.',
+    'Never reveal you are an AI model — you are Maestro, the student\'s personal tutor.',
+  ].join(' ');
+
+  if (!context) return base;
+
+  const parts = [base, `\n\nCurrent practice session:`];
+  if (context.subject) parts.push(`- Subject: ${context.subject}`);
+  if (context.level)   parts.push(`- Level: ${context.level}`);
+  if (context.topic)   parts.push(`- Topic: ${context.topic}`);
+  if (context.stem)    parts.push(`- Question stem: ${context.stem}`);
+  if (context.parts)   parts.push(`- Question parts:\n${context.parts}`);
+  parts.push('\nHelp the student understand this question. Guide without giving the full answer immediately.');
+  return parts.join('\n');
+}
+
+export default function ChatInterface({ isOpen, onClose, initialMessage, context }) {
   const [messages, setMessages] = useState(() => {
     if (initialMessage) {
       return [{
@@ -87,6 +110,8 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
   });
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const abortRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -106,9 +131,9 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
     if (isTyping || messages.length) scrollToBottom();
   }, [messages, isTyping]);
 
-  const sendMessage = async () => {
-    const text = inputValue.trim();
-    if (!text) return;
+  const sendMessage = async (overrideText) => {
+    const text = (overrideText ?? inputValue).trim();
+    if (!text || isStreaming) return;
 
     const userMsg = {
       id: Date.now(),
@@ -122,25 +147,64 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
     setIsTyping(true);
     inputRef.current?.focus();
 
-    await new Promise((r) => setTimeout(r, 1200 + Math.random() * 800));
+    // Build Gemini-format conversation history (exclude initial system greeting)
+    const history = messages
+      .filter((m) => m.role === 'user' || m.role === 'assistant')
+      .map((m) => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.text }],
+      }));
+    history.push({ role: 'user', parts: [{ text }] });
 
-    const replies = [
-      "Great question! Let me break that down for you step by step.\n\nFirst, identify the forces acting on the object. Then apply Newton's second law to find the acceleration.",
-      "That's a common area of confusion. The key insight is to separate the horizontal and vertical components.\n\n**Horizontal:** constant velocity\n**Vertical:** constant acceleration (g = 9.8 m/s²)",
-      "Exactly right! You're making great progress. Would you like to try a more challenging problem to test your understanding?",
-      "Good thinking! Let's verify that with the formula. Remember to check your units at the end — that's where most mistakes happen.",
-      "Here's a helpful tip: when dealing with inclined planes, always draw a free body diagram first. It makes identifying the force components much easier.",
-    ];
+    const botId = Date.now() + 1;
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    const botMsg = {
-      id: Date.now() + 1,
-      role: 'assistant',
-      text: replies[Math.floor(Math.random() * replies.length)],
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
+    if (!isAvailable()) {
+      // Graceful fallback when no API key
+      await new Promise((r) => setTimeout(r, 800));
+      setIsTyping(false);
+      setMessages((prev) => [
+        ...prev,
+        { id: botId, role: 'assistant', text: 'Maestro needs a Gemini API key (VITE_GEMINI_API_KEY) to answer your questions. Please add it in the Replit Secrets panel.', time: timeStr },
+      ]);
+      return;
+    }
 
-    setIsTyping(false);
-    setMessages((prev) => [...prev, botMsg]);
+    try {
+      const systemPrompt = buildSystemPrompt(context);
+      const stream = streamGemini(history, systemPrompt, { temperature: 0.7, maxOutputTokens: 1024 });
+
+      let accumulated = '';
+      let firstChunk = true;
+
+      setIsStreaming(true);
+
+      for await (const chunk of stream) {
+        if (firstChunk) {
+          setIsTyping(false);
+          setMessages((prev) => [...prev, { id: botId, role: 'assistant', text: '', time: timeStr }]);
+          firstChunk = false;
+        }
+        accumulated += chunk;
+        setMessages((prev) =>
+          prev.map((m) => (m.id === botId ? { ...m, text: accumulated } : m))
+        );
+      }
+
+      if (firstChunk) {
+        // stream produced nothing
+        setIsTyping(false);
+        setMessages((prev) => [...prev, { id: botId, role: 'assistant', text: 'Sorry, I didn\'t get a response. Please try again.', time: timeStr }]);
+      }
+    } catch (err) {
+      setIsTyping(false);
+      const errText = err.message?.includes('429')
+        ? 'Rate limit reached. Please wait a moment before sending another message.'
+        : `Something went wrong: ${err.message}`;
+      setMessages((prev) => [...prev, { id: botId, role: 'assistant', text: errText, time: timeStr }]);
+    } finally {
+      setIsStreaming(false);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -198,9 +262,9 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
             </div>
             <div>
               <h2 className="text-white font-semibold text-sm">Maestro AI</h2>
-              <p className="text-emerald-400 text-xs flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Ready to help
+              <p className={`text-xs flex items-center gap-1 ${isStreaming ? 'text-amber-400' : 'text-emerald-400'}`}>
+                <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isStreaming ? 'bg-amber-400' : 'bg-emerald-400'}`} />
+                {isStreaming ? 'Thinking…' : 'Ready to help'}
               </p>
             </div>
           </div>
@@ -233,12 +297,12 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
         </div>
 
         {/* Quick Actions */}
-        {messages.length <= 2 && (
+        {messages.length <= 2 && !isStreaming && (
           <div className="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-none">
             {quickActions.map((action) => (
               <button
                 key={action.label}
-                onClick={() => setInputValue(action.label)}
+                onClick={() => sendMessage(action.label)}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-full border border-white/10 bg-white/5 hover:bg-[#f99c00]/10 hover:border-[#f99c00]/30 text-xs text-slate-300 hover:text-[#f99c00] whitespace-nowrap transition-all shrink-0"
               >
                 <Icon icon={action.icon} width="14" />
@@ -267,20 +331,23 @@ export default function ChatInterface({ isOpen, onClose, initialMessage }) {
             />
 
             <button
-              onClick={sendMessage}
-              disabled={!inputValue.trim()}
+              onClick={() => sendMessage()}
+              disabled={!inputValue.trim() || isStreaming}
               className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 ${
- inputValue.trim()
- ? 'bg-[#f99c00] hover:bg-[#e88d00] text-[#0B1120] hover:scale-105 active:scale-95 '
- : 'bg-white/5 text-slate-600 cursor-not-allowed'
- }`}
+                inputValue.trim() && !isStreaming
+                  ? 'bg-[#f99c00] hover:bg-[#e88d00] text-[#0B1120] hover:scale-105 active:scale-95'
+                  : 'bg-white/5 text-slate-600 cursor-not-allowed'
+              }`}
             >
-              <Icon icon="solar:arrow-up-linear" width="18" />
+              {isStreaming
+                ? <span className="w-3 h-3 rounded-full border-2 border-slate-600 border-t-slate-400 animate-spin" />
+                : <Icon icon="solar:arrow-up-linear" width="18" />
+              }
             </button>
           </div>
 
           <p className="text-[10px] text-slate-600 text-center mt-2">
-            Press Enter to send
+            {isStreaming ? 'Maestro is responding…' : 'Enter to send · Shift+Enter for new line'}
           </p>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { AiChat01Icon } from '@hugeicons/core-free-icons';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { examLevels, physicsTopics, mathematicsTopics } from '../data/examStructure';
 import ChatInterface from '../components/ChatInterface';
+import AudioOverview from '../components/AudioOverview';
 import MarkdownText from '../components/MarkdownText';
 import FocusAudio from '../components/FocusAudio';
 import { trackPracticeAttempt, trackTopicView } from '../utils/analyticsTracker';
@@ -120,6 +121,7 @@ export default function Practice() {
   const [showMarkScheme, setShowMarkScheme]       = useState(false);
   const [error, setError]                         = useState('');
   const [isChatOpen, setIsChatOpen]               = useState(false);
+  const [audioOverviewTopic, setAudioOverviewTopic] = useState(null);
 
   const inputFileRef       = useRef(null);
   const workboardStartedAt = useRef(Date.now());
@@ -382,6 +384,14 @@ export default function Practice() {
                   </div>
 
                   <button
+                    onClick={() => setAudioOverviewTopic({ name: topic.name, subject: topic.subject, level: selectedExamLevel })}
+                    className="shrink-0 w-9 h-9 rounded-xl border border-white/10 bg-white/[0.04] flex items-center justify-center text-slate-500 hover:border-violet-500/40 hover:bg-violet-500/10 hover:text-violet-400 transition-all active:scale-95"
+                    title="Audio Overview"
+                  >
+                    <Icon icon="solar:headphones-linear" width="16" />
+                  </button>
+
+                  <button
                     onClick={() => handleTopicSelect(topic)}
                     className="shrink-0 px-4 py-2 rounded-xl border border-white/10 bg-white/[0.04] text-sm font-semibold text-white/70 hover:border-amber-500/50 hover:bg-amber-500/10 hover:text-amber-300 transition-all active:scale-95"
                   >
@@ -396,6 +406,15 @@ export default function Practice() {
             {allTopics.length} topics · {selectedExamLevel?.toUpperCase().replace('-', ' ')}
           </p>
         </div>
+
+        {audioOverviewTopic && (
+          <AudioOverview
+            topic={audioOverviewTopic.name}
+            subject={audioOverviewTopic.subject}
+            level={audioOverviewTopic.level?.toUpperCase().replace('-', ' ') || 'A-Level'}
+            onClose={() => setAudioOverviewTopic(null)}
+          />
+        )}
       </div>
     );
   }
@@ -439,6 +458,15 @@ export default function Practice() {
         </div>
 
         <FocusAudio />
+
+        <button
+          onClick={() => setAudioOverviewTopic({ name: selectedTopic?.name || scenario?.topic || 'Topic', subject: selectedSubject, level: selectedExamLevel })}
+          className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl border border-violet-500/20 bg-violet-500/[0.07] text-violet-400 hover:bg-violet-500/15 hover:border-violet-500/40 transition-all text-sm font-semibold shrink-0"
+          title="Audio Overview"
+        >
+          <Icon icon="solar:headphones-linear" width="16" />
+          Listen
+        </button>
 
         <button
           onClick={() => setIsChatOpen(!isChatOpen)}
@@ -804,8 +832,24 @@ export default function Practice() {
       <ChatInterface
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
-        initialMessage={`Hello! I'm Maestro. I see you're working on ${selectedTopic?.name || 'this topic'}. Ask me anything!`}
+        initialMessage={`Hello! I'm Maestro. I see you're working on **${selectedTopic?.name || 'this topic'}**. Ask me anything about the question or the concept!`}
+        context={{
+          subject: selectedSubject,
+          level: selectedExamLevel?.toUpperCase().replace('-', ' '),
+          topic: selectedTopic?.name || scenario?.topic,
+          stem: scenario?.stem,
+          parts: scenario?.parts?.map((p) => `(${p.label}) ${p.text} [${p.marks} marks]`).join('\n'),
+        }}
       />
+
+      {audioOverviewTopic && (
+        <AudioOverview
+          topic={audioOverviewTopic.name}
+          subject={audioOverviewTopic.subject}
+          level={audioOverviewTopic.level?.toUpperCase().replace('-', ' ') || 'A-Level'}
+          onClose={() => setAudioOverviewTopic(null)}
+        />
+      )}
     </div>
   );
 }
