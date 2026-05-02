@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Icon } from '@iconify/react';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { useUser } from '../contexts/UserContext';
@@ -30,6 +30,48 @@ export default function Profile() {
   });
 
   const { data: analytics, loading: analyticsLoading, source } = useAnalyticsData();
+
+  // Separate prefs state — lives independently from the profile edit flow
+  const [prefs, setPrefs] = useState({
+    dailyGoal: user.dailyGoal ?? 50,
+    notifications: user.notifications ?? true,
+    examLevel: user.examLevel ?? 'A-Level',
+  });
+  const [prefSaved, setPrefSaved] = useState(false);
+  const prefSavedTimer = useRef(null);
+
+  // Sync prefs when user context loads (e.g. after localStorage restores)
+  useEffect(() => {
+    setPrefs({
+      dailyGoal: user.dailyGoal ?? 50,
+      notifications: user.notifications ?? true,
+      examLevel: user.examLevel ?? 'A-Level',
+    });
+  }, [user.dailyGoal, user.notifications, user.examLevel]);
+
+  const savePrefs = async (updated) => {
+    await updateUser(updated);
+    clearTimeout(prefSavedTimer.current);
+    setPrefSaved(true);
+    prefSavedTimer.current = setTimeout(() => setPrefSaved(false), 2500);
+  };
+
+  const handlePrefChange = (key, value) => {
+    const updated = { ...prefs, [key]: value };
+    setPrefs(updated);
+    savePrefs(updated);
+  };
+
+  const resetPrefs = () => {
+    const defaults = { dailyGoal: 50, notifications: true, examLevel: 'A-Level' };
+    setPrefs(defaults);
+    savePrefs(defaults);
+  };
+
+  // Today's questions from analytics weekly data (last entry = today)
+  const todayQuestions = analytics?.weeklyActivity?.[6]?.questions ?? 0;
+  const goalProgress = prefs.dailyGoal > 0 ? Math.min(100, Math.round((todayQuestions / prefs.dailyGoal) * 100)) : 0;
+  const goalMet = todayQuestions >= prefs.dailyGoal;
 
   // Keep local form in sync when the user context changes from elsewhere
   useEffect(() => {
@@ -255,8 +297,7 @@ export default function Profile() {
         <div className="flex gap-2 mb-6 border-b border-white/5 overflow-x-auto">
           {[
             { id: 'personal', label: t('profile.personalInfo') },
-            { id: 'security', label: t('profile.accountSettings') },
-            { id: 'preferences', label: t('profile.preferences') },
+            { id: 'preferences', label: 'Study Preferences' },
             { id: 'achievements', label: t('profile.achievements') }
           ].map(tab => (
             <button
@@ -342,84 +383,134 @@ export default function Profile() {
             </div>
           )}
 
-          {/* Security Tab */}
-          {activeTab === 'security' && (
-            <div className="space-y-5">
-              <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-2xl p-6 sm:p-8">
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <Icon icon="solar:lock-linear" width="20" />
-                  {t('profile.changePassword')}
-                </h3>
-                <button className="px-5 py-2.5 rounded-lg border border-white/10 hover:border-white/20 text-sm font-semibold text-slate-300 hover:text-white transition-all">
-                  Update Password
-                </button>
+          {/* Study Preferences Tab */}
+          {activeTab === 'preferences' && (
+            <div className="space-y-4">
+
+              {/* Auto-save confirmation banner */}
+              <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-300 ${
+                prefSaved
+                  ? 'bg-emerald-500/10 border-emerald-500/25 opacity-100'
+                  : 'opacity-0 pointer-events-none border-transparent'
+              }`}>
+                <Icon icon="solar:check-circle-bold" width="15" className="text-emerald-400 shrink-0" />
+                <span className="text-sm font-medium text-emerald-300">Preferences saved automatically</span>
               </div>
 
+              {/* Daily Goal card */}
+              <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-2xl p-6 sm:p-8">
+                <div className="flex items-start justify-between mb-5">
+                  <div>
+                    <h3 className="text-base font-bold text-white flex items-center gap-2 mb-1">
+                      <Icon icon="solar:target-linear" width="18" className="text-[#f99c00]" />
+                      Daily Question Goal
+                    </h3>
+                    <p className="text-xs text-slate-500">Set how many questions you want to answer each day</p>
+                  </div>
+                  <span className={`text-2xl font-black tabular-nums ${goalMet ? 'text-emerald-400' : 'text-[#f99c00]'}`}>
+                    {prefs.dailyGoal}
+                  </span>
+                </div>
+
+                {/* Slider */}
+                <div className="mb-5">
+                  <input
+                    type="range"
+                    min="5"
+                    max="200"
+                    step="5"
+                    value={prefs.dailyGoal}
+                    onChange={(e) => handlePrefChange('dailyGoal', Number(e.target.value))}
+                    className="w-full accent-[#f99c00]"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-600 mt-1">
+                    <span>5</span><span>50</span><span>100</span><span>150</span><span>200</span>
+                  </div>
+                </div>
+
+                {/* Today's progress */}
+                <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <span className="text-xs font-semibold text-slate-400">Today's progress</span>
+                    <div className="flex items-center gap-1.5">
+                      {goalMet && <Icon icon="solar:check-circle-bold" width="13" className="text-emerald-400" />}
+                      <span className={`text-xs font-bold tabular-nums ${goalMet ? 'text-emerald-400' : 'text-slate-300'}`}>
+                        {todayQuestions} / {prefs.dailyGoal}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-full h-2 bg-white/[0.06] rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${goalMet ? 'bg-emerald-500' : 'bg-[#f99c00]'}`}
+                      style={{ width: `${goalProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-600 mt-2">
+                    {goalMet
+                      ? `Goal met! Great work today.`
+                      : `${prefs.dailyGoal - todayQuestions} more question${prefs.dailyGoal - todayQuestions !== 1 ? 's' : ''} to reach your goal`}
+                  </p>
+                </div>
+              </div>
+
+              {/* Exam level card */}
+              <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-2xl p-6 sm:p-8">
+                <h3 className="text-base font-bold text-white flex items-center gap-2 mb-1">
+                  <Icon icon="solar:diploma-linear" width="18" className="text-violet-400" />
+                  Exam Level
+                </h3>
+                <p className="text-xs text-slate-500 mb-5">Questions and scenarios are filtered to match your level</p>
+                <div className="flex gap-3">
+                  {['A-Level', 'UACE'].map((level) => (
+                    <button
+                      key={level}
+                      onClick={() => handlePrefChange('examLevel', level)}
+                      className={`flex-1 py-3 rounded-xl text-sm font-bold border transition-all ${
+                        prefs.examLevel === level
+                          ? 'bg-[#f99c00]/15 border-[#f99c00]/40 text-[#f99c00]'
+                          : 'bg-white/[0.03] border-white/[0.08] text-slate-400 hover:border-white/20 hover:text-white'
+                      }`}
+                    >
+                      {level}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Notifications card */}
               <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-2xl p-6 sm:p-8">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                      <Icon icon="solar:shield-linear" width="20" />
-                      {t('profile.twoFactorAuth')}
+                    <h3 className="text-base font-bold text-white flex items-center gap-2 mb-1">
+                      <Icon icon="solar:bell-linear" width="18" className="text-blue-400" />
+                      Daily Reminders
                     </h3>
-                    <p className="text-sm text-slate-400">Add an extra layer of security</p>
+                    <p className="text-xs text-slate-500">Remind me to practice each day</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-xs font-bold uppercase ${formData.twoFactor ? 'text-emerald-400' : 'text-slate-500'}`}>
-                      {formData.twoFactor ? t('profile.enabled') : t('profile.disabled')}
-                    </span>
-                    {isEditing && (
-                      <button
-                        onClick={() => setFormData(prev => ({ ...prev, twoFactor: !prev.twoFactor }))}
-                        className={`relative w-12 h-7 rounded-full transition-colors ${formData.twoFactor ? 'bg-emerald-500' : 'bg-slate-600'}`}
-                      >
-                        <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${formData.twoFactor ? 'translate-x-5' : ''}`}></div>
-                      </button>
-                    )}
-                  </div>
+                  <button
+                    onClick={() => handlePrefChange('notifications', !prefs.notifications)}
+                    className={`relative w-12 h-7 rounded-full transition-colors shrink-0 ${prefs.notifications ? 'bg-emerald-500' : 'bg-slate-700'}`}
+                  >
+                    <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${prefs.notifications ? 'translate-x-5' : ''}`} />
+                  </button>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Preferences Tab */}
-          {activeTab === 'preferences' && (
-            <div className="bg-gradient-to-br from-[#111827] to-[#0D0F1B] border border-white/5 rounded-2xl p-6 sm:p-8 space-y-6">
-              <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-3">{t('profile.dailyGoalTarget')}</label>
-                {isEditing ? (
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="range"
-                      name="dailyGoal"
-                      min="10"
-                      max="200"
-                      value={formData.dailyGoal}
-                      onChange={handleChange}
-                      className="flex-1"
-                    />
-                    <span className="text-lg font-bold text-[#f99c00] min-w-fit">{formData.dailyGoal} questions</span>
-                  </div>
-                ) : (
-                  <p className="text-white text-lg">{formData.dailyGoal} questions per day</p>
+                {prefs.notifications && (
+                  <p className="mt-3 text-xs text-emerald-400 flex items-center gap-1.5">
+                    <Icon icon="solar:check-circle-bold" width="13" />
+                    Reminders are on
+                  </p>
                 )}
               </div>
 
-              <div className="border-t border-white/5 pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-semibold text-white mb-1">{t('profile.notificationReminders')}</h4>
-                    <p className="text-sm text-slate-400">Receive daily practice reminders</p>
-                  </div>
-                  {isEditing && (
-                    <button
-                      onClick={() => setFormData(prev => ({ ...prev, notifications: !prev.notifications }))}
-                      className={`relative w-12 h-7 rounded-full transition-colors ${formData.notifications ? 'bg-emerald-500' : 'bg-slate-600'}`}
-                    >
-                      <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${formData.notifications ? 'translate-x-5' : ''}`}></div>
-                    </button>
-                  )}
-                </div>
+              {/* Reset to defaults */}
+              <div className="flex justify-end pt-1">
+                <button
+                  onClick={resetPrefs}
+                  className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-400 transition-colors"
+                >
+                  <Icon icon="solar:restart-linear" width="13" />
+                  Reset to defaults
+                </button>
               </div>
             </div>
           )}

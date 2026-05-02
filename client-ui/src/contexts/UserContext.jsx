@@ -174,6 +174,21 @@ const saveUserProfileToSupabase = async (userId, userData) => {
   }
 };
 
+const PREFS_KEY = 'edupractice_user_prefs';
+
+function loadLocalPrefs() {
+  try {
+    const raw = localStorage.getItem(PREFS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function saveLocalPrefs(prefs) {
+  try {
+    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+  } catch {}
+}
+
 /**
  * UserProvider Component
  */
@@ -191,7 +206,9 @@ export function UserProvider({ children }) {
         }
 
         if (!auth.isAuthenticated || !auth.user) {
-          setUser(defaultUser);
+          // Load saved preferences from localStorage for unauthenticated users
+          const local = loadLocalPrefs();
+          setUser(local ? { ...defaultUser, ...local } : defaultUser);
           setIsLoading(false);
           return;
         }
@@ -234,11 +251,6 @@ export function UserProvider({ children }) {
   }, [auth.isAuthenticated, auth.user, auth.isLoading]);
 
   const updateUser = async (updates) => {
-    if (!user.id) {
-      console.warn('Cannot update user without ID');
-      return false;
-    }
-
     const newUser = { ...user, ...updates };
 
     if (updates.firstName || updates.lastName) {
@@ -248,17 +260,30 @@ export function UserProvider({ children }) {
       );
     }
 
-    try {
-      const success = await saveUserProfileToSupabase(user.id, newUser);
-      if (success) {
-        setUser(newUser);
-        return true;
+    // Always persist to localStorage so preferences survive page reloads
+    const prefsToSave = {
+      fullName: newUser.fullName,
+      email: newUser.email,
+      schoolName: newUser.schoolName,
+      examLevel: newUser.examLevel,
+      dailyGoal: newUser.dailyGoal,
+      notifications: newUser.notifications,
+    };
+    saveLocalPrefs(prefsToSave);
+
+    // Optimistically update state immediately
+    setUser(newUser);
+
+    // Also persist to Supabase if authenticated
+    if (user.id) {
+      try {
+        await saveUserProfileToSupabase(user.id, newUser);
+      } catch (err) {
+        console.error('Failed to sync prefs to Supabase:', err);
       }
-      return false;
-    } catch (err) {
-      console.error('Failed to update user:', err);
-      return false;
     }
+
+    return true;
   };
 
   const updateStats = async (updates) => {
