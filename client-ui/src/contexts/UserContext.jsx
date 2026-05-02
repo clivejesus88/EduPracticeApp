@@ -23,7 +23,7 @@ const defaultUser = {
   stats: {
     questionsAttempted: 0,
     averageAccuracy: 0,
-    totalStudyTime: '0h 0m',
+    totalStudyTime: '0 minutes',
     achievements: 0
   }
 };
@@ -37,28 +37,72 @@ const buildFullName = (firstName, lastName) => {
 };
 
 /**
- * Fetch user data from Supabase
+ * Fetch user stats from Supabase
+ */
+const fetchUserStatsFromSupabase = async (userId) => {
+  if (!userId) return null;
+
+  try {
+    const { data: stats, error } = await supabase
+      .from('user_stats')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.warn('Error fetching user stats:', error);
+      return null;
+    }
+
+    return {
+      questionsAttempted: stats?.questions_attempted || 0,
+      averageAccuracy: stats?.average_accuracy || 0,
+      totalStudyTime: stats?.total_study_time || '0 minutes',
+      achievements: stats?.achievements || 0
+    };
+  } catch (err) {
+    console.error('Failed to fetch user stats:', err);
+    return null;
+  }
+};
+
+/**
+ * Save user stats to Supabase
+ */
+const saveUserStatsToSupabase = async (userId, stats) => {
+  if (!userId) return false;
+
+  try {
+    const { error } = await supabase
+      .from('user_stats')
+      .upsert({
+        id: userId,
+        questions_attempted: stats.questionsAttempted,
+        average_accuracy: stats.averageAccuracy,
+        total_study_time: stats.totalStudyTime,
+        achievements: stats.achievements,
+        updated_at: new Date().toISOString()
+      });
+
+    if (error) {
+      console.warn('Error saving user stats:', error);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error('Failed to save user stats:', err);
+    return false;
+  }
+};
+
+/**
+ * Fetch user profile from Supabase
  */
 const fetchUserDataFromSupabase = async (authUser) => {
   if (!authUser) return null;
 
   try {
-    // Try to get user profile from profiles table
-    // Note: You'll need to create this table in Supabase with the following structure:
-    // CREATE TABLE profiles (
-    //   id uuid REFERENCES auth.users(id) PRIMARY KEY,
-    //   email text UNIQUE,
-    //   first_name text,
-    //   last_name text,
-    //   school_name text,
-    //   exam_level text,
-    //   avatar_url text,
-    //   daily_goal integer DEFAULT 50,
-    //   notifications boolean DEFAULT true,
-    //   two_factor boolean DEFAULT false,
-    //   created_at timestamp DEFAULT now()
-    // );
-
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
@@ -66,12 +110,10 @@ const fetchUserDataFromSupabase = async (authUser) => {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      // PGRST116 = no rows found (expected for new users)
       console.warn('Error fetching user profile:', error);
       return null;
     }
 
-    // Build user data from auth user and profile
     const fullName = buildFullName(
       profile?.first_name || authUser.user_metadata?.first_name || '',
       profile?.last_name || authUser.user_metadata?.last_name || ''
@@ -90,12 +132,7 @@ const fetchUserDataFromSupabase = async (authUser) => {
       twoFactor: profile?.two_factor || false,
       isVerified: authUser.email_confirmed_at !== null,
       avatar: profile?.avatar_url || null,
-      stats: {
-        questionsAttempted: 0,
-        averageAccuracy: 0,
-        totalStudyTime: '0h 0m',
-        achievements: 0
-      }
+      stats: defaultUser.stats // will be replaced after stats fetch
     };
   } catch (err) {
     console.error('Failed to fetch user data:', err);
@@ -139,14 +176,12 @@ const saveUserProfileToSupabase = async (userId, userData) => {
 
 /**
  * UserProvider Component
- * Manages user data synchronized with Supabase
  */
 export function UserProvider({ children }) {
   const auth = useAuth();
   const [user, setUser] = useState(defaultUser);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load user data when auth state changes
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -156,19 +191,20 @@ export function UserProvider({ children }) {
         }
 
         if (!auth.isAuthenticated || !auth.user) {
-          // User not authenticated - reset to default
           setUser(defaultUser);
           setIsLoading(false);
           return;
         }
 
-        // Fetch user data from Supabase
         const userData = await fetchUserDataFromSupabase(auth.user);
+        const statsData = await fetchUserStatsFromSupabase(auth.user.id);
 
         if (userData) {
-          setUser(userData);
+          setUser({
+            ...userData,
+            stats: statsData || defaultUser.stats
+          });
         } else {
-          // Create a user object from auth data
           const fullName = buildFullName(
             auth.user.user_metadata?.first_name || '',
             auth.user.user_metadata?.last_name || ''
@@ -197,9 +233,6 @@ export function UserProvider({ children }) {
     loadUserData();
   }, [auth.isAuthenticated, auth.user, auth.isLoading]);
 
-  /**
-   * Update user data locally and sync to Supabase
-   */
   const updateUser = async (updates) => {
     if (!user.id) {
       console.warn('Cannot update user without ID');
@@ -208,7 +241,6 @@ export function UserProvider({ children }) {
 
     const newUser = { ...user, ...updates };
 
-    // If full name is updated, recalculate it
     if (updates.firstName || updates.lastName) {
       newUser.fullName = buildFullName(
         updates.firstName || user.firstName,
@@ -217,14 +249,11 @@ export function UserProvider({ children }) {
     }
 
     try {
-      // Update in Supabase
       const success = await saveUserProfileToSupabase(user.id, newUser);
-
       if (success) {
         setUser(newUser);
         return true;
       }
-
       return false;
     } catch (err) {
       console.error('Failed to update user:', err);
@@ -232,26 +261,24 @@ export function UserProvider({ children }) {
     }
   };
 
-  /**
-   * Update user statistics
-   */
-  const updateStats = (updates) => {
-    setUser(prev => ({
-      ...prev,
-      stats: { ...prev.stats, ...updates }
-    }));
+  const updateStats = async (updates) => {
+    if (!user.id) {
+      console.warn('Cannot update stats without user ID');
+      return false;
+    }
+
+    const newStats = { ...user.stats, ...updates };
+    const success = await saveUserStatsToSupabase(user.id, newStats);
+
+    if (success) {
+      setUser(prev => ({ ...prev, stats: newStats }));
+      return true;
+    }
+    return false;
   };
 
-  /**
-   * Get first name for greetings
-   */
-  const getFirstName = () => {
-    return user.firstName || 'User';
-  };
+  const getFirstName = () => user.firstName || 'User';
 
-  /**
-   * Get initials for avatar fallback
-   */
   const getInitials = () => {
     const parts = [user.firstName, user.lastName].filter(Boolean);
     if (parts.length >= 2) {
@@ -272,9 +299,6 @@ export function UserProvider({ children }) {
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 
-/**
- * useUser hook
- */
 export function useUser() {
   const context = useContext(UserContext);
   if (!context) {

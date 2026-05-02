@@ -8,529 +8,771 @@ import ChatInterface from '../components/ChatInterface';
 import { trackPracticeAttempt, trackTopicView } from '../utils/analyticsTracker';
 import { evaluatePracticeSolution } from '../services/practiceAiService';
 
-const PRACTICE_DRAFT_KEY = 'eduPractice_practiceDraft';
+// ─── Draft persistence ────────────────────────────────────────────────────────
+const DRAFT_KEY = 'eduPractice_practiceDraft';
+const loadDraft = () => {
+  try { const r = localStorage.getItem(DRAFT_KEY); return r ? JSON.parse(r) : null; }
+  catch { return null; }
+};
+const saveDraft = (d) => localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
 
-function loadPracticeDraft() {
-  try {
-    const raw = localStorage.getItem(PRACTICE_DRAFT_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function savePracticeDraft(draft) {
-  localStorage.setItem(PRACTICE_DRAFT_KEY, JSON.stringify(draft));
-}
-
-function getScenarioForSubject(subject) {
-  if (subject === 'physics') {
-    return {
-      title: 'Murchison Falls Energy & Power',
-      topic: 'Energy & Power',
-      maxMark: 10,
-      question:
-        'Murchison Falls drops water through a height of 43 m. If 200 kg of water passes over the falls each second, derive the expression for the power available and calculate the maximum power output assuming g = 10 m/s².',
-    };
-  }
-
-  return {
-    title: 'Applied Mathematics Modelling',
+// ─── Scenario data ────────────────────────────────────────────────────────────
+const SCENARIOS = {
+  physics: {
+    topic: 'Energy & Power',
+    difficulty: 2,
+    totalMarks: 10,
+    stem: 'A recently excavated spherical marble artifact has diameter of 2.4 × 10³ mm',
+    parts: [
+      { label: 'a', text: 'Write down the radius of the artifact.', marks: 1 },
+      { label: 'b', text: 'Murchison Falls drops water through a height of 43 m. If 200 kg of water passes over the falls each second, derive the expression for the power available and calculate the maximum power output assuming g = 10 m/s².', marks: 4 },
+      { label: 'c', text: 'Calculate the maximum theoretical power output. Take g = 10 m s⁻².', marks: 3 },
+      { label: 'd', text: 'Suggest two reasons why the actual power output of a hydroelectric turbine at this location would be less than your answer in (c).', marks: 2 },
+    ],
+  },
+  mathematics: {
     topic: 'Calculus Applications',
-    maxMark: 10,
-    question:
-      'A water tank in Mbarara is filled at a rate r(t) = 6t^2 + 2 litres per minute, where t is in minutes. Derive the expression for the total volume added in the first 5 minutes and compute the result.',
-  };
+    difficulty: 3,
+    totalMarks: 10,
+    stem: 'A water tank in Mbarara is filled at a rate r(t) = 6t² + 2 litres per minute, where t is measured in minutes.',
+    parts: [
+      { label: 'a', text: 'Write down the definite integral that represents the total volume added in the first 5 minutes.', marks: 2 },
+      { label: 'b', text: 'Evaluate the integral from part (a), showing all working.', marks: 4 },
+      { label: 'c', text: 'Determine the rate of change of r(t) at t = 3 minutes and interpret your answer in context.', marks: 2 },
+      { label: 'd', text: 'Sketch the graph of r(t) for 0 ≤ t ≤ 5, labelling all key features.', marks: 2 },
+    ],
+  },
+};
+
+const MARK_SCHEME = {
+  physics: [
+    { criterion: 'Identifies gravitational potential energy', marks: 1, max: 1 },
+    { criterion: 'States P = ΔE/Δt', marks: 1, max: 1 },
+    { criterion: 'Substitutes ΔE = mgh correctly', marks: 1, max: 1 },
+    { criterion: 'Derives P = ṁgh with units verified', marks: 1, max: 1 },
+    { criterion: 'Correct substitution of ṁ = 200, g = 10, h = 43', marks: 1, max: 1 },
+    { criterion: 'P = 86 000 W / 86 kW stated', marks: 1, max: 1 },
+    { criterion: 'Correct unit stated (W or kW)', marks: 1, max: 1 },
+    { criterion: 'Valid reason 1 (e.g. friction / turbine inefficiency)', marks: 1, max: 1 },
+    { criterion: 'Valid reason 2 (e.g. heat loss / water splashing)', marks: 1, max: 1 },
+    { criterion: 'Both reasons are distinct and scientifically valid', marks: 1, max: 1 },
+  ],
+  mathematics: [
+    { criterion: 'Correct integral limits (0 to 5)', marks: 1, max: 1 },
+    { criterion: 'Correct integrand ∫(6t² + 2) dt written', marks: 1, max: 1 },
+    { criterion: 'Antiderivative: 2t³ + 2t', marks: 2, max: 2 },
+    { criterion: 'Correct substitution of limits', marks: 1, max: 1 },
+    { criterion: 'Final answer 260 litres', marks: 1, max: 1 },
+    { criterion: 'Correct derivative r′(t) = 12t', marks: 1, max: 1 },
+    { criterion: 'r′(3) = 36 with units and contextual interpretation', marks: 1, max: 1 },
+    { criterion: 'Correct shape (increasing, concave up)', marks: 1, max: 1 },
+    { criterion: 'Labelled axes with r(0) = 2 and r(5) = 152 shown', marks: 1, max: 1 },
+  ],
+};
+
+const SUBJECT_COLORS = {
+  physics:     { bar: 'bg-blue-500', badge: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+  mathematics: { bar: 'bg-rose-500', badge: 'text-rose-400 bg-rose-500/10 border-rose-500/20' },
+};
+
+const AVATAR_COLORS = [
+  'bg-blue-600', 'bg-rose-600', 'bg-violet-600', 'bg-amber-500',
+  'bg-emerald-600', 'bg-cyan-600', 'bg-indigo-600', 'bg-pink-600',
+  'bg-teal-600', 'bg-orange-600', 'bg-fuchsia-600', 'bg-lime-600',
+];
+
+// ─── Difficulty indicator ─────────────────────────────────────────────────────
+function DifficultyDots({ level = 1 }) {
+  const label = level === 1 ? 'Easy' : level === 2 ? 'Medium' : 'Hard';
+  const color =
+    level === 1 ? 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20' :
+    level === 2 ? 'text-amber-400 bg-amber-400/10 border-amber-400/20' :
+                  'text-red-400 bg-red-400/10 border-red-400/20';
+  return (
+    <div className="flex items-center gap-1.5 shrink-0">
+      <div className="flex items-center gap-[3px]">
+        {[1, 2, 3].map((i) => (
+          <span key={i} className={`w-1.5 h-1.5 rounded-full ${
+            i <= level
+              ? i === 1 ? 'bg-emerald-400' : i === 2 ? 'bg-amber-400' : 'bg-red-400'
+              : 'bg-white/10'
+          }`} />
+        ))}
+      </div>
+      <span className={`text-[9px] font-bold font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border ${color}`}>
+        {label}
+      </span>
+    </div>
+  );
 }
 
+// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function Practice() {
   const { t } = useLocalization();
-  const draft = useMemo(() => loadPracticeDraft(), []);
-  const [step, setStep] = useState(draft?.step || 'selectLevel'); // selectLevel | topics | workboard
+  const draft = useMemo(() => loadDraft(), []);
+
+  const [step, setStep]                           = useState(draft?.step || 'selectLevel');
   const [selectedExamLevel, setSelectedExamLevel] = useState(draft?.selectedExamLevel || null);
-  const [selectedSubject, setSelectedSubject] = useState(draft?.selectedSubject || null);
-  const [selectedTopic, setSelectedTopic] = useState(draft?.selectedTopic || null);
-  const [aiState, setAiState] = useState(draft?.feedback ? 'feedback' : 'idle'); // idle | analyzing | feedback
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [solutionText, setSolutionText] = useState(draft?.solutionText || '');
-  const [selectedFileName, setSelectedFileName] = useState(draft?.selectedFileName || '');
-  const [feedback, setFeedback] = useState(draft?.feedback || null);
-  const [error, setError] = useState('');
-  const inputFileRef = useRef(null);
+  const [selectedSubject, setSelectedSubject]     = useState(draft?.selectedSubject || null);
+  const [selectedTopic, setSelectedTopic]         = useState(draft?.selectedTopic || null);
+  const [targetGrade, setTargetGrade]             = useState(draft?.targetGrade || 4);
+
+  const [solutionText, setSolutionText]           = useState(draft?.solutionText || '');
+  const [selectedFileName, setSelectedFileName]   = useState(draft?.selectedFileName || '');
+  const [aiState, setAiState]                     = useState(draft?.feedback ? 'feedback' : 'idle');
+  const [feedback, setFeedback]                   = useState(draft?.feedback || null);
+  const [awardedMarks, setAwardedMarks]           = useState(draft?.awardedMarks || null);
+  const [showHint, setShowHint]                   = useState({});
+  const [showMarkScheme, setShowMarkScheme]       = useState(false);
+  const [error, setError]                         = useState('');
+  const [isChatOpen, setIsChatOpen]               = useState(false);
+
+  // Single shared file input — always mounted at root level, triggered from anywhere
+  const inputFileRef       = useRef(null);
   const workboardStartedAt = useRef(Date.now());
 
-  // Get topics based on selected exam level
-  const getTopics = () => {
+  const scenario   = useMemo(() => selectedSubject ? SCENARIOS[selectedSubject] : null,  [selectedSubject]);
+  const markScheme = useMemo(() => selectedSubject ? MARK_SCHEME[selectedSubject] : [],  [selectedSubject]);
+  const totalScore   = awardedMarks ? awardedMarks.reduce((s, m) => s + m.marks, 0) : 0;
+  const maxScore     = markScheme.reduce((s, m) => s + m.max, 0);
+  const scorePercent = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+
+  const allTopics = useMemo(() => {
     if (!selectedExamLevel) return [];
-
-    const levelKey = selectedExamLevel === 'uace' ? 'ALEVEL' : selectedExamLevel.toUpperCase().replace('-', '');
+    const levelKey = selectedExamLevel === 'uace'
+      ? 'ALEVEL'
+      : selectedExamLevel.toUpperCase().replace('-', '');
     const topics = [];
+    let colorIdx = 0;
 
-    if (physicsTopics[levelKey]) {
-      topics.push({
-        id: 'physics',
-        name: t('subjects.physics'),
-        description: t('subjects.physicsDescription'),
-        icon: 'solar:flash-bold',
-        color: 'from-blue-500 to-cyan-500',
-        questions: physicsTopics[levelKey].reduce((sum, t) => sum + t.questions, 0),
-        subtopics: physicsTopics[levelKey],
-        difficulty: 'Intermediate to Advanced',
+    const addSubtopics = (subtopics, subject, icon) => {
+      subtopics.forEach((sub, i) => {
+        topics.push({
+          id: `${subject}-${i}`,
+          subject,
+          name: sub.name,
+          code: `${subject === 'physics' ? 'PHY' : 'MTH'} ${Math.floor(i / 2) + 1}.${(i % 2) + 1}`,
+          questions: sub.questions,
+          progress: [0, 0, 53, 64, 0, 0, 0, 0, 0][i] ?? 0,
+          color: AVATAR_COLORS[colorIdx++ % AVATAR_COLORS.length],
+          icon,
+        });
       });
-    }
+    };
 
-    if (mathematicsTopics[levelKey]) {
-      topics.push({
-        id: 'mathematics',
-        name: t('subjects.mathematics'),
-        description: t('subjects.mathematicsDescription'),
-        icon: 'solar:calculator-bold',
-        color: 'from-rose-500 to-pink-500',
-        questions: mathematicsTopics[levelKey].reduce((sum, t) => sum + t.questions, 0),
-        subtopics: mathematicsTopics[levelKey],
-        difficulty: 'Intermediate to Advanced',
-      });
-    }
-
+    if (physicsTopics[levelKey])     addSubtopics(physicsTopics[levelKey],     'physics',     'solar:flash-bold');
+    if (mathematicsTopics[levelKey]) addSubtopics(mathematicsTopics[levelKey], 'mathematics', 'solar:calculator-bold');
     return topics;
-  };
-
-  const topics = getTopics();
-  const currentScenario = useMemo(() => getScenarioForSubject(selectedSubject), [selectedSubject]);
+  }, [selectedExamLevel]);
 
   useEffect(() => {
-    savePracticeDraft({
-      step,
-      selectedExamLevel,
-      selectedSubject,
-      selectedTopic,
-      solutionText,
-      selectedFileName,
-      feedback,
-    });
-  }, [step, selectedExamLevel, selectedSubject, selectedTopic, solutionText, selectedFileName, feedback]);
+    saveDraft({ step, selectedExamLevel, selectedSubject, selectedTopic, solutionText, selectedFileName, feedback, awardedMarks, targetGrade });
+  }, [step, selectedExamLevel, selectedSubject, selectedTopic, solutionText, selectedFileName, feedback, awardedMarks, targetGrade]);
 
-  const handleExamLevelSelect = (levelId) => {
-    setSelectedExamLevel(levelId);
-    setSelectedSubject(null);
-    setSelectedTopic(null);
-    setStep('topics');
-  };
+  // ─── Handlers ────────────────────────────────────────────────────────────────
+  const handleExamLevelSelect = (id) => { setSelectedExamLevel(id); setStep('topics'); };
 
   const handleTopicSelect = (topic) => {
     setSelectedTopic(topic);
-    setSelectedSubject(topic.id);
+    setSelectedSubject(topic.subject);
     trackTopicView(topic.name, topic.id);
     setSolutionText('');
     setSelectedFileName('');
     setFeedback(null);
+    setAwardedMarks(null);
+    setShowHint({});
+    setShowMarkScheme(false);
     setError('');
     workboardStartedAt.current = Date.now();
     setStep('workboard');
   };
 
-  const handleBackToTopics = () => {
+  const handleEndPractice = () => {
     setStep('topics');
     setSelectedTopic(null);
     setAiState('idle');
-    setSolutionText('');
-    setSelectedFileName('');
     setFeedback(null);
+    setAwardedMarks(null);
     setError('');
-  };
-
-  const handleBackToExamLevel = () => {
-    setStep('selectLevel');
-    setSelectedExamLevel(null);
-    setSelectedSubject(null);
-    setAiState('idle');
-    setFeedback(null);
-    setError('');
+    setShowMarkScheme(false);
   };
 
   const handleSubmit = async () => {
     if (aiState !== 'idle') return;
-    if (!solutionText.trim()) {
-      setError('Write your solution before sending it for evaluation.');
+    if (!solutionText.trim() && !selectedFileName) {
+      setError('Write your answer or attach your working before submitting.');
       return;
     }
     setError('');
     setAiState('analyzing');
-
     try {
       const result = await evaluatePracticeSolution({
-        subject: selectedTopic?.name || 'Practice',
-        level: selectedExamLevel?.toUpperCase().replace('-', ' ') || 'A-Level',
-        topic: currentScenario.topic,
-        question: currentScenario.question,
-        studentAnswer: solutionText,
+        subject:        selectedTopic?.name || 'Practice',
+        level:          selectedExamLevel?.toUpperCase().replace('-', ' ') || 'A-Level',
+        topic:          scenario?.topic || '',
+        question:       scenario?.parts.map(p => `(${p.label}) ${p.text} [${p.marks} marks]`).join('\n') || '',
+        studentAnswer:  solutionText,
         attachmentName: selectedFileName || null,
       });
-
       setFeedback(result);
+      const awarded = markScheme.map((m, i) => ({
+        ...m,
+        marks: i < Math.round((result.score / 100) * markScheme.length) ? m.max : 0,
+      }));
+      setAwardedMarks(awarded);
       setAiState('feedback');
-      const durationMinutes = Math.max(1, Math.round((Date.now() - workboardStartedAt.current) / 60000));
-      trackPracticeAttempt(selectedTopic?.name || 'Practice', result.score, durationMinutes);
+      const dur = Math.max(1, Math.round((Date.now() - workboardStartedAt.current) / 60000));
+      trackPracticeAttempt(selectedTopic?.name || 'Practice', result.score, dur);
     } catch (err) {
-      setError(err.message || 'AI evaluation failed.');
+      setError(err.message || 'Grading failed. Please try again.');
       setAiState('idle');
     }
   };
 
-  // Reserve room on the right for the chat sidebar on large screens when chat is open
-  const workboardPaneClass = isChatOpen ? 'lg:pr-[400px]' : '';
+  const handleFileChange = (e) => {
+    const name = e.target.files?.[0]?.name || '';
+    setSelectedFileName(name);
+    e.target.value = ''; // reset so same file can be re-selected
+  };
 
-  return (
-    <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-[#0B1120]">
+  // ─────────────────────────────────────────────────────────────────────────────
+  // SCREEN 1 — Level selection
+  // ─────────────────────────────────────────────────────────────────────────────
+  if (step === 'selectLevel') {
+    return (
+      <div className="flex-1 overflow-y-auto bg-[#0D0F14] px-4 sm:px-8 py-8 sm:py-14">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8 sm:mb-10">
+            <p className="text-[10px] font-bold font-mono text-amber-400/70 uppercase tracking-[0.25em] mb-3">
+              // PRACTICE
+            </p>
+            <h1 className="text-2xl sm:text-4xl font-bold text-white tracking-tight mb-2 leading-tight">
+              {t('practice.chooseATopic')}
+            </h1>
+            <p className="text-slate-500 text-sm">{t('examLevels.selectLevel')}</p>
+          </div>
 
-      {/* EXAM LEVEL SELECTION SCREEN */}
-      {step === 'selectLevel' ? (
-        <div className="flex-1 overflow-y-auto w-full px-5 sm:px-8 md:px-10 py-8 sm:py-10 md:py-14">
-          <div className="max-w-5xl mx-auto">
-
-            {/* Header */}
-            <div className="mb-8 sm:mb-10 md:mb-14">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-3 leading-[1.1]">
-                {t('practice.chooseATopic')}
-              </h1>
-              <p className="text-base sm:text-lg text-slate-400 max-w-2xl">
-                {t('examLevels.selectLevel')}
-              </p>
-            </div>
-
-            {/* Exam Level Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-              {Object.values(examLevels).map((level) => (
-                <button
-                  key={level.id}
-                  onClick={() => handleExamLevelSelect(level.id)}
-                  className="group relative p-6 sm:p-7 md:p-8 rounded-2xl border border-white/10 bg-[#111827] hover:border-[#f99c00]/40 hover:bg-[#141d2e] transition-all duration-200 text-left active:scale-[0.98] flex flex-col gap-5 min-h-[180px]"
-                >
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${level.color} flex items-center justify-center text-white`}>
-                    <Icon icon="solar:book-2-bold" width="22" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {Object.values(examLevels).map((level) => (
+              <button
+                key={level.id}
+                onClick={() => handleExamLevelSelect(level.id)}
+                className="group text-left p-5 sm:p-6 rounded-xl border border-white/[0.06] bg-[#12151C] hover:border-amber-500/30 hover:bg-[#14171F] transition-all duration-200 active:scale-[0.98]"
+              >
+                <div className="flex items-start justify-between mb-4 sm:mb-5">
+                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${level.color} flex items-center justify-center`}>
+                    <Icon icon="solar:book-2-bold" width="18" className="text-white" />
                   </div>
-
-                  <div className="flex-1">
-                    <h3 className="text-xl sm:text-2xl font-bold text-white mb-1.5 group-hover:text-[#f99c00] transition-colors break-words">
-                      {level.name}
-                    </h3>
-                    <p className="text-sm text-slate-400 leading-relaxed">{level.description}</p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                      {level.difficulty}
-                    </span>
-                    <Icon icon="solar:arrow-right-linear" width="18" className="text-slate-500 group-hover:text-[#f99c00] group-hover:translate-x-0.5 transition-all" />
-                  </div>
-                </button>
-              ))}
-            </div>
+                  <Icon icon="solar:arrow-right-linear" width="14" className="text-white/20 group-hover:text-amber-400 transition-colors mt-1" />
+                </div>
+                <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-amber-400 transition-colors mb-1">{level.name}</h3>
+                <p className="text-xs text-slate-500 leading-relaxed mb-4">{level.description}</p>
+                <span className="text-[9px] font-bold font-mono uppercase tracking-widest text-white/20">{level.difficulty}</span>
+              </button>
+            ))}
           </div>
         </div>
-      ) : step === 'topics' ? (
-        // TOPICS SELECTION SCREEN
-        <div className="flex-1 overflow-y-auto w-full px-5 sm:px-8 md:px-10 py-8 sm:py-10 md:py-14">
-          <div className="max-w-5xl mx-auto">
+      </div>
+    );
+  }
 
-            {/* Back Button */}
-            <button
-              onClick={handleBackToExamLevel}
-              className="inline-flex items-center gap-2 text-slate-400 hover:text-[#f99c00] transition-colors mb-6 sm:mb-8 text-sm font-medium group"
-            >
-              <Icon icon="solar:alt-arrow-left-linear" width="18" className="group-hover:-translate-x-0.5 transition-transform shrink-0" />
-              <span>{t('practice.backToTopics')}</span>
-            </button>
+  // ─────────────────────────────────────────────────────────────────────────────
+  // SCREEN 2 — Topic list
+  // ─────────────────────────────────────────────────────────────────────────────
+  if (step === 'topics') {
+    return (
+      <div className="flex-1 overflow-y-auto bg-[#0D0F14]">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-6 space-y-3 sm:space-y-4">
 
-            {/* Header */}
-            <div className="mb-8 sm:mb-10 md:mb-12">
-              <p className="text-xs text-[#f99c00] font-bold mb-3 uppercase tracking-[0.18em]">
-                {selectedExamLevel?.toUpperCase().replace('-', ' ')}
-              </p>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-3 leading-[1.1]">
-                {t('practice.chooseATopic')}
-              </h1>
-              <p className="text-base sm:text-lg text-slate-400 max-w-2xl">
-                {t('practice.selectSubject')}
-              </p>
+          <button
+            onClick={() => setStep('selectLevel')}
+            className="inline-flex items-center gap-1.5 text-slate-500 hover:text-slate-300 transition-colors text-xs font-mono group"
+          >
+            <Icon icon="solar:alt-arrow-left-linear" width="13" className="group-hover:-translate-x-0.5 transition-transform" />
+            BACK
+          </button>
+
+          {/* Header card */}
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 sm:p-5">
+            <div className="flex items-start justify-between gap-3 mb-5">
+              <div>
+                <h2 className="text-sm sm:text-base font-bold text-white font-mono">
+                  {selectedExamLevel?.toUpperCase().replace('-', ' ')} PRACTICE
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">Select a topic to begin</p>
+              </div>
+              <button
+                onClick={() => setStep('selectLevel')}
+                className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-[10px] font-bold font-mono transition-colors shrink-0"
+              >
+                CHANGE
+              </button>
             </div>
 
-            {/* Topics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 mb-10 md:mb-14">
-              {topics.map((topic) => (
-                <button
-                  key={topic.id}
-                  onClick={() => handleTopicSelect(topic)}
-                  className="group relative p-6 sm:p-7 md:p-8 rounded-2xl border border-white/10 bg-[#111827] hover:border-[#f99c00]/40 hover:bg-[#141d2e] transition-all duration-200 text-left active:scale-[0.98] flex flex-col"
-                >
-                  {/* Icon row */}
-                  <div className="flex items-start justify-between mb-5 gap-3">
-                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${topic.color} flex items-center justify-center text-white shrink-0`}>
-                      <Icon icon={topic.icon} width="22" />
+            {/* Grade target slider 1–7 */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5 px-0.5">
+                {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                  <span key={n} className={`text-[10px] font-mono select-none ${targetGrade === n ? 'text-amber-400 font-bold' : 'text-white/20'}`}>
+                    {n}
+                  </span>
+                ))}
+              </div>
+              {/* Slider — taller touch target on mobile */}
+              <div className="relative h-8 flex items-center">
+                <div className="absolute inset-x-0 h-1.5 rounded-full bg-white/[0.06]" />
+                <div
+                  className="absolute left-0 h-1.5 rounded-full bg-amber-500/60 transition-all"
+                  style={{ width: `${((targetGrade - 1) / 6) * 100}%` }}
+                />
+                {/* Thumb */}
+                <div
+                  className="absolute w-4 h-4 bg-amber-500 rounded-full shadow-lg shadow-amber-500/30 transition-all pointer-events-none z-20"
+                  style={{ left: `calc(${((targetGrade - 1) / 6) * 100}% - 8px)` }}
+                />
+                {/* Transparent interactive range on top */}
+                <input
+                  type="range" min={1} max={7} step={1}
+                  value={targetGrade}
+                  onChange={(e) => setTargetGrade(Number(e.target.value))}
+                  className="absolute inset-x-0 w-full h-8 opacity-0 cursor-pointer z-30"
+                  style={{ touchAction: 'none' }}
+                />
+              </div>
+              <p className="text-[9px] font-mono text-slate-600 mt-1">TARGET GRADE: {targetGrade}</p>
+            </div>
+          </div>
+
+          {/* Topic list */}
+          <div className="bg-[#12151C] rounded-xl border border-white/[0.06] overflow-hidden divide-y divide-white/[0.04]">
+            {allTopics.length === 0 ? (
+              <p className="py-12 text-center text-xs font-mono text-slate-600">NO TOPICS FOUND FOR THIS LEVEL.</p>
+            ) : allTopics.map((topic) => {
+              const subjectColors = SUBJECT_COLORS[topic.subject] || {};
+              return (
+                <div key={topic.id} className="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-white/[0.02] transition-colors">
+                  {/* Icon */}
+                  <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg ${topic.color} flex items-center justify-center shrink-0`}>
+                    <Icon icon={topic.icon} width="16" className="text-white" />
+                  </div>
+
+                  {/* Name + progress */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-1 min-w-0">
+                      <p className="text-xs font-semibold text-white truncate min-w-0">{topic.code} – {topic.name}</p>
+                      <span className={`text-[8px] font-bold font-mono uppercase px-1.5 py-0.5 rounded border shrink-0 ${subjectColors.badge}`}>
+                        {topic.subject === 'physics' ? 'PHY' : 'MTH'}
+                      </span>
                     </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-bold text-white">{topic.questions}</p>
-                      <p className="text-[11px] text-slate-500 uppercase tracking-wider">{t('practice.questions')}</p>
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1 h-[5px] rounded-full bg-white/[0.06] overflow-hidden">
+                        <div className="absolute top-1/2 left-1/2 -translate-y-1/2 w-px h-3 bg-white/10 z-10" />
+                        {topic.progress > 0 && (
+                          <div
+                            className={`absolute inset-y-0 left-0 rounded-full ${subjectColors.bar} transition-all duration-500`}
+                            style={{ width: `${topic.progress}%` }}
+                          />
+                        )}
+                      </div>
+                      <span className="text-[9px] font-mono text-slate-600 w-6 text-right shrink-0">
+                        {topic.progress > 0 ? `${topic.progress}%` : '–'}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Title */}
-                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-1.5 group-hover:text-[#f99c00] transition-colors break-words">
-                    {topic.name}
-                  </h3>
+                  {/* Start button */}
+                  <button
+                    onClick={() => handleTopicSelect(topic)}
+                    className="shrink-0 px-3 sm:px-4 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] text-[10px] sm:text-xs font-bold font-mono text-white/60 hover:border-amber-500/40 hover:bg-amber-500/10 hover:text-amber-400 transition-all active:scale-95"
+                  >
+                    START
+                  </button>
+                </div>
+              );
+            })}
+          </div>
 
-                  {/* Description */}
-                  <p className="text-sm text-slate-400 leading-relaxed mb-5 flex-1">
-                    {topic.description}
-                  </p>
+          <p className="text-center text-[9px] font-mono text-slate-700 pb-4">
+            {allTopics.length} TOPICS · {selectedExamLevel?.toUpperCase().replace('-', ' ')}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-                  {/* Subtopics chips */}
-                  {topic.subtopics && topic.subtopics.length > 0 && (
-                    <div className="mb-5">
-                      <div className="flex flex-wrap gap-1.5">
-                        {topic.subtopics.slice(0, 3).map((sub, i) => (
-                          <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-white/5 text-slate-300 border border-white/5">
-                            {sub.name}
-                          </span>
-                        ))}
-                        {topic.subtopics.length > 3 && (
-                          <span className="text-xs px-2.5 py-1 rounded-full bg-[#f99c00]/10 text-[#f99c00] border border-[#f99c00]/20">
-                            +{topic.subtopics.length - 3}
-                          </span>
-                        )}
+  // ─────────────────────────────────────────────────────────────────────────────
+  // SCREEN 3 — Workboard
+  // ─────────────────────────────────────────────────────────────────────────────
+  return (
+    <div className="flex-1 flex flex-col bg-[#0D0F14] overflow-hidden">
+
+      {/*
+        Single shared hidden file input — always present at this level so both the
+        desktop sidebar button and mobile bottom-bar button trigger the same element.
+      */}
+      <input
+        ref={inputFileRef}
+        type="file"
+        accept=".png,.jpg,.jpeg,.pdf"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {/* ── Top bar ────────────────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-2 px-4 sm:px-8 py-2.5 border-b border-white/[0.06] shrink-0 bg-[#0D0F14]">
+        <span className="text-[10px] sm:text-xs font-mono text-slate-500 shrink-0">
+          [MAX:&nbsp;<span className="text-white font-bold">{scenario?.totalMarks}</span>]
+        </span>
+
+        <div className="flex-1" />
+
+        <DifficultyDots level={scenario?.difficulty || 1} />
+
+        {/* Desktop-only divider + icon row */}
+        <div className="hidden sm:flex items-center gap-1 ml-1">
+          <div className="w-px h-4 bg-white/[0.08] mr-1" />
+          <button className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] rounded-lg transition-all" title="Notes">
+            <Icon icon="solar:pen-2-linear" width="15" />
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] rounded-lg transition-all" title="Save">
+            <Icon icon="solar:bookmark-linear" width="15" />
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] rounded-lg transition-all" title="Flag">
+            <Icon icon="solar:flag-linear" width="15" />
+          </button>
+        </div>
+
+        {/* Ask Maestro — desktop only */}
+        <button
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-violet-500/20 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-all text-[10px] font-bold font-mono shrink-0"
+        >
+          <HugeiconsIcon icon={AiBrain05Icon} size={12} strokeWidth={2} />
+          ASK MAESTRO
+        </button>
+      </div>
+
+      {/* ── Body ───────────────────────────────────────────────────────────────── */}
+      <div className="flex-1 flex overflow-hidden">
+
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-2xl px-4 sm:px-8 md:px-14 py-5 sm:py-8">
+
+            {/* Breadcrumb nav */}
+            <div className="flex items-center gap-2 mb-5">
+              <button
+                onClick={handleEndPractice}
+                className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-400 transition-colors text-[9px] font-mono group shrink-0"
+              >
+                <Icon icon="solar:alt-arrow-left-linear" width="11" className="group-hover:-translate-x-0.5 transition-transform" />
+                TOPICS
+              </button>
+              <span className="text-white/10 text-[9px]">›</span>
+              <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest truncate">
+                {selectedTopic?.code} · {scenario?.topic}
+              </span>
+            </div>
+
+            <div className="border-t border-white/[0.06] mb-6" />
+
+            {aiState !== 'feedback' ? (
+              /* ── QUESTION ─────────────────────────────────────────────────── */
+              <div className="space-y-5">
+                {scenario?.stem && (
+                  <p className="text-sm text-slate-300 leading-relaxed">{scenario.stem}</p>
+                )}
+
+                <div className="space-y-5">
+                  {scenario?.parts.map((part) => (
+                    <div key={part.label} className="space-y-2">
+                      <div className="flex items-start gap-2">
+                        {/* (a) */}
+                        <span className="text-sm text-amber-400/60 font-mono shrink-0 w-5 pt-px">({part.label})</span>
+
+                        {/* Question text — takes all remaining width */}
+                        <p className="text-sm text-slate-300 leading-relaxed flex-1 min-w-0">{part.text}</p>
+
+                        {/* Marks + hint stacked vertically so they don't squeeze text */}
+                        <div className="shrink-0 flex flex-col items-end gap-1 ml-1 pt-px">
+                          <span className="text-[10px] font-mono text-slate-600 whitespace-nowrap">[{part.marks}]</span>
+                          <button
+                            onClick={() => setShowHint(prev => ({ ...prev, [part.label]: !prev[part.label] }))}
+                            className="flex items-center gap-0.5 text-[9px] font-bold font-mono text-violet-400 hover:text-violet-300 transition-colors whitespace-nowrap"
+                          >
+                            <Icon icon="solar:magic-stick-3-linear" width="10" />
+                            HINT
+                          </button>
+                        </div>
                       </div>
+
+                      {showHint[part.label] && (
+                        <div className="ml-7 px-3 py-2.5 rounded-lg bg-violet-500/[0.08] border border-violet-500/15 text-xs text-violet-300 leading-relaxed font-mono">
+                          Think about the fundamental formula linking this quantity to the given values. Show each substitution step explicitly.
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Working space */}
+                <div className="mt-6 space-y-2">
+                  <p className="text-[9px] font-mono text-slate-700 uppercase tracking-widest">YOUR WORKING</p>
+                  <textarea
+                    value={solutionText}
+                    onChange={(e) => setSolutionText(e.target.value)}
+                    placeholder="Write your working and answer here…"
+                    className="w-full min-h-44 sm:min-h-56 text-sm text-slate-300 placeholder:text-white/10 bg-[#12151C] border border-white/[0.06] rounded-xl p-4 resize-none focus:outline-none focus:border-amber-500/30 leading-relaxed font-mono transition-colors"
+                  />
+
+                  {/* Attached file pill */}
+                  {selectedFileName && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/[0.08] border border-amber-500/15">
+                      <Icon icon="solar:file-bold" width="13" className="text-amber-400 shrink-0" />
+                      <span className="text-xs font-mono text-amber-400 truncate min-w-0 flex-1">{selectedFileName}</span>
+                      <button
+                        onClick={() => setSelectedFileName('')}
+                        className="shrink-0 text-amber-400/50 hover:text-amber-400 transition-colors"
+                      >
+                        <Icon icon="solar:close-circle-bold" width="13" />
+                      </button>
                     </div>
                   )}
 
-                  {/* CTA Footer */}
-                  <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                      {t('practice.startNow')}
-                    </span>
-                    <div className="w-8 h-8 rounded-full bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] group-hover:bg-[#f99c00] group-hover:text-[#0B1120] transition-all shrink-0">
-                      <Icon icon="solar:alt-arrow-right-linear" width="16" />
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {/* Features Section */}
-            <div>
-              <h2 className="text-base sm:text-lg font-semibold text-white mb-4">{t('practice.whyPractice')}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div className="p-4 sm:p-5 rounded-xl bg-[#111827] border border-white/10 flex items-start gap-4 hover:border-[#f99c00]/30 transition-all">
-                  <div className="w-10 h-10 rounded-lg bg-[#f99c00]/10 flex items-center justify-center text-[#f99c00] shrink-0">
-                    <Icon icon="solar:star-bold" width="18" />
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="text-sm font-semibold text-white mb-1">{t('practice.instantAiFeedback')}</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">{t('practice.getInstantAnalysis')}</p>
-                  </div>
-                </div>
-                <div className="p-4 sm:p-5 rounded-xl bg-[#111827] border border-white/10 flex items-start gap-4 hover:border-emerald-500/30 transition-all">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0">
-                    <Icon icon="solar:target-bold" width="18" />
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="text-sm font-semibold text-white mb-1">{t('practice.trackProgress')}</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">{t('practice.monitorGrowth')}</p>
-                  </div>
+                  {error && (
+                    <p className="text-xs text-red-400 font-mono flex items-center gap-1.5">
+                      <Icon icon="solar:danger-circle-bold" width="13" />
+                      {error}
+                    </p>
+                  )}
                 </div>
               </div>
-            </div>
+            ) : (
+              /* ── FEEDBACK ─────────────────────────────────────────────────── */
+              <div className="space-y-4">
+
+                {/* Score banner */}
+                <div className={`rounded-xl p-4 sm:p-5 border ${
+                  scorePercent >= 70 ? 'bg-emerald-500/[0.08] border-emerald-500/20' :
+                  scorePercent >= 40 ? 'bg-amber-500/[0.08] border-amber-500/20' :
+                                       'bg-red-500/[0.08] border-red-500/20'
+                }`}>
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center font-bold font-mono shrink-0 border text-sm sm:text-base ${
+                      scorePercent >= 70 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
+                      scorePercent >= 40 ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
+                                           'bg-red-500/20 text-red-400 border-red-500/30'
+                    }`}>
+                      {scorePercent}%
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-bold text-xs sm:text-sm font-mono ${
+                        scorePercent >= 70 ? 'text-emerald-400' :
+                        scorePercent >= 40 ? 'text-amber-400' : 'text-red-400'
+                      }`}>
+                        {scorePercent >= 70 ? 'GREAT WORK' : scorePercent >= 40 ? 'GOOD EFFORT' : 'KEEP PRACTISING'}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-0.5 leading-snug">{feedback?.summary}</p>
+                    </div>
+
+                    <div className="shrink-0 text-right">
+                      <p className="text-xl sm:text-2xl font-bold text-white font-mono">
+                        {totalScore}<span className="text-slate-600 text-sm sm:text-base"> / {maxScore}</span>
+                      </p>
+                      <p className="text-[9px] uppercase tracking-widest text-slate-600 font-mono">marks</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mark scheme toggle */}
+                <button
+                  onClick={() => setShowMarkScheme(!showMarkScheme)}
+                  className="flex items-center gap-2 text-[10px] font-bold font-mono text-violet-400 hover:text-violet-300 transition-colors"
+                >
+                  <Icon icon={showMarkScheme ? 'solar:eye-closed-linear' : 'solar:eye-linear'} width="13" />
+                  {showMarkScheme ? 'HIDE' : 'SHOW'} MARK SCHEME
+                </button>
+
+                {showMarkScheme && (
+                  <div className="rounded-xl border border-white/[0.06] overflow-hidden text-xs font-mono">
+                    <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/[0.06] flex justify-between">
+                      <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px]">Mark Scheme</span>
+                      <span className="text-slate-600">{totalScore} / {maxScore}</span>
+                    </div>
+                    <div className="divide-y divide-white/[0.04]">
+                      {(awardedMarks || markScheme).map((item, i) => (
+                        <div key={i} className="flex items-start gap-3 px-4 py-3">
+                          <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 mt-0.5 ${
+                            item.marks > 0 ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/10 text-red-500/50'
+                          }`}>
+                            <Icon icon={item.marks > 0 ? 'solar:check-circle-bold' : 'solar:close-circle-bold'} width="12" />
+                          </div>
+                          <p className="flex-1 text-slate-500 leading-snug min-w-0">{item.criterion}</p>
+                          <span className={`font-bold shrink-0 ml-2 ${item.marks > 0 ? 'text-emerald-400' : 'text-white/10'}`}>
+                            {item.marks}/{item.max}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Strengths */}
+                {feedback?.strengths?.length > 0 && (
+                  <div className="rounded-xl bg-emerald-500/[0.05] border border-emerald-500/10 p-4">
+                    <p className="text-[9px] font-bold font-mono text-emerald-400/60 uppercase tracking-widest mb-3">WHAT YOU DID WELL</p>
+                    <ul className="space-y-2">
+                      {feedback.strengths.map((s, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs text-slate-400">
+                          <Icon icon="solar:check-circle-linear" width="13" className="text-emerald-500 shrink-0 mt-0.5" />
+                          {s}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Improvements */}
+                {feedback?.improvements?.length > 0 && (
+                  <div className="rounded-xl bg-amber-500/[0.05] border border-amber-500/10 p-4">
+                    <p className="text-[9px] font-bold font-mono text-amber-400/60 uppercase tracking-widest mb-3">IMPROVE NEXT TIME</p>
+                    <ul className="space-y-2">
+                      {feedback.improvements.map((s, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs text-slate-400">
+                          <Icon icon="solar:arrow-up-circle-linear" width="13" className="text-amber-500 shrink-0 mt-0.5" />
+                          {s}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Model answer */}
+                {feedback?.modelAnswer && (
+                  <div className="rounded-xl bg-[#12151C] border border-white/[0.06] p-4">
+                    <p className="text-[9px] font-bold font-mono text-slate-600 uppercase tracking-widest mb-2">MODEL ANSWER OUTLINE</p>
+                    <p className="text-xs text-slate-500 leading-relaxed">{feedback.modelAnswer}</p>
+                  </div>
+                )}
+
+                {/* Spacer so last card clears the sticky footer */}
+                <div className="h-2" />
+              </div>
+            )}
           </div>
         </div>
-      ) : (
-        // WORKBOARD SCREEN
-        <div className={`flex-1 overflow-y-auto w-full px-5 sm:px-8 md:px-10 py-8 sm:py-10 pb-32 lg:pb-10 ${workboardPaneClass} transition-[padding] duration-300`}>
-          <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8">
 
-            {/* Back Button */}
+        {/* ── Right sidebar — desktop only ──────────────────────────────────── */}
+        {aiState !== 'feedback' && (
+          <div className="hidden sm:flex flex-col items-center gap-3 px-2 py-5 border-l border-white/[0.06] bg-[#0D0F14] shrink-0 w-12">
             <button
-              onClick={handleBackToTopics}
-              className="inline-flex items-center gap-2 text-slate-400 hover:text-[#f99c00] transition-colors text-sm font-medium group"
+              className="w-8 h-8 rounded-lg border border-white/[0.06] bg-[#12151C] flex items-center justify-center text-slate-600 hover:text-slate-300 hover:border-white/20 transition-all"
+              title="Scan / take photo"
             >
-              <Icon icon="solar:alt-arrow-left-linear" width="18" className="group-hover:-translate-x-0.5 transition-transform shrink-0" />
-              <span>Back to Topics</span>
+              <Icon icon="solar:camera-linear" width="16" />
             </button>
 
-            {/* Header */}
-            <div>
-              <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
-                <div className="flex items-center gap-2 text-[#f99c00] text-xs font-bold uppercase tracking-[0.18em]">
-                  <Icon icon="solar:book-bookmark-linear" width="16" />
-                  <span className="truncate">{selectedTopic?.name}</span>
-                </div>
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 shrink-0">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span className="text-xs font-semibold text-emerald-400">Easy</span>
-                </div>
+            <button
+              onClick={() => inputFileRef.current?.click()}
+              className="w-8 h-8 rounded-lg border border-white/[0.06] bg-[#12151C] flex items-center justify-center text-slate-600 hover:text-slate-300 hover:border-white/20 transition-all"
+              title="Upload working"
+            >
+              <Icon icon="solar:file-upload-linear" width="16" />
+            </button>
+
+            {selectedFileName && (
+              <div className="flex flex-col items-center gap-0.5">
+                <Icon icon="solar:file-bold" width="12" className="text-amber-400" />
+                <span className="text-[7px] text-amber-400 font-mono text-center leading-tight break-all px-0.5">
+                  {selectedFileName.length > 7 ? selectedFileName.slice(0, 6) + '…' : selectedFileName}
+                </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white break-words mb-2 leading-tight">
-                {selectedTopic?.name} Question
-              </h1>
-              <p className="text-sm text-slate-400">
-                {t('practice.maximumMark')}: <span className="font-semibold text-white">{currentScenario.maxMark}</span>
-              </p>
-            </div>
-
-            {/* Scenario Card */}
-            <div className="bg-[#111827] border border-white/10 rounded-2xl p-5 sm:p-6 md:p-8 space-y-5">
-              <p className="text-slate-300 leading-relaxed text-base sm:text-lg">
-                {currentScenario.question}
-              </p>
-            </div>
-
-            {/* Answer Section */}
-            <div className="space-y-5">
-              <h3 className="text-xl sm:text-2xl font-bold text-white">{t('practice.yourSolution')}</h3>
-
-              <textarea
-                value={solutionText}
-                onChange={(e) => setSolutionText(e.target.value)}
-                placeholder="Write your derivation, working, substitutions, and final answer here."
-                className="w-full min-h-48 rounded-2xl border border-white/10 bg-[#111827] px-5 py-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#f99c00]/40"
-              />
-
-              {/* Upload Area */}
-              <div
-                onClick={() => inputFileRef.current?.click()}
-                className="w-full h-40 rounded-2xl border-2 border-dashed border-white/15 hover:border-[#f99c00]/50 bg-[#111827]/50 flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group px-5"
-              >
-                <input
-                  ref={inputFileRef}
-                  type="file"
-                  accept=".png,.jpg,.jpeg,.pdf"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    setSelectedFileName(file?.name || '');
-                  }}
-                />
-                <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-[#f99c00]/10 flex items-center justify-center text-slate-400 group-hover:text-[#f99c00] transition-all mb-3">
-                  <Icon icon="solar:upload-minimalistic-linear" width="24" />
-                </div>
-                <p className="text-base font-semibold text-white mb-1">{t('practice.clickToUpload')}</p>
-                <p className="text-sm text-slate-500 max-w-xs">
-                  {selectedFileName || `${t('practice.uploadDescription')} Attachment is optional.`}
-                </p>
-              </div>
-
-              {error && (
-                <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                  {error}
-                </div>
-              )}
-
-              {/* Submit Action */}
-              {aiState !== 'feedback' && (
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleSubmit}
-                    disabled={aiState !== 'idle'}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] px-6 py-3.5 rounded-full text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] active:scale-95"
-                  >
-                    {aiState === 'analyzing' ? (
-                      <>
-                        <Icon icon="solar:loader-bold" width="20" className="animate-spin" />
-                        <span>{t('practice.analyzing')}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Icon icon="solar:magic-stick-3-linear" width="20" />
-                        <span>{t('practice.submitForEvaluation')}</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
-
-              {/* Feedback */}
-              {aiState === 'feedback' && feedback && (
-                <div className="bg-emerald-950/30 border border-emerald-500/30 rounded-2xl p-6 md:p-8 animate-fade-in-up relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
-
-                  <div className="flex flex-col sm:flex-row gap-5 sm:items-start sm:justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-lg md:text-xl font-bold text-emerald-400 mb-3 flex items-center gap-2">
-                        <Icon icon="solar:check-circle-bold" width="22" />
-                        {t('practice.solutionEvaluated')}
-                      </h3>
-                      <div className="text-slate-300 text-sm md:text-base leading-relaxed space-y-3">
-                        <p>{feedback.summary}</p>
-                        {feedback.strengths.length > 0 && (
-                          <div>
-                            <p className="font-semibold text-white mb-1">What you did well</p>
-                            <ul className="list-disc pl-5 space-y-1">
-                              {feedback.strengths.map((item) => <li key={item}>{item}</li>)}
-                            </ul>
-                          </div>
-                        )}
-                        {feedback.improvements.length > 0 && (
-                          <div>
-                            <p className="font-semibold text-white mb-1">Improve next time</p>
-                            <ul className="list-disc pl-5 space-y-1">
-                              {feedback.improvements.map((item) => <li key={item}>{item}</li>)}
-                            </ul>
-                          </div>
-                        )}
-                        {feedback.modelAnswer && (
-                          <div className="rounded-xl bg-white/5 border border-white/10 p-4">
-                            <p className="font-semibold text-white mb-1">Model answer outline</p>
-                            <p>{feedback.modelAnswer}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="shrink-0 flex flex-col items-center justify-center p-5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 self-center sm:self-auto">
-                      <span className="text-4xl font-bold text-emerald-400 font-mono">{feedback.score}%</span>
-                      <span className="text-[11px] font-bold text-emerald-500/80 uppercase tracking-widest mt-1">{t('practice.score')}</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 pt-5 border-t border-white/10 flex flex-col sm:flex-row gap-3">
-                    <button onClick={() => { setAiState('idle'); setFeedback(null); }} className="px-6 py-3 rounded-full border border-white/15 hover:border-white/25 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all w-full sm:w-auto active:scale-95">
-                      {t('practice.tryAgain')}
-                    </button>
-                    <button onClick={() => setIsChatOpen(true)} className="px-6 py-3 rounded-full bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] text-sm font-bold transition-all flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95">
-                      <HugeiconsIcon icon={AiBrain05Icon} size={20} strokeWidth={2} />
-                      <span>{t('practice.askMaestro')}</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Floating Chat Toggle Button */}
-      {step === 'workboard' && !isChatOpen && (
+      {/* ── Bottom bar ─────────────────────────────────────────────────────────── */}
+      <div className="shrink-0 flex items-center justify-between gap-2 px-4 sm:px-8 py-3 border-t border-white/[0.06] bg-[#0D0F14]">
+
         <button
-          onClick={() => setIsChatOpen(true)}
-          className="fixed lg:absolute right-4 bottom-24 lg:bottom-8 z-30 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#f99c00] to-amber-600 rounded-full flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all duration-300 group"
-          aria-label="Open AI Tutor"
-          title="Ask Maestro AI for help"
+          onClick={handleEndPractice}
+          className="text-[10px] sm:text-xs font-bold font-mono text-red-500/60 hover:text-red-400 transition-colors shrink-0"
         >
-          <HugeiconsIcon icon={AiBrain05Icon} size={28} strokeWidth={2} className="group-hover:rotate-6 transition-transform" />
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-[#0B1120] rounded-full flex items-center justify-center">
-            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
-          </span>
+          END PRACTICE
         </button>
-      )}
 
-      {/* ChatInterface */}
-      {step === 'workboard' && (
-        <ChatInterface
-          isOpen={isChatOpen}
-          onClose={() => setIsChatOpen(false)}
-          initialMessage={`Hello! I'm Maestro, your AI study assistant. I see you're working on ${selectedTopic?.name || 'this topic'}. Feel free to ask me anything — I can explain concepts, give hints, or check your work!`}
-        />
-      )}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Mobile-only: upload */}
+          {aiState !== 'feedback' && (
+            <button
+              onClick={() => inputFileRef.current?.click()}
+              className="sm:hidden w-8 h-8 rounded-lg border border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-slate-300 active:scale-95 transition-all shrink-0"
+              title="Upload working"
+            >
+              <Icon icon="solar:file-upload-linear" width="15" />
+            </button>
+          )}
 
+          {/* Mobile-only: Maestro */}
+          <button
+            onClick={() => setIsChatOpen(!isChatOpen)}
+            className="sm:hidden w-8 h-8 rounded-lg border border-violet-500/20 bg-violet-500/10 flex items-center justify-center text-violet-400 active:scale-95 transition-all shrink-0"
+            title="Ask Maestro"
+          >
+            <HugeiconsIcon icon={AiBrain05Icon} size={15} strokeWidth={2} />
+          </button>
+
+          {aiState === 'feedback' ? (
+            <>
+              <button
+                onClick={() => {
+                  setAiState('idle');
+                  setFeedback(null);
+                  setAwardedMarks(null);
+                  setSolutionText('');
+                  setShowMarkScheme(false);
+                }}
+                className="px-3 sm:px-4 py-2 rounded-lg border border-white/[0.08] bg-white/[0.04] text-[10px] sm:text-xs font-bold font-mono text-slate-400 hover:text-white hover:border-white/20 transition-all whitespace-nowrap"
+              >
+                TRY AGAIN
+              </button>
+              <button
+                onClick={handleEndPractice}
+                className="px-3 sm:px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-[10px] sm:text-xs font-bold font-mono transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-amber-500/20"
+              >
+                NEXT →
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={aiState !== 'idle'}
+              className="px-3 sm:px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:bg-white/[0.06] disabled:text-white/20 disabled:cursor-not-allowed text-black text-[10px] sm:text-xs font-bold font-mono transition-all flex items-center gap-1.5 active:scale-95 whitespace-nowrap shadow-lg shadow-amber-500/20"
+            >
+              {aiState === 'analyzing' ? (
+                <>
+                  <Icon icon="solar:loader-bold" width="12" className="animate-spin shrink-0" />
+                  <span>MARKING...</span>
+                </>
+              ) : (
+                <>
+                  <span className="hidden sm:inline">SUBMIT FOR GRADING</span>
+                  <span className="sm:hidden">SUBMIT</span>
+                  <span>&nbsp;→</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <ChatInterface
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        initialMessage={`Hello! I'm Maestro. I see you're working on ${selectedTopic?.name || 'this topic'}. Ask me anything!`}
+      />
     </div>
   );
 }
