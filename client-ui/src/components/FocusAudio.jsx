@@ -3,32 +3,32 @@ import { Icon } from '@iconify/react';
 
 const STATIONS = [
   {
-    id: 'lofi-beats',
-    name: 'Lofi Beats',
-    description: 'Instrumental hip-hop & chillhop',
-    src: 'https://ice1.somafm.com/fluid-128-mp3',
-    icon: 'solar:headphones-round-sound-linear',
+    id: 'swiss-classic',
+    name: 'Bach & Beethoven',
+    description: 'Radio Swiss Classic — orchestral & chamber',
+    src: 'https://stream.srg-ssr.ch/m/rsc_de/mp3_128',
+    icon: 'solar:music-notes-linear',
   },
   {
-    id: 'chill-study',
-    name: 'Chill Study',
-    description: 'Downtempo grooves for deep work',
-    src: 'https://ice1.somafm.com/groovesalad-128-mp3',
-    icon: 'solar:music-note-linear',
+    id: 'classic-fm',
+    name: 'Classic FM',
+    description: 'Popular orchestral & film scores (UK)',
+    src: 'https://media-ice.musicradio.com/ClassicFMMP3',
+    icon: 'solar:vinyl-record-linear',
   },
   {
-    id: 'coffee-shop',
-    name: 'Coffee Shop',
-    description: 'Mellow vocal chillout',
-    src: 'https://ice1.somafm.com/lush-128-mp3',
-    icon: 'solar:cup-hot-linear',
+    id: 'wqxr',
+    name: 'WQXR New York',
+    description: 'Symphonies, opera & piano concertos',
+    src: 'https://stream.wqxr.org/wqxr',
+    icon: 'solar:piano-linear',
   },
   {
-    id: 'ambient',
-    name: 'Ambient Focus',
-    description: 'Atmospheric, no distractions',
-    src: 'https://ice1.somafm.com/deepspaceone-128-mp3',
-    icon: 'solar:planet-linear',
+    id: 'venice',
+    name: 'Venice Classic',
+    description: 'Italian baroque & Renaissance pieces',
+    src: 'https://streamingv2.shoutcast.com/Venice-Classic-Radio-Italia',
+    icon: 'solar:star-linear',
   },
 ];
 
@@ -84,7 +84,7 @@ export default function FocusAudio() {
       await audioRef.current.play();
       setPlaying(true);
       setLoading(false);
-    } catch (e) {
+    } catch {
       setError('Could not start the stream. Try another station.');
       setPlaying(false);
       setLoading(false);
@@ -93,9 +93,7 @@ export default function FocusAudio() {
 
   const handleStationClick = (id) => {
     setStationId(id);
-    if (playing || loading) {
-      play(id);
-    }
+    if (playing || loading) play(id);
   };
 
   const togglePlay = () => {
@@ -103,7 +101,6 @@ export default function FocusAudio() {
     else play();
   };
 
-  // Cleanup on unmount (e.g. when leaving the exam)
   useEffect(() => () => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -126,11 +123,11 @@ export default function FocusAudio() {
         aria-expanded={open}
       >
         <Icon
-          icon={playing ? 'solar:soundwave-bold' : 'solar:headphones-round-sound-linear'}
+          icon={playing ? 'solar:soundwave-bold' : 'solar:music-notes-linear'}
           width="16"
           className={playing ? 'animate-pulse' : ''}
         />
-        <span className="hidden sm:inline">{playing ? station.name : 'Focus audio'}</span>
+        <span className="hidden sm:inline">{playing ? station.name : 'Classical'}</span>
       </button>
 
       {open && (
@@ -144,8 +141,8 @@ export default function FocusAudio() {
             <div className="p-4 border-b border-white/5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-white">Focus audio</p>
-                  <p className="text-xs text-slate-400 mt-0.5">Lofi beats to help you concentrate</p>
+                  <p className="text-sm font-semibold text-white">Classical Focus</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Classical music to help you concentrate</p>
                 </div>
                 <button
                   onClick={togglePlay}
@@ -228,7 +225,7 @@ export default function FocusAudio() {
                 </p>
               )}
               <p className="text-[11px] text-slate-500 leading-relaxed">
-                Streams continue while you take the exam. Audio stops automatically when you leave or submit.
+                Streams play while you practise. Audio stops when you leave or submit.
               </p>
             </div>
           </div>

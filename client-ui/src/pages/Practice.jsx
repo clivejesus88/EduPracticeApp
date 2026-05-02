@@ -5,6 +5,7 @@ import { AiChat01Icon } from '@hugeicons/core-free-icons';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { examLevels, physicsTopics, mathematicsTopics } from '../data/examStructure';
 import ChatInterface from '../components/ChatInterface';
+import FocusAudio from '../components/FocusAudio';
 import { trackPracticeAttempt, trackTopicView } from '../utils/analyticsTracker';
 import { evaluatePracticeSolution } from '../services/practiceAiService';
 
@@ -436,6 +437,10 @@ export default function Practice() {
           </button>
         </div>
 
+        <div className="hidden sm:block">
+          <FocusAudio />
+        </div>
+
         <button
           onClick={() => setIsChatOpen(!isChatOpen)}
           className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl border border-violet-500/30 bg-violet-500/10 text-violet-300 hover:bg-violet-500/20 hover:border-violet-500/50 transition-all text-sm font-semibold shrink-0"
@@ -668,14 +673,14 @@ export default function Practice() {
               className="w-10 h-10 rounded-xl border border-white/10 bg-[#12151C] flex items-center justify-center text-slate-500 hover:text-slate-200 hover:border-white/20 transition-all"
               title="Scan / take photo"
             >
-              <Icon icon="solar:camera-linear" width="18" />
+              <Icon icon="solar:camera-minimalistic-linear" width="18" />
             </button>
             <button
               onClick={() => inputFileRef.current?.click()}
               className="w-10 h-10 rounded-xl border border-white/10 bg-[#12151C] flex items-center justify-center text-slate-500 hover:text-slate-200 hover:border-white/20 transition-all"
               title="Upload working"
             >
-              <Icon icon="solar:file-upload-linear" width="18" />
+              <Icon icon="solar:cloud-upload-linear" width="18" />
             </button>
             {selectedFileName && (
               <div className="flex flex-col items-center gap-0.5 px-0.5">
@@ -706,7 +711,7 @@ export default function Practice() {
               className="sm:hidden w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center text-slate-400 hover:text-slate-200 active:scale-95 transition-all shrink-0"
               title="Upload working"
             >
-              <Icon icon="solar:file-upload-linear" width="17" />
+              <Icon icon="solar:cloud-upload-linear" width="17" />
             </button>
           )}
 
