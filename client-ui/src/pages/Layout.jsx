@@ -162,8 +162,8 @@ export default function Layout() {
             <Icon icon="solar:magnifier-linear" width="20" height="20" className="text-slate-400 group-hover:text-slate-300" style={{ strokeWidth: 1 }} />
             <span className="flex-1 text-left">Search topics, questions...</span>
             <div className="flex items-center gap-1">
-              <kbd className="font-mono text-xs text-slate-500 bg-white/5 border border-white/10 rounded px-2 py-1">⌘</kbd>
-              <kbd className="font-mono text-xs text-slate-500 bg-white/5 border border-white/10 rounded px-2 py-1">K</kbd>
+              <kbd className="text-xs text-slate-500 bg-white/5 border border-white/10 rounded px-2 py-1">⌘</kbd>
+              <kbd className="text-xs text-slate-500 bg-white/5 border border-white/10 rounded px-2 py-1">K</kbd>
             </div>
           </button>
 

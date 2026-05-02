@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabaseClient';
 import { Icon } from '@iconify/react';
+
+// If Supabase is not configured (no env vars), skip auth entirely so the app
+// works in development without credentials.
+const AUTH_DISABLED = !supabase;
 
 /**
  * AuthLoader Component
@@ -146,60 +151,45 @@ function AuthLoader({ onDone }) {
 const ProtectedRoute = () => {
   const navigate = useNavigate();
   const auth = useAuth();
-  const [showLoader, setShowLoader] = useState(true);
-  const [minLoadTimeElapsed, setMinLoadTimeElapsed] = useState(false);
+  const [showLoader, setShowLoader] = useState(!AUTH_DISABLED);
+  const [minLoadTimeElapsed, setMinLoadTimeElapsed] = useState(AUTH_DISABLED);
+
+  // Skip all auth logic when Supabase is not configured
+  if (AUTH_DISABLED) return <Outlet />;
 
   // Ensure minimum loading time for visual effect
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setMinLoadTimeElapsed(true);
-    }, 3000);
-
+    const timer = setTimeout(() => setMinLoadTimeElapsed(true), 3000);
     return () => clearTimeout(timer);
   }, []);
 
   // Handle authentication check and redirect
   useEffect(() => {
-    // Still loading from Supabase
     if (auth.isLoading) return;
 
-    // Not authenticated and minimum load time has elapsed
     if (!auth.isAuthenticated && minLoadTimeElapsed) {
-      // Trigger loader completion animation
       window.dispatchEvent(new Event('auth-loader-complete'));
-
-      // Schedule redirect after animation
       const redirectTimer = setTimeout(() => {
         navigate('/login', { replace: true });
       }, 1000);
-
       return () => clearTimeout(redirectTimer);
     }
 
-    // Authenticated - complete the loader
     if (auth.isAuthenticated && minLoadTimeElapsed) {
       window.dispatchEvent(new Event('auth-loader-complete'));
-      const hideLoaderTimer = setTimeout(() => {
-        setShowLoader(false);
-      }, 1000);
-
+      const hideLoaderTimer = setTimeout(() => setShowLoader(false), 1000);
       return () => clearTimeout(hideLoaderTimer);
     }
   }, [auth.isLoading, auth.isAuthenticated, minLoadTimeElapsed, navigate]);
 
-  // Only hide loader after fade when signed in; otherwise keep loader until navigate unmounts (avoids flash of blank).
   const handleLoaderDone = () => {
-    if (auth.isAuthenticated) {
-      setShowLoader(false);
-    }
+    if (auth.isAuthenticated) setShowLoader(false);
   };
 
-  // Show loader while authenticating or if user not authenticated
   if (showLoader || auth.isLoading) {
     return <AuthLoader onDone={handleLoaderDone} />;
   }
 
-  // Show protected content only if authenticated
   return auth.isAuthenticated ? <Outlet /> : null;
 };
 

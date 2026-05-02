@@ -71,8 +71,8 @@ const MARK_SCHEME = {
 };
 
 const SUBJECT_COLORS = {
-  physics:     { bar: 'bg-blue-500', badge: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
-  mathematics: { bar: 'bg-rose-500', badge: 'text-rose-400 bg-rose-500/10 border-rose-500/20' },
+  physics:     { bar: 'bg-blue-500',  badge: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+  mathematics: { bar: 'bg-rose-500',  badge: 'text-rose-400 bg-rose-500/10 border-rose-500/20' },
 };
 
 const AVATAR_COLORS = [
@@ -81,25 +81,25 @@ const AVATAR_COLORS = [
   'bg-teal-600', 'bg-orange-600', 'bg-fuchsia-600', 'bg-lime-600',
 ];
 
-// ─── Difficulty indicator ─────────────────────────────────────────────────────
-function DifficultyDots({ level = 1 }) {
+// ─── Difficulty badge ─────────────────────────────────────────────────────────
+function DifficultyBadge({ level = 1 }) {
   const label = level === 1 ? 'Easy' : level === 2 ? 'Medium' : 'Hard';
-  const color =
-    level === 1 ? 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20' :
-    level === 2 ? 'text-amber-400 bg-amber-400/10 border-amber-400/20' :
-                  'text-red-400 bg-red-400/10 border-red-400/20';
+  const dotColor = level === 1 ? 'bg-emerald-400' : level === 2 ? 'bg-amber-400' : 'bg-red-400';
+  const textColor = level === 1 ? 'text-emerald-400' : level === 2 ? 'text-amber-400' : 'text-red-400';
   return (
     <div className="flex items-center gap-1.5 shrink-0">
       <div className="flex items-center gap-[3px]">
         {[1, 2, 3].map((i) => (
-          <span key={i} className={`w-1.5 h-1.5 rounded-full ${
-            i <= level
-              ? i === 1 ? 'bg-emerald-400' : i === 2 ? 'bg-amber-400' : 'bg-red-400'
-              : 'bg-white/10'
-          }`} />
+          <span key={i} className={`w-1.5 h-1.5 rounded-full ${i <= level ? dotColor : 'bg-white/10'}`} />
         ))}
       </div>
-      <span className={`text-[9px] font-bold font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border ${color}`}>
+      <span className={`text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border ${
+        level === 1
+          ? 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20'
+          : level === 2
+          ? 'text-amber-400 bg-amber-400/10 border-amber-400/20'
+          : 'text-red-400 bg-red-400/10 border-red-400/20'
+      }`}>
         {label}
       </span>
     </div>
@@ -127,7 +127,6 @@ export default function Practice() {
   const [error, setError]                         = useState('');
   const [isChatOpen, setIsChatOpen]               = useState(false);
 
-  // Single shared file input — always mounted at root level, triggered from anywhere
   const inputFileRef       = useRef(null);
   const workboardStartedAt = useRef(Date.now());
 
@@ -232,7 +231,7 @@ export default function Practice() {
   const handleFileChange = (e) => {
     const name = e.target.files?.[0]?.name || '';
     setSelectedFileName(name);
-    e.target.value = ''; // reset so same file can be re-selected
+    e.target.value = '';
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -243,8 +242,8 @@ export default function Practice() {
       <div className="flex-1 overflow-y-auto bg-[#0D0F14] px-4 sm:px-8 py-8 sm:py-14">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8 sm:mb-10">
-            <p className="text-[10px] font-bold font-mono text-amber-400/70 uppercase tracking-[0.25em] mb-3">
-              // PRACTICE
+            <p className="text-xs font-semibold text-amber-400/70 uppercase tracking-widest mb-3">
+              Practice
             </p>
             <h1 className="text-2xl sm:text-4xl font-bold text-white tracking-tight mb-2 leading-tight">
               {t('practice.chooseATopic')}
@@ -267,7 +266,7 @@ export default function Practice() {
                 </div>
                 <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-amber-400 transition-colors mb-1">{level.name}</h3>
                 <p className="text-xs text-slate-500 leading-relaxed mb-4">{level.description}</p>
-                <span className="text-[9px] font-bold font-mono uppercase tracking-widest text-white/20">{level.difficulty}</span>
+                <span className="text-[10px] font-medium uppercase tracking-wide text-white/20">{level.difficulty}</span>
               </button>
             ))}
           </div>
@@ -286,26 +285,26 @@ export default function Practice() {
 
           <button
             onClick={() => setStep('selectLevel')}
-            className="inline-flex items-center gap-1.5 text-slate-500 hover:text-slate-300 transition-colors text-xs font-mono group"
+            className="inline-flex items-center gap-1.5 text-slate-500 hover:text-slate-300 transition-colors text-xs font-medium group"
           >
             <Icon icon="solar:alt-arrow-left-linear" width="13" className="group-hover:-translate-x-0.5 transition-transform" />
-            BACK
+            Back
           </button>
 
           {/* Header card */}
           <div className="bg-[#12151C] rounded-xl border border-white/[0.06] p-4 sm:p-5">
             <div className="flex items-start justify-between gap-3 mb-5">
               <div>
-                <h2 className="text-sm sm:text-base font-bold text-white font-mono">
-                  {selectedExamLevel?.toUpperCase().replace('-', ' ')} PRACTICE
+                <h2 className="text-sm sm:text-base font-bold text-white">
+                  {selectedExamLevel?.toUpperCase().replace('-', ' ')} Practice
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">Select a topic to begin</p>
               </div>
               <button
                 onClick={() => setStep('selectLevel')}
-                className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-[10px] font-bold font-mono transition-colors shrink-0"
+                className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold transition-colors shrink-0"
               >
-                CHANGE
+                Change
               </button>
             </div>
 
@@ -313,24 +312,21 @@ export default function Practice() {
             <div>
               <div className="flex items-center justify-between mb-1.5 px-0.5">
                 {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                  <span key={n} className={`text-[10px] font-mono select-none ${targetGrade === n ? 'text-amber-400 font-bold' : 'text-white/20'}`}>
+                  <span key={n} className={`text-[10px] font-semibold select-none ${targetGrade === n ? 'text-amber-400' : 'text-white/20'}`}>
                     {n}
                   </span>
                 ))}
               </div>
-              {/* Slider — taller touch target on mobile */}
               <div className="relative h-8 flex items-center">
                 <div className="absolute inset-x-0 h-1.5 rounded-full bg-white/[0.06]" />
                 <div
                   className="absolute left-0 h-1.5 rounded-full bg-amber-500/60 transition-all"
                   style={{ width: `${((targetGrade - 1) / 6) * 100}%` }}
                 />
-                {/* Thumb */}
                 <div
                   className="absolute w-4 h-4 bg-amber-500 rounded-full shadow-lg shadow-amber-500/30 transition-all pointer-events-none z-20"
                   style={{ left: `calc(${((targetGrade - 1) / 6) * 100}% - 8px)` }}
                 />
-                {/* Transparent interactive range on top */}
                 <input
                   type="range" min={1} max={7} step={1}
                   value={targetGrade}
@@ -339,28 +335,28 @@ export default function Practice() {
                   style={{ touchAction: 'none' }}
                 />
               </div>
-              <p className="text-[9px] font-mono text-slate-600 mt-1">TARGET GRADE: {targetGrade}</p>
+              <p className="text-[10px] text-slate-600 mt-1">Target grade: {targetGrade}</p>
             </div>
           </div>
 
           {/* Topic list */}
           <div className="bg-[#12151C] rounded-xl border border-white/[0.06] overflow-hidden divide-y divide-white/[0.04]">
             {allTopics.length === 0 ? (
-              <p className="py-12 text-center text-xs font-mono text-slate-600">NO TOPICS FOUND FOR THIS LEVEL.</p>
+              <p className="py-12 text-center text-xs text-slate-600">No topics found for this level.</p>
             ) : allTopics.map((topic) => {
               const subjectColors = SUBJECT_COLORS[topic.subject] || {};
               return (
                 <div key={topic.id} className="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-white/[0.02] transition-colors">
                   {/* Icon */}
-                  <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg ${topic.color} flex items-center justify-center shrink-0`}>
+                  <div className={`w-9 h-9 rounded-lg ${topic.color} flex items-center justify-center shrink-0`}>
                     <Icon icon={topic.icon} width="16" className="text-white" />
                   </div>
 
                   {/* Name + progress */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-1 min-w-0">
-                      <p className="text-xs font-semibold text-white truncate min-w-0">{topic.code} – {topic.name}</p>
-                      <span className={`text-[8px] font-bold font-mono uppercase px-1.5 py-0.5 rounded border shrink-0 ${subjectColors.badge}`}>
+                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                      <p className="text-xs font-semibold text-white truncate">{topic.code} – {topic.name}</p>
+                      <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded border shrink-0 ${subjectColors.badge}`}>
                         {topic.subject === 'physics' ? 'PHY' : 'MTH'}
                       </span>
                     </div>
@@ -374,7 +370,7 @@ export default function Practice() {
                           />
                         )}
                       </div>
-                      <span className="text-[9px] font-mono text-slate-600 w-6 text-right shrink-0">
+                      <span className="text-[10px] text-slate-600 w-7 text-right shrink-0 tabular-nums">
                         {topic.progress > 0 ? `${topic.progress}%` : '–'}
                       </span>
                     </div>
@@ -383,17 +379,17 @@ export default function Practice() {
                   {/* Start button */}
                   <button
                     onClick={() => handleTopicSelect(topic)}
-                    className="shrink-0 px-3 sm:px-4 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] text-[10px] sm:text-xs font-bold font-mono text-white/60 hover:border-amber-500/40 hover:bg-amber-500/10 hover:text-amber-400 transition-all active:scale-95"
+                    className="shrink-0 px-3 sm:px-4 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] text-xs font-semibold text-white/60 hover:border-amber-500/40 hover:bg-amber-500/10 hover:text-amber-400 transition-all active:scale-95"
                   >
-                    START
+                    Start
                   </button>
                 </div>
               );
             })}
           </div>
 
-          <p className="text-center text-[9px] font-mono text-slate-700 pb-4">
-            {allTopics.length} TOPICS · {selectedExamLevel?.toUpperCase().replace('-', ' ')}
+          <p className="text-center text-[10px] text-slate-700 pb-4">
+            {allTopics.length} topics · {selectedExamLevel?.toUpperCase().replace('-', ' ')}
           </p>
         </div>
       </div>
@@ -406,10 +402,6 @@ export default function Practice() {
   return (
     <div className="flex-1 flex flex-col bg-[#0D0F14] overflow-hidden">
 
-      {/*
-        Single shared hidden file input — always present at this level so both the
-        desktop sidebar button and mobile bottom-bar button trigger the same element.
-      */}
       <input
         ref={inputFileRef}
         type="file"
@@ -419,16 +411,16 @@ export default function Practice() {
       />
 
       {/* ── Top bar ────────────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 px-4 sm:px-8 py-2.5 border-b border-white/[0.06] shrink-0 bg-[#0D0F14]">
-        <span className="text-[10px] sm:text-xs font-mono text-slate-500 shrink-0">
-          [MAX:&nbsp;<span className="text-white font-bold">{scenario?.totalMarks}</span>]
+      <div className="flex items-center gap-2 px-4 sm:px-6 py-2.5 border-b border-white/[0.06] shrink-0 bg-[#0D0F14]">
+        <span className="text-xs text-slate-500 shrink-0">
+          Max:&nbsp;<span className="text-white font-semibold">{scenario?.totalMarks}</span>&nbsp;marks
         </span>
 
         <div className="flex-1" />
 
-        <DifficultyDots level={scenario?.difficulty || 1} />
+        <DifficultyBadge level={scenario?.difficulty || 1} />
 
-        {/* Desktop-only divider + icon row */}
+        {/* Desktop icon row */}
         <div className="hidden sm:flex items-center gap-1 ml-1">
           <div className="w-px h-4 bg-white/[0.08] mr-1" />
           <button className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] rounded-lg transition-all" title="Notes">
@@ -445,10 +437,10 @@ export default function Practice() {
         {/* Ask Maestro — desktop only */}
         <button
           onClick={() => setIsChatOpen(!isChatOpen)}
-          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-violet-500/20 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-all text-[10px] font-bold font-mono shrink-0"
+          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-violet-500/20 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-all text-xs font-semibold shrink-0"
         >
           <HugeiconsIcon icon={AiBrain05Icon} size={12} strokeWidth={2} />
-          ASK MAESTRO
+          Ask Maestro
         </button>
       </div>
 
@@ -457,19 +449,19 @@ export default function Practice() {
 
         {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-2xl px-4 sm:px-8 md:px-14 py-5 sm:py-8">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-10 py-5 sm:py-8">
 
             {/* Breadcrumb nav */}
-            <div className="flex items-center gap-2 mb-5">
+            <div className="flex items-center gap-2 mb-5 flex-wrap">
               <button
                 onClick={handleEndPractice}
-                className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-400 transition-colors text-[9px] font-mono group shrink-0"
+                className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-400 transition-colors text-xs font-medium group shrink-0"
               >
                 <Icon icon="solar:alt-arrow-left-linear" width="11" className="group-hover:-translate-x-0.5 transition-transform" />
-                TOPICS
+                Topics
               </button>
-              <span className="text-white/10 text-[9px]">›</span>
-              <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest truncate">
+              <span className="text-white/10 text-xs">›</span>
+              <span className="text-xs text-slate-600 truncate">
                 {selectedTopic?.code} · {scenario?.topic}
               </span>
             </div>
@@ -487,27 +479,27 @@ export default function Practice() {
                   {scenario?.parts.map((part) => (
                     <div key={part.label} className="space-y-2">
                       <div className="flex items-start gap-2">
-                        {/* (a) */}
-                        <span className="text-sm text-amber-400/60 font-mono shrink-0 w-5 pt-px">({part.label})</span>
+                        {/* Part label */}
+                        <span className="text-sm text-amber-400/60 font-semibold shrink-0 w-5 pt-px">({part.label})</span>
 
-                        {/* Question text — takes all remaining width */}
+                        {/* Question text */}
                         <p className="text-sm text-slate-300 leading-relaxed flex-1 min-w-0">{part.text}</p>
 
-                        {/* Marks + hint stacked vertically so they don't squeeze text */}
+                        {/* Marks + hint */}
                         <div className="shrink-0 flex flex-col items-end gap-1 ml-1 pt-px">
-                          <span className="text-[10px] font-mono text-slate-600 whitespace-nowrap">[{part.marks}]</span>
+                          <span className="text-[10px] text-slate-600 whitespace-nowrap tabular-nums">[{part.marks}]</span>
                           <button
                             onClick={() => setShowHint(prev => ({ ...prev, [part.label]: !prev[part.label] }))}
-                            className="flex items-center gap-0.5 text-[9px] font-bold font-mono text-violet-400 hover:text-violet-300 transition-colors whitespace-nowrap"
+                            className="flex items-center gap-0.5 text-[10px] font-semibold text-violet-400 hover:text-violet-300 transition-colors whitespace-nowrap"
                           >
                             <Icon icon="solar:magic-stick-3-linear" width="10" />
-                            HINT
+                            Hint
                           </button>
                         </div>
                       </div>
 
                       {showHint[part.label] && (
-                        <div className="ml-7 px-3 py-2.5 rounded-lg bg-violet-500/[0.08] border border-violet-500/15 text-xs text-violet-300 leading-relaxed font-mono">
+                        <div className="ml-7 px-3 py-2.5 rounded-lg bg-violet-500/[0.08] border border-violet-500/15 text-xs text-violet-300 leading-relaxed">
                           Think about the fundamental formula linking this quantity to the given values. Show each substitution step explicitly.
                         </div>
                       )}
@@ -517,19 +509,19 @@ export default function Practice() {
 
                 {/* Working space */}
                 <div className="mt-6 space-y-2">
-                  <p className="text-[9px] font-mono text-slate-700 uppercase tracking-widest">YOUR WORKING</p>
+                  <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Your Working</p>
                   <textarea
                     value={solutionText}
                     onChange={(e) => setSolutionText(e.target.value)}
                     placeholder="Write your working and answer here…"
-                    className="w-full min-h-44 sm:min-h-56 text-sm text-slate-300 placeholder:text-white/10 bg-[#12151C] border border-white/[0.06] rounded-xl p-4 resize-none focus:outline-none focus:border-amber-500/30 leading-relaxed font-mono transition-colors"
+                    className="w-full min-h-44 sm:min-h-56 text-sm text-slate-300 placeholder:text-white/10 bg-[#12151C] border border-white/[0.06] rounded-xl p-4 resize-none focus:outline-none focus:border-amber-500/30 leading-relaxed transition-colors"
                   />
 
                   {/* Attached file pill */}
                   {selectedFileName && (
                     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/[0.08] border border-amber-500/15">
                       <Icon icon="solar:file-bold" width="13" className="text-amber-400 shrink-0" />
-                      <span className="text-xs font-mono text-amber-400 truncate min-w-0 flex-1">{selectedFileName}</span>
+                      <span className="text-xs text-amber-400 truncate min-w-0 flex-1">{selectedFileName}</span>
                       <button
                         onClick={() => setSelectedFileName('')}
                         className="shrink-0 text-amber-400/50 hover:text-amber-400 transition-colors"
@@ -540,7 +532,7 @@ export default function Practice() {
                   )}
 
                   {error && (
-                    <p className="text-xs text-red-400 font-mono flex items-center gap-1.5">
+                    <p className="text-xs text-red-400 flex items-center gap-1.5">
                       <Icon icon="solar:danger-circle-bold" width="13" />
                       {error}
                     </p>
@@ -558,7 +550,7 @@ export default function Practice() {
                                        'bg-red-500/[0.08] border-red-500/20'
                 }`}>
                   <div className="flex items-center gap-3 sm:gap-4">
-                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center font-bold font-mono shrink-0 border text-sm sm:text-base ${
+                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center font-bold shrink-0 border text-sm sm:text-base tabular-nums ${
                       scorePercent >= 70 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
                       scorePercent >= 40 ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
                                            'bg-red-500/20 text-red-400 border-red-500/30'
@@ -567,20 +559,20 @@ export default function Practice() {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className={`font-bold text-xs sm:text-sm font-mono ${
+                      <p className={`font-bold text-xs sm:text-sm ${
                         scorePercent >= 70 ? 'text-emerald-400' :
                         scorePercent >= 40 ? 'text-amber-400' : 'text-red-400'
                       }`}>
-                        {scorePercent >= 70 ? 'GREAT WORK' : scorePercent >= 40 ? 'GOOD EFFORT' : 'KEEP PRACTISING'}
+                        {scorePercent >= 70 ? 'Great work' : scorePercent >= 40 ? 'Good effort' : 'Keep practising'}
                       </p>
                       <p className="text-xs text-slate-500 mt-0.5 leading-snug">{feedback?.summary}</p>
                     </div>
 
                     <div className="shrink-0 text-right">
-                      <p className="text-xl sm:text-2xl font-bold text-white font-mono">
+                      <p className="text-xl sm:text-2xl font-bold text-white tabular-nums">
                         {totalScore}<span className="text-slate-600 text-sm sm:text-base"> / {maxScore}</span>
                       </p>
-                      <p className="text-[9px] uppercase tracking-widest text-slate-600 font-mono">marks</p>
+                      <p className="text-[10px] uppercase tracking-wide text-slate-600">marks</p>
                     </div>
                   </div>
                 </div>
@@ -588,17 +580,17 @@ export default function Practice() {
                 {/* Mark scheme toggle */}
                 <button
                   onClick={() => setShowMarkScheme(!showMarkScheme)}
-                  className="flex items-center gap-2 text-[10px] font-bold font-mono text-violet-400 hover:text-violet-300 transition-colors"
+                  className="flex items-center gap-2 text-xs font-semibold text-violet-400 hover:text-violet-300 transition-colors"
                 >
                   <Icon icon={showMarkScheme ? 'solar:eye-closed-linear' : 'solar:eye-linear'} width="13" />
-                  {showMarkScheme ? 'HIDE' : 'SHOW'} MARK SCHEME
+                  {showMarkScheme ? 'Hide' : 'Show'} mark scheme
                 </button>
 
                 {showMarkScheme && (
-                  <div className="rounded-xl border border-white/[0.06] overflow-hidden text-xs font-mono">
-                    <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/[0.06] flex justify-between">
-                      <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px]">Mark Scheme</span>
-                      <span className="text-slate-600">{totalScore} / {maxScore}</span>
+                  <div className="rounded-xl border border-white/[0.06] overflow-hidden text-xs">
+                    <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/[0.06] flex justify-between items-center">
+                      <span className="font-semibold text-slate-400 uppercase tracking-wide text-[10px]">Mark Scheme</span>
+                      <span className="text-slate-600 tabular-nums">{totalScore} / {maxScore}</span>
                     </div>
                     <div className="divide-y divide-white/[0.04]">
                       {(awardedMarks || markScheme).map((item, i) => (
@@ -609,7 +601,7 @@ export default function Practice() {
                             <Icon icon={item.marks > 0 ? 'solar:check-circle-bold' : 'solar:close-circle-bold'} width="12" />
                           </div>
                           <p className="flex-1 text-slate-500 leading-snug min-w-0">{item.criterion}</p>
-                          <span className={`font-bold shrink-0 ml-2 ${item.marks > 0 ? 'text-emerald-400' : 'text-white/10'}`}>
+                          <span className={`font-semibold shrink-0 ml-2 tabular-nums ${item.marks > 0 ? 'text-emerald-400' : 'text-white/10'}`}>
                             {item.marks}/{item.max}
                           </span>
                         </div>
@@ -621,7 +613,7 @@ export default function Practice() {
                 {/* Strengths */}
                 {feedback?.strengths?.length > 0 && (
                   <div className="rounded-xl bg-emerald-500/[0.05] border border-emerald-500/10 p-4">
-                    <p className="text-[9px] font-bold font-mono text-emerald-400/60 uppercase tracking-widest mb-3">WHAT YOU DID WELL</p>
+                    <p className="text-[10px] font-semibold text-emerald-400/60 uppercase tracking-wide mb-3">What you did well</p>
                     <ul className="space-y-2">
                       {feedback.strengths.map((s, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs text-slate-400">
@@ -636,7 +628,7 @@ export default function Practice() {
                 {/* Improvements */}
                 {feedback?.improvements?.length > 0 && (
                   <div className="rounded-xl bg-amber-500/[0.05] border border-amber-500/10 p-4">
-                    <p className="text-[9px] font-bold font-mono text-amber-400/60 uppercase tracking-widest mb-3">IMPROVE NEXT TIME</p>
+                    <p className="text-[10px] font-semibold text-amber-400/60 uppercase tracking-wide mb-3">Improve next time</p>
                     <ul className="space-y-2">
                       {feedback.improvements.map((s, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs text-slate-400">
@@ -651,12 +643,11 @@ export default function Practice() {
                 {/* Model answer */}
                 {feedback?.modelAnswer && (
                   <div className="rounded-xl bg-[#12151C] border border-white/[0.06] p-4">
-                    <p className="text-[9px] font-bold font-mono text-slate-600 uppercase tracking-widest mb-2">MODEL ANSWER OUTLINE</p>
+                    <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide mb-2">Model answer outline</p>
                     <p className="text-xs text-slate-500 leading-relaxed">{feedback.modelAnswer}</p>
                   </div>
                 )}
 
-                {/* Spacer so last card clears the sticky footer */}
                 <div className="h-2" />
               </div>
             )}
@@ -684,7 +675,7 @@ export default function Practice() {
             {selectedFileName && (
               <div className="flex flex-col items-center gap-0.5">
                 <Icon icon="solar:file-bold" width="12" className="text-amber-400" />
-                <span className="text-[7px] text-amber-400 font-mono text-center leading-tight break-all px-0.5">
+                <span className="text-[7px] text-amber-400 text-center leading-tight break-all px-0.5">
                   {selectedFileName.length > 7 ? selectedFileName.slice(0, 6) + '…' : selectedFileName}
                 </span>
               </div>
@@ -694,13 +685,13 @@ export default function Practice() {
       </div>
 
       {/* ── Bottom bar ─────────────────────────────────────────────────────────── */}
-      <div className="shrink-0 flex items-center justify-between gap-2 px-4 sm:px-8 py-3 border-t border-white/[0.06] bg-[#0D0F14]">
+      <div className="shrink-0 flex items-center justify-between gap-2 px-4 sm:px-6 py-3 border-t border-white/[0.06] bg-[#0D0F14]">
 
         <button
           onClick={handleEndPractice}
-          className="text-[10px] sm:text-xs font-bold font-mono text-red-500/60 hover:text-red-400 transition-colors shrink-0"
+          className="text-xs font-semibold text-red-500/60 hover:text-red-400 transition-colors shrink-0"
         >
-          END PRACTICE
+          End practice
         </button>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -708,20 +699,20 @@ export default function Practice() {
           {aiState !== 'feedback' && (
             <button
               onClick={() => inputFileRef.current?.click()}
-              className="sm:hidden w-8 h-8 rounded-lg border border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-slate-300 active:scale-95 transition-all shrink-0"
+              className="sm:hidden w-9 h-9 rounded-lg border border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-slate-300 active:scale-95 transition-all shrink-0"
               title="Upload working"
             >
-              <Icon icon="solar:file-upload-linear" width="15" />
+              <Icon icon="solar:file-upload-linear" width="16" />
             </button>
           )}
 
           {/* Mobile-only: Maestro */}
           <button
             onClick={() => setIsChatOpen(!isChatOpen)}
-            className="sm:hidden w-8 h-8 rounded-lg border border-violet-500/20 bg-violet-500/10 flex items-center justify-center text-violet-400 active:scale-95 transition-all shrink-0"
+            className="sm:hidden w-9 h-9 rounded-lg border border-violet-500/20 bg-violet-500/10 flex items-center justify-center text-violet-400 active:scale-95 transition-all shrink-0"
             title="Ask Maestro"
           >
-            <HugeiconsIcon icon={AiBrain05Icon} size={15} strokeWidth={2} />
+            <HugeiconsIcon icon={AiBrain05Icon} size={16} strokeWidth={2} />
           </button>
 
           {aiState === 'feedback' ? (
@@ -734,32 +725,32 @@ export default function Practice() {
                   setSolutionText('');
                   setShowMarkScheme(false);
                 }}
-                className="px-3 sm:px-4 py-2 rounded-lg border border-white/[0.08] bg-white/[0.04] text-[10px] sm:text-xs font-bold font-mono text-slate-400 hover:text-white hover:border-white/20 transition-all whitespace-nowrap"
+                className="px-3 sm:px-4 py-2 rounded-lg border border-white/[0.08] bg-white/[0.04] text-xs font-semibold text-slate-400 hover:text-white hover:border-white/20 transition-all whitespace-nowrap"
               >
-                TRY AGAIN
+                Try again
               </button>
               <button
                 onClick={handleEndPractice}
-                className="px-3 sm:px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-[10px] sm:text-xs font-bold font-mono transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-amber-500/20"
+                className="px-4 sm:px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-amber-500/20"
               >
-                NEXT →
+                Next →
               </button>
             </>
           ) : (
             <button
               onClick={handleSubmit}
               disabled={aiState !== 'idle'}
-              className="px-3 sm:px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:bg-white/[0.06] disabled:text-white/20 disabled:cursor-not-allowed text-black text-[10px] sm:text-xs font-bold font-mono transition-all flex items-center gap-1.5 active:scale-95 whitespace-nowrap shadow-lg shadow-amber-500/20"
+              className="px-4 sm:px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:bg-white/[0.06] disabled:text-white/20 disabled:cursor-not-allowed text-black text-xs font-semibold transition-all flex items-center gap-1.5 active:scale-95 whitespace-nowrap shadow-lg shadow-amber-500/20"
             >
               {aiState === 'analyzing' ? (
                 <>
                   <Icon icon="solar:loader-bold" width="12" className="animate-spin shrink-0" />
-                  <span>MARKING...</span>
+                  <span>Marking…</span>
                 </>
               ) : (
                 <>
-                  <span className="hidden sm:inline">SUBMIT FOR GRADING</span>
-                  <span className="sm:hidden">SUBMIT</span>
+                  <span className="hidden sm:inline">Submit for grading</span>
+                  <span className="sm:hidden">Submit</span>
                   <span>&nbsp;→</span>
                 </>
               )}

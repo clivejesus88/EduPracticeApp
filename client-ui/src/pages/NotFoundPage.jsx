@@ -259,7 +259,7 @@ export default function NotFoundPage() {
 
         {/* Error code tag */}
         <p
-          className="mt-8 text-xs font-mono"
+          className="mt-8 text-xs"
           style={{
             color: "rgba(249,156,0,.3)",
             opacity: mounted ? 1 : 0,
