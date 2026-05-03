@@ -5,18 +5,10 @@ import { GraduationCapIcon, MailIcon, LockIcon, UserIcon, CheckIcon, CircleAlert
 import { useAuth } from '../contexts/AuthContext';
 import * as authService from '../services/authService';
 import { useRateLimit } from '../hooks/useRateLimit';
-import { supabase } from '../lib/supabaseClient';
 
 export default function Signup() {
   const navigate = useNavigate();
   const auth = useAuth();
-
-  // If auth is not configured, skip signup entirely
-  useEffect(() => {
-    if (!supabase) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [navigate]);
 
   // Form state
   const [formData, setFormData] = useState({

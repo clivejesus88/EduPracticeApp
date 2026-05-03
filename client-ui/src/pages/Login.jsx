@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { GraduationCapIcon, MailIcon, LockIcon } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useRateLimit } from '../hooks/useRateLimit'
-import { supabase } from '../lib/supabaseClient'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -18,13 +17,6 @@ export default function Login() {
 
   const loginRL  = useRateLimit('login')
   const resetRL  = useRateLimit('passwordReset')
-
-  // If auth is not configured, skip login entirely
-  useEffect(() => {
-    if (!supabase) {
-      navigate('/dashboard', { replace: true })
-    }
-  }, [navigate])
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
