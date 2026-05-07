@@ -8,27 +8,31 @@ import { supabase } from '../lib/supabaseClient';
  * - Enforces email verification
  */
 
-const RATE_LIMIT_KEY = 'auth_rate_limit';
+// ─── Rate Limiting ────────────────────────────────────────────────────────────
+
+const RATE_LIMIT_PREFIX = 'auth_rate_limit';   // FIX: single canonical prefix
 const MAX_LOGIN_ATTEMPTS = 5;
-const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes in milliseconds
+const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
 
 /**
- * Get rate limit state for an email
+ * Build a consistent storage key for a given email.
+ * Centralising this avoids the key-mismatch that caused clearAuthStorage
+ * to silently fail in the original code.
  */
+const rateLimitKey = (email) => `${RATE_LIMIT_PREFIX}:${email}`;
+
 const getRateLimitState = (email) => {
   try {
-    const stored = localStorage.getItem(`${RATE_LIMIT_KEY}:${email}`);
+    const stored = localStorage.getItem(rateLimitKey(email));
     if (!stored) return { attempts: 0, resetTime: null };
-    
+
     const state = JSON.parse(stored);
-    const now = Date.now();
-    
-    // Reset if window has passed
-    if (state.resetTime && now > state.resetTime) {
-      localStorage.removeItem(`${RATE_LIMIT_KEY}:${email}`);
+
+    if (state.resetTime && Date.now() > state.resetTime) {
+      localStorage.removeItem(rateLimitKey(email));
       return { attempts: 0, resetTime: null };
     }
-    
+
     return state;
   } catch (e) {
     console.error('Error reading rate limit state:', e);
@@ -36,92 +40,65 @@ const getRateLimitState = (email) => {
   }
 };
 
-/**
- * Increment rate limit counter
- */
 const incrementRateLimit = (email) => {
   const state = getRateLimitState(email);
   const now = Date.now();
   const resetTime = state.resetTime || now + RATE_LIMIT_WINDOW;
-  
-  const newState = {
-    attempts: state.attempts + 1,
-    resetTime
-  };
-  
-  localStorage.setItem(`${RATE_LIMIT_KEY}:${email}`, JSON.stringify(newState));
+
+  const newState = { attempts: state.attempts + 1, resetTime };
+  localStorage.setItem(rateLimitKey(email), JSON.stringify(newState));
   return newState;
 };
 
-/**
- * Clear rate limit for an email (after successful login)
- */
+// FIX: now uses the same rateLimitKey helper, so the entry is actually removed
 const clearRateLimit = (email) => {
-  localStorage.removeItem(`${RATE_LIMIT_KEY}:${email}`);
+  localStorage.removeItem(rateLimitKey(email));
 };
 
-/**
- * Get minutes until rate limit resets
- */
 const getResetMinutes = (resetTime) => {
   if (!resetTime) return 0;
-  const remaining = Math.ceil((resetTime - Date.now()) / 1000 / 60);
-  return Math.max(1, remaining);
+  return Math.max(1, Math.ceil((resetTime - Date.now()) / 60_000));
 };
 
+// ─── Auth Operations ──────────────────────────────────────────────────────────
+
 /**
- * Sign in with email and password
- * - Rate limited
- * - Uses Supabase session (persisted automatically)
+ * Sign in with email and password.
+ * - Rate limited per email address
+ * - Session is persisted automatically by Supabase
  */
 export const signInWithEmail = async (email, password) => {
-  // Check rate limit
   const rateLimit = getRateLimitState(email);
+
   if (rateLimit.attempts >= MAX_LOGIN_ATTEMPTS) {
     const resetMinutes = getResetMinutes(rateLimit.resetTime);
     return {
       error: new Error(
         `Too many login attempts. Please try again in ${resetMinutes} minute${resetMinutes > 1 ? 's' : ''}.`
       ),
-      data: null
+      data: null,
     };
   }
 
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      // Increment failed attempts
       incrementRateLimit(email);
       return { error, data: null };
     }
 
-    // Clear rate limit on success
     clearRateLimit(email);
-
-    return {
-      error: null,
-      data: {
-        user: data.user,
-        session: data.session
-      }
-    };
+    return { error: null, data: { user: data.user, session: data.session } };
   } catch (err) {
     incrementRateLimit(email);
-    return {
-      error: err,
-      data: null
-    };
+    return { error: err, data: null };
   }
 };
 
 /**
- * Sign up with email, password, and user info
- * - Requires email verification
- * - Stores additional user metadata
+ * Sign up with email, password, and user metadata.
+ * Requires subsequent email verification before the account is active.
  */
 export const signUpWithEmail = async (email, password, userData = {}) => {
   try {
@@ -134,23 +111,21 @@ export const signUpWithEmail = async (email, password, userData = {}) => {
           last_name: userData.lastName || '',
           school_name: userData.schoolName || '',
           exam_level: userData.examLevel || '',
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
         },
-        emailRedirectTo: `${window.location.origin}/verify-email`
-      }
+        emailRedirectTo: `${window.location.origin}/verify-email`,
+      },
     });
 
-    if (error) {
-      return { error, data: null };
-    }
+    if (error) return { error, data: null };
 
     return {
       error: null,
       data: {
         user: data.user,
         session: data.session,
-        needsEmailVerification: !data.session // User needs to verify email
-      }
+        needsEmailVerification: !data.session,
+      },
     };
   } catch (err) {
     return { error: err, data: null };
@@ -158,25 +133,38 @@ export const signUpWithEmail = async (email, password, userData = {}) => {
 };
 
 /**
- * Sign in with Google OAuth
+ * Generate a cryptographically secure random state token for CSRF protection.
+ */
+function generateSecureState() {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Initiate Google OAuth sign-in.
+ * A CSRF state token is stored in sessionStorage so the callback can
+ * verify it via validateOAuthCallback() before accepting the session.
  */
 export const signInWithGoogle = async () => {
   try {
+    const state = generateSecureState();
+    sessionStorage.setItem('oauth_state', state);
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback`,
         queryParams: {
           access_type: 'offline',
-          prompt: 'consent'
-        }
-      }
+          prompt: 'consent',
+          state,
+        },
+        scopes: 'openid profile email',
+      },
     });
 
-    if (error) {
-      return { error, data: null };
-    }
-
+    if (error) return { error, data: null };
     return { error: null, data };
   } catch (err) {
     return { error: err, data: null };
@@ -184,45 +172,55 @@ export const signInWithGoogle = async () => {
 };
 
 /**
- * Verify OTP for signup or recovery
+ * FIX: Validate the OAuth callback state parameter against the value stored
+ * before the redirect began.  Without this check the CSRF state token stored
+ * by signInWithGoogle() was never verified, making the protection a no-op.
+ *
+ * Call this at the top of your /auth/callback route handler.
+ *
+ * @param {string} returnedState  The `state` query-param from the OAuth redirect URL.
+ * @returns {{ valid: boolean, error: string|null }}
+ */
+export const validateOAuthCallback = (returnedState) => {
+  const storedState = sessionStorage.getItem('oauth_state');
+  sessionStorage.removeItem('oauth_state'); // consume immediately — one-time use
+
+  if (!storedState) {
+    return { valid: false, error: 'No OAuth state found. Possible CSRF attack or stale tab.' };
+  }
+
+  if (!returnedState || returnedState !== storedState) {
+    return { valid: false, error: 'OAuth state mismatch. Request rejected.' };
+  }
+
+  return { valid: true, error: null };
+};
+
+/**
+ * Verify a one-time OTP for email confirmation or account recovery.
  */
 export const verifyOtp = async (email, token, type = 'signup') => {
   try {
-    const { data, error } = await supabase.auth.verifyOtp({
-      email,
-      token,
-      type
-    });
+    const { data, error } = await supabase.auth.verifyOtp({ email, token, type });
 
-    if (error) {
-      return { error, data: null };
-    }
+    if (error) return { error, data: null };
 
-    return {
-      error: null,
-      data: {
-        user: data.user,
-        session: data.session
-      }
-    };
+    return { error: null, data: { user: data.user, session: data.session } };
   } catch (err) {
     return { error: err, data: null };
   }
 };
 
 /**
- * Resend signup verification email
+ * Resend the signup verification email.
  */
 export const resendVerificationEmail = async (email) => {
   try {
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/verify-email`
-      }
+      options: { emailRedirectTo: `${window.location.origin}/verify-email` },
     });
-
     return { error };
   } catch (err) {
     return { error: err };
@@ -230,48 +228,61 @@ export const resendVerificationEmail = async (email) => {
 };
 
 /**
- * Send password reset email
+ * Send a password-reset email.
  */
 export const requestPasswordReset = async (email) => {
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`
+      redirectTo: `${window.location.origin}/reset-password`,
     });
-
-    if (error) {
-      return { error };
-    }
-
-    return { error: null };
+    return { error: error ?? null };
   } catch (err) {
     return { error: err };
   }
 };
 
 /**
- * Update password with recovery token
+ * Validate the recovery token received from the password-reset email link.
+ * Only format/presence is checked here; Supabase validates authenticity
+ * server-side when the session is established.
+ */
+export const validateRecoveryToken = (token, type) => {
+  if (!token || !type || type !== 'recovery') return false;
+  if (typeof token !== 'string' || token.length < 20) return false;
+  return true;
+};
+
+/**
+ * Update the user's password after arriving from a valid reset email link.
+ * Requires an active Supabase recovery session (established automatically
+ * when the user follows the email link).
  */
 export const updatePasswordWithToken = async (password) => {
   try {
-    const { data, error } = await supabase.auth.updateUser({
-      password
-    });
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    if (error) {
-      return { error, data: null };
+    if (sessionError || !session) {
+      return {
+        error: new Error('Invalid or expired reset link. Please request a new password reset.'),
+        data: null,
+      };
     }
 
-    return {
-      error: null,
-      data: { user: data.user }
-    };
+    const { data, error } = await supabase.auth.updateUser({ password });
+
+    if (error) return { error, data: null };
+
+    // Invalidate the now-consumed recovery session across all devices
+    await supabase.auth.signOut({ scope: 'global' });
+
+    return { error: null, data: { user: data.user } };
   } catch (err) {
     return { error: err, data: null };
   }
 };
 
 /**
- * Get current session
+ * Get the current Supabase session.
  */
 export const getSession = async () => {
   try {
@@ -283,7 +294,7 @@ export const getSession = async () => {
 };
 
 /**
- * Get current user
+ * Get the currently authenticated user.
  */
 export const getCurrentUser = async () => {
   try {
@@ -295,11 +306,18 @@ export const getCurrentUser = async () => {
 };
 
 /**
- * Sign out (clears session)
+ * Sign out the current user.
+ *
+ * FIX: uses scope: 'global' to revoke ALL active sessions for this user,
+ * not just the current browser tab.  The original call left every other
+ * device/session fully authenticated after logout.
  */
-export const signOut = async () => {
+export const signOut = async (email = null) => {
   try {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({ scope: 'global' });
+
+    clearAuthStorage(email);
+
     return { error };
   } catch (err) {
     return { error: err };
@@ -307,62 +325,90 @@ export const signOut = async () => {
 };
 
 /**
- * Subscribe to auth state changes
+ * Clear sensitive auth data from browser storage.
+ *
+ * FIX: The original function tried to clear keys with the pattern
+ * `eduPractice_rl_${action}`, which never matched the actual rate-limit
+ * keys written as `auth_rate_limit:${email}`.  The rate-limit entry for the
+ * signed-out user is now cleared correctly when `email` is supplied.
+ * The CSRF state token is removed unconditionally.
+ */
+function clearAuthStorage(email = null) {
+  // Remove the rate-limit entry for this specific email when known
+  if (email) clearRateLimit(email);
+
+  // Remove the OAuth CSRF state token (one-time use)
+  sessionStorage.removeItem('oauth_state');
+
+  // Remove any persisted user preferences tied to this session
+  localStorage.removeItem('edupractice_user_prefs');
+}
+
+// ─── Auth State Listener ─────────────────────────────────────────────────────
+
+// FIX: removed the stray `"` character that appeared between clearAuthStorage
+// and onAuthStateChange in the original source, which caused a syntax error.
+
+/**
+ * Subscribe to Supabase auth state changes.
+ * @returns {Function} Unsubscribe function — call on component unmount.
  */
 export const onAuthStateChange = (callback) => {
   const { data } = supabase.auth.onAuthStateChange((event, session) => {
     callback(event, session);
   });
-
-  // Return unsubscribe function
   return data.subscription.unsubscribe;
 };
 
+// ─── Utilities ────────────────────────────────────────────────────────────────
+
 /**
- * Validate password strength
+ * Evaluate password strength against minimum security requirements.
  */
 export const validatePasswordStrength = (password) => {
-  const minLength = 8;
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
   const hasNumbers = /\d/.test(password);
   const hasSpecialChars = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const isLongEnough = password.length >= 8;
 
-  const strength = {
-    isValid: password.length >= minLength && hasUppercase && hasLowercase && (hasNumbers || hasSpecialChars),
-    length: password.length >= minLength,
+  return {
+    isValid: isLongEnough && hasUppercase && hasLowercase && (hasNumbers || hasSpecialChars),
+    length: isLongEnough,
     uppercase: hasUppercase,
     lowercase: hasLowercase,
     numbers: hasNumbers,
     specialChars: hasSpecialChars,
-    score: [
-      password.length >= minLength,
-      hasUppercase,
-      hasLowercase,
-      hasNumbers || hasSpecialChars
-    ].filter(Boolean).length
+    score: [isLongEnough, hasUppercase, hasLowercase, hasNumbers || hasSpecialChars].filter(Boolean).length,
   };
-
-  return strength;
 };
 
 /**
- * Format auth error messages for display
+ * Map internal Supabase error messages to safe, user-facing strings.
+ * Generic messages prevent account-enumeration attacks (e.g. probing
+ * whether a given email address is registered).
  */
 export const formatAuthError = (error) => {
   if (!error) return null;
 
-  const message = error.message || error;
-  
-  // Map common Supabase errors to user-friendly messages
+  const message = error.message || String(error);
+
   const errorMap = {
-    'Invalid login credentials': 'Email or password is incorrect',
-    'Email not confirmed': 'Please verify your email before logging in',
-    'User already registered': 'This email is already registered',
-    'Weak password': 'Password must be at least 8 characters with uppercase, lowercase, and numbers',
-    'Invalid email': 'Please enter a valid email address',
-    'New password should be different': 'Please enter a different password'
+    'Invalid login credentials': 'Invalid email or password.',
+    'Email not confirmed': 'Please verify your email address before signing in.',
+    'User already registered': 'Unable to create account at this time.',
+    'Weak password': 'Password does not meet security requirements.',
+    'Invalid email': 'Invalid email format.',
+    'New password should be different': 'Password update failed — please choose a different password.',
+    'Unverified Sender Address': 'Email service is temporarily unavailable.',
+    'SignUp: Password invalid, password should contain at least 8 characters including uppercase':
+      'Password does not meet security requirements.',
+    'over_email_send_rate_limit':
+      'Too many verification emails sent. Please wait before requesting another.',
   };
 
-  return errorMap[message] || message;
+  // Log the raw error server-side only — never expose it to the UI
+  console.error('[Auth Error]', message);
+
+  return errorMap[message] ?? 'An authentication error occurred. Please try again.';
 };

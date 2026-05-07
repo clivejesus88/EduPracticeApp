@@ -130,10 +130,18 @@ export function AuthProvider({ children }) {
   const logOut = async () => {
     if (!supabase) return { success: true };
     setError(null);
+    
+    // Sign out and clear all sensitive data
     const result = await authService.signOut();
     if (result.error) console.error('Sign out error:', result.error);
+    
+    // Clear auth state
     setUser(null);
     setSession(null);
+    
+    // Clear any error messages
+    setError(null);
+    
     return { success: !result.error };
   };
 

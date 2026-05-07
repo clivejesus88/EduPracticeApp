@@ -5,11 +5,6 @@ import { GraduationCapIcon, LockIcon, CheckIcon, CircleAlert } from 'lucide-reac
 import { useAuth } from '../contexts/AuthContext';
 import * as authService from '../services/authService';
 
-/**
- * ResetPassword Component
- * Used when user clicks the reset password link in their email
- * The email contains a special token in the URL
- */
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -21,23 +16,40 @@ export default function ResetPassword() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [hasToken, setHasToken] = useState(false);
+  const [hasValidToken, setHasValidToken] = useState(false);
+  const [isValidating, setIsValidating] = useState(true);
 
-  // Check if we have a valid reset token in the URL
   useEffect(() => {
-    const token = searchParams.get('token');
-    const type = searchParams.get('type');
+    const validateToken = async () => {
+      const token = searchParams.get('token');
+      const type = searchParams.get('type');
 
-    // Supabase sends reset tokens in the URL
-    // We need to verify it's a valid recovery/reset token
-    if (token && type === 'recovery') {
-      setHasToken(true);
-    } else {
-      setError('Invalid or missing reset link. Please request a new password reset.');
-    }
+      if (!authService.validateRecoveryToken(token, type)) {
+        setError('Invalid or missing reset link. Please request a new password reset.');
+        setIsValidating(false);
+        return;
+      }
+
+      try {
+        const { session, error: sessionError } = await authService.getSession();
+        
+        if (sessionError || !session) {
+          setError('This reset link has expired or is invalid. Please request a new password reset.');
+          setIsValidating(false);
+          return;
+        }
+
+        setHasValidToken(true);
+        setIsValidating(false);
+      } catch (err) {
+        setError('Failed to validate reset link. Please try again.');
+        setIsValidating(false);
+      }
+    };
+
+    validateToken();
   }, [searchParams]);
 
-  // Validate password strength in real-time
   useEffect(() => {
     if (password) {
       setPasswordStrength(authService.validatePasswordStrength(password));
@@ -46,7 +58,6 @@ export default function ResetPassword() {
     }
   }, [password]);
 
-  // Redirect authenticated users
   useEffect(() => {
     if (auth.isAuthenticated) {
       navigate('/dashboard');
@@ -57,7 +68,6 @@ export default function ResetPassword() {
     e.preventDefault();
     setError('');
 
-    // Validate inputs
     if (!password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
@@ -69,9 +79,7 @@ export default function ResetPassword() {
     }
 
     if (!passwordStrength?.isValid) {
-      setError(
-        'Password must be at least 8 characters with uppercase, lowercase, and numbers/symbols'
-      );
+      setError('Password must be at least 8 characters with uppercase, lowercase, and numbers/symbols');
       return;
     }
 
@@ -81,7 +89,6 @@ export default function ResetPassword() {
 
     if (result.success) {
       setSuccess(true);
-      // Redirect to login after success
       setTimeout(() => {
         navigate('/login');
       }, 2000);
@@ -92,6 +99,17 @@ export default function ResetPassword() {
     setLoading(false);
   };
 
+  if (isValidating) {
+    return (
+      <div className="min-h-screen bg-[#0B1120] flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400 mb-4"></div>
+          <p className="text-gray-400">Validating reset link...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0B1120] flex items-center justify-center p-4 sm:p-6 py-8 sm:py-12">
       <motion.div
@@ -100,7 +118,6 @@ export default function ResetPassword() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md bg-[#111827] border border-gray-800 rounded-2xl p-6 sm:p-8"
       >
-        {/* Header */}
         <div className="flex items-center justify-center gap-2 mb-6">
           <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
             <GraduationCapIcon className="w-7 h-7 text-gray-900" />
@@ -111,17 +128,16 @@ export default function ResetPassword() {
         <div className="text-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-white">Reset Password</h1>
           <p className="text-sm sm:text-base text-gray-400 mt-2">
-            {hasToken ? 'Enter your new password' : 'Invalid reset link'}
+            {hasValidToken ? 'Enter your new password' : 'Invalid reset link'}
           </p>
         </div>
 
-        {!hasToken ? (
+        {!hasValidToken ? (
           <div className="space-y-4">
             <div className="px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-start gap-2">
               <CircleAlert className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
-
             <button
               onClick={() => navigate('/login')}
               className="w-full py-3 bg-amber-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-400 transition-colors"
@@ -145,7 +161,6 @@ export default function ResetPassword() {
               </div>
             )}
 
-            {/* New Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
                 New Password
@@ -164,7 +179,6 @@ export default function ResetPassword() {
                 />
               </div>
 
-              {/* Password Strength Indicator */}
               {password && passwordStrength && (
                 <div className="mt-2 space-y-2">
                   <div className="flex gap-1">
@@ -172,42 +186,21 @@ export default function ResetPassword() {
                       <div
                         key={i}
                         className={`flex-1 h-1 rounded-full transition-colors ${
-                          i < passwordStrength.score
-                            ? passwordStrength.score <= 1
-                              ? 'bg-red-500'
-                              : passwordStrength.score <= 2
-                              ? 'bg-yellow-500'
-                              : 'bg-green-500'
-                            : 'bg-gray-700'
+                          i < passwordStrength.score ? (passwordStrength.score <= 1 ? 'bg-red-500' : passwordStrength.score <= 2 ? 'bg-yellow-500' : 'bg-green-500') : 'bg-gray-700'
                         }`}
                       />
                     ))}
                   </div>
                   <div className="text-xs text-gray-400 space-y-1">
-                    <div className={passwordStrength.length ? 'text-green-400' : 'text-gray-400'}>
-                      ✓ At least 8 characters
-                    </div>
-                    <div className={passwordStrength.uppercase ? 'text-green-400' : 'text-gray-400'}>
-                      ✓ Uppercase letter
-                    </div>
-                    <div className={passwordStrength.lowercase ? 'text-green-400' : 'text-gray-400'}>
-                      ✓ Lowercase letter
-                    </div>
-                    <div
-                      className={
-                        passwordStrength.numbers || passwordStrength.specialChars
-                          ? 'text-green-400'
-                          : 'text-gray-400'
-                      }
-                    >
-                      ✓ Number or special character
-                    </div>
+                    <div className={passwordStrength.length ? 'text-green-400' : 'text-gray-400'}>✓ At least 8 characters</div>
+                    <div className={passwordStrength.uppercase ? 'text-green-400' : 'text-gray-400'}>✓ Uppercase letter</div>
+                    <div className={passwordStrength.lowercase ? 'text-green-400' : 'text-gray-400'}>✓ Lowercase letter</div>
+                    <div className={passwordStrength.numbers || passwordStrength.specialChars ? 'text-green-400' : 'text-gray-400'}>✓ Number or special character</div>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
                 Confirm Password
@@ -224,19 +217,15 @@ export default function ResetPassword() {
                   required
                   disabled={loading}
                 />
-                {confirmPassword && password === confirmPassword && (
-                  <CheckIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
-                )}
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading || !passwordStrength?.isValid || password !== confirmPassword}
-              className="w-full py-3 bg-amber-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+              disabled={loading}
+              className="w-full py-3 bg-amber-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? 'Resetting Password...' : 'Reset Password'}
+              {loading ? 'Updating password...' : 'Update Password'}
             </button>
           </form>
         )}

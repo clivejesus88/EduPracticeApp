@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle2, CircleAlert, GraduationCapIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,12 +7,20 @@ import { useAuth } from '../contexts/AuthContext';
 export default function VerifyEmail() {
   const navigate = useNavigate();
   const auth = useAuth();
+  const [searchParams] = useSearchParams();
   const [countdown, setCountdown] = useState(5);
+  const [verificationStatus, setVerificationStatus] = useState('pending'); // 'pending', 'verified', 'expired'
 
   const isVerified = !!auth.user?.email_confirmed_at;
+  const hasToken = !!searchParams.get('token');
+  const hasType = searchParams.get('type') === 'signup';
 
+  // If user landed here from email link with token, Supabase automatically verifies them
+  // If they're already authenticated and verified, redirect to dashboard
   useEffect(() => {
     if (!auth.isLoading && auth.isAuthenticated && isVerified) {
+      setVerificationStatus('verified');
+      
       const interval = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
@@ -25,8 +33,18 @@ export default function VerifyEmail() {
       }, 1000);
 
       return () => clearInterval(interval);
+    } else if (!auth.isLoading && auth.isAuthenticated && !isVerified) {
+      // User is authenticated but email not verified
+      // This is the normal signup flow waiting for email verification
+      setVerificationStatus('pending');
+    } else if (!auth.isLoading && !auth.isAuthenticated) {
+      // User not authenticated - check if token expired or they need to sign in
+      if (hasToken && hasType) {
+        // Token was in URL but verification failed - likely expired
+        setVerificationStatus('expired');
+      }
     }
-  }, [auth.isLoading, auth.isAuthenticated, isVerified, navigate]);
+  }, [auth.isLoading, auth.isAuthenticated, isVerified, hasToken, hasType, navigate]);
 
   if (auth.isLoading) {
     return (
@@ -54,7 +72,7 @@ export default function VerifyEmail() {
           <span className="text-xl sm:text-2xl font-bold text-white">EduPractice</span>
         </Link>
 
-        {auth.isAuthenticated && isVerified ? (
+        {verificationStatus === 'verified' ? (
           <div className="text-center space-y-4">
             <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto" />
             <h1 className="text-2xl font-bold text-white">Email verified</h1>
@@ -69,26 +87,39 @@ export default function VerifyEmail() {
               Go to dashboard now
             </button>
           </div>
-        ) : (
+        ) : verificationStatus === 'expired' ? (
           <div className="text-center space-y-4">
-            <CircleAlert className="w-12 h-12 text-amber-400 mx-auto" />
-            <h1 className="text-2xl font-bold text-white">Verification pending</h1>
+            <CircleAlert className="w-12 h-12 text-red-400 mx-auto" />
+            <h1 className="text-2xl font-bold text-white">Link Expired</h1>
             <p className="text-gray-400 text-sm">
-              This link may be expired, invalid, or your session has not been established yet.
-              Try signing in again or request another verification email.
+              This verification link has expired. Please sign in and request a new verification email if needed.
             </p>
             <Link
               to="/login"
-              className="block w-full py-3 bg-amber-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-400 transition-colors"
+              className="block w-full py-3 bg-amber-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-400 transition-colors text-center"
             >
               Go to sign in
             </Link>
-            <Link
-              to="/signup"
+          </div>
+        ) : (
+          <div className="text-center space-y-4">
+            <div className="w-12 h-12 mx-auto flex items-center justify-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400"></div>
+            </div>
+            <h1 className="text-2xl font-bold text-white">Verification Pending</h1>
+            <p className="text-gray-400 text-sm">
+              Check your email for a verification link. Click it to confirm your account.
+            </p>
+            <p className="text-gray-500 text-xs">
+              Didn't receive an email? Check your spam folder or click below to request another.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/signup')}
               className="block w-full py-3 bg-[#1a1f2e] border border-gray-700 text-gray-300 rounded-lg font-semibold hover:text-white hover:border-gray-500 transition-colors"
             >
-              Back to signup
-            </Link>
+              Request new verification email
+            </button>
           </div>
         )}
       </motion.div>
