@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import * as authService from '../services/authService';
 
@@ -9,6 +9,7 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const sessionUpdatedRef = useRef(null); // Will hold resolve function
 
   useEffect(() => {
     if (!supabase) {
@@ -28,6 +29,11 @@ export function AuthProvider({ children }) {
           setSession(newSession);
           setUser(newSession?.user || null);
           if (event === 'SIGNED_OUT') setError(null);
+          
+          // Notify signIn promise that session has been updated
+          if (sessionUpdatedRef.current && newSession) {
+            sessionUpdatedRef.current();
+          }
         });
 
         unsubscribe = () => data.subscription.unsubscribe();
@@ -52,6 +58,22 @@ export function AuthProvider({ children }) {
       setError(errorMsg);
       return { success: false, error: errorMsg };
     }
+    
+    // Create a promise that resolves when session is updated by listener
+    const waitForSessionUpdate = new Promise(resolve => {
+      sessionUpdatedRef.current = () => {
+        sessionUpdatedRef.current = null;
+        resolve();
+      };
+      // Safety timeout to avoid hanging forever
+      setTimeout(() => {
+        if (sessionUpdatedRef.current) {
+          sessionUpdatedRef.current();
+        }
+      }, 2000);
+    });
+    
+    await waitForSessionUpdate;
     return { success: true, user: result.data.user };
   };
 
@@ -64,6 +86,21 @@ export function AuthProvider({ children }) {
       setError(errorMsg);
       return { success: false, error: errorMsg };
     }
+    
+    // Wait for session to update after OAuth redirect completes
+    const waitForSessionUpdate = new Promise(resolve => {
+      sessionUpdatedRef.current = () => {
+        sessionUpdatedRef.current = null;
+        resolve();
+      };
+      setTimeout(() => {
+        if (sessionUpdatedRef.current) {
+          sessionUpdatedRef.current();
+        }
+      }, 2000);
+    });
+    
+    await waitForSessionUpdate;
     return { success: true };
   };
 
