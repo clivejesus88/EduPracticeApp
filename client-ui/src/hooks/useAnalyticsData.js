@@ -24,9 +24,14 @@ async function fetchAllFromSupabase() {
       .select('*')
       .order('submitted_at', { ascending: false })
       .limit(500);
-    if (error || !Array.isArray(data)) return null;
+    if (error) {
+      console.warn('Supabase fetch error:', error);
+      return null;
+    }
+    if (!Array.isArray(data)) return null;
     return data.map(rowToAttempt);
-  } catch {
+  } catch (err) {
+    console.warn('Failed to fetch from Supabase:', err);
     return null;
   }
 }
@@ -65,15 +70,42 @@ export default function useAnalyticsData({ days = null } = {}) {
       return () => clearInterval(timer);
     }
 
-    const channel = supabase
-      .channel('analytics_realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'exam_attempts' }, () => {
-        refresh();
-      })
-      .subscribe();
+    let subscribed = false;
 
-    channelRef.current = channel;
+    const setupRealtimeSubscription = async () => {
+      try {
+        const channel = supabase.channel('analytics_realtime');
+        
+        channel.on('postgres_changes', 
+          { event: '*', schema: 'public', table: 'exam_attempts' }, 
+          () => {
+            if (subscribed) {
+              refresh();
+            }
+          }
+        );
+        
+        const subscription = await channel.subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            subscribed = true;
+            console.log('Analytics realtime subscribed successfully');
+          } else if (status === 'CHANNEL_ERROR') {
+            subscribed = false;
+            console.warn('Analytics realtime channel error, falling back to polling');
+          }
+        });
+        
+        channelRef.current = channel;
+      } catch (err) {
+        console.warn('Failed to setup realtime subscription:', err);
+        subscribed = false;
+      }
+    };
+
+    setupRealtimeSubscription();
+    
     return () => {
+      subscribed = false;
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;

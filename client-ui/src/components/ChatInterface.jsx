@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { AiBrain05Icon } from '@hugeicons/core-free-icons';
+import { AiChat01Icon, AiBrain05Icon } from '@hugeicons/core-free-icons';
 import MarkdownText from './MarkdownText';
 import { streamGemini, isAvailable } from '../services/geminiService';
 import { checkAndRecord, blockedMessage } from '../utils/rateLimiter';
@@ -19,7 +19,7 @@ function Avatar({ role }) {
   if (role === 'assistant') {
     return (
       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#f99c00] to-amber-600 flex items-center justify-center shrink-0">
-        <HugeiconsIcon icon={AiBrain05Icon} size={16} strokeWidth={2} className="text-white" />
+        <HugeiconsIcon icon={AiChat01Icon} size={16} strokeWidth={2} className="text-white" />
       </div>
     );
   }
@@ -75,6 +75,49 @@ function TypingIndicator() {
   );
 }
 
+function ModelSearchingIndicator() {
+  const [currentModel, setCurrentModel] = useState(0);
+  const models = [
+    'Llama 3.2',
+    'WizardLM',
+    'Gemma 7B',
+    'Mistral',
+    'Zephyr'
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentModel((prev) => (prev + 1) % models.length);
+    }, 800);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex gap-3 items-start">
+      <Avatar role="assistant" />
+      <div className="bg-white/5 border border-white/10 rounded-2xl rounded-bl-md px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className="flex gap-1">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-1.5 h-1.5 bg-[#f99c00] rounded-full animate-pulse"
+                style={{ animationDelay: `${i * 0.2}s` }}
+              />
+            ))}
+          </div>
+          <span className="text-xs text-slate-300 font-medium">
+            Finding best AI model...
+          </span>
+          <span className="text-xs text-[#f99c00] font-mono">
+            {models[currentModel]}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function buildSystemPrompt(context) {
   const base = [
     'You are Maestro, a friendly expert A-Level tutor for Uganda UACE curriculum.',
@@ -112,6 +155,7 @@ export default function ChatInterface({ isOpen, onClose, initialMessage, context
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isSearchingModels, setIsSearchingModels] = useState(false);
   const abortRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -161,7 +205,7 @@ export default function ChatInterface({ isOpen, onClose, initialMessage, context
 
     setMessages((prev) => [...prev, userMsg]);
     setInputValue('');
-    setIsTyping(true);
+    setIsSearchingModels(true);
     inputRef.current?.focus();
 
     // Build Gemini-format conversation history (exclude initial system greeting)
@@ -179,10 +223,10 @@ export default function ChatInterface({ isOpen, onClose, initialMessage, context
     if (!isAvailable()) {
       // Graceful fallback when no API key
       await new Promise((r) => setTimeout(r, 800));
-      setIsTyping(false);
+      setIsSearchingModels(false);
       setMessages((prev) => [
         ...prev,
-        { id: botId, role: 'assistant', text: 'Maestro needs a Gemini API key (VITE_GEMINI_API_KEY) to answer your questions. Please add it in the Replit Secrets panel.', time: timeStr },
+        { id: botId, role: 'assistant', text: 'Maestro needs an OpenRouter API key (VITE_OPENROUTER_API_KEY) to answer your questions. Please add it in the environment variables.', time: timeStr },
       ]);
       return;
     }
@@ -194,11 +238,12 @@ export default function ChatInterface({ isOpen, onClose, initialMessage, context
       let accumulated = '';
       let firstChunk = true;
 
+      setIsSearchingModels(false);
       setIsStreaming(true);
 
       for await (const chunk of stream) {
         if (firstChunk) {
-          setIsTyping(false);
+          setIsSearchingModels(false);
           setMessages((prev) => [...prev, { id: botId, role: 'assistant', text: '', time: timeStr }]);
           firstChunk = false;
         }
@@ -210,11 +255,11 @@ export default function ChatInterface({ isOpen, onClose, initialMessage, context
 
       if (firstChunk) {
         // stream produced nothing
-        setIsTyping(false);
+        setIsSearchingModels(false);
         setMessages((prev) => [...prev, { id: botId, role: 'assistant', text: 'Sorry, I didn\'t get a response. Please try again.', time: timeStr }]);
       }
     } catch (err) {
-      setIsTyping(false);
+      setIsSearchingModels(false);
       const errText = err.message?.includes('429')
         ? 'Rate limit reached. Please wait a moment before sending another message.'
         : `Something went wrong: ${err.message}`;
@@ -309,6 +354,7 @@ export default function ChatInterface({ isOpen, onClose, initialMessage, context
           {messages.map((msg) => (
             <MessageBubble key={msg.id} msg={msg} />
           ))}
+          {isSearchingModels && <ModelSearchingIndicator />}
           {isTyping && <TypingIndicator />}
           <div ref={messagesEndRef} />
         </div>

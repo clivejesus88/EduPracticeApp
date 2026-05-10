@@ -160,13 +160,13 @@ export function UserProvider({ children }) {
   const auth = useAuth();
   const [user, setUser] = useState(defaultUser);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [error, setError] = useState(null);
   // Load user data when auth state changes
   useEffect(() => {
     const loadUserData = async () => {
+      setIsLoading(true);
       try {
         if (auth.isLoading) {
-          setIsLoading(true);
           return;
         }
 
@@ -276,7 +276,8 @@ export function UserProvider({ children }) {
     updateUser,
     updateStats,
     getFirstName,
-    getInitials
+    getInitials,
+    error
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

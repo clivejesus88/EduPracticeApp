@@ -212,8 +212,12 @@ function timeAgo(ts) {
 export function NotificationsProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [readIds, setReadIds] = useState(loadReadIds);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const refresh = useCallback(() => {
+    setIsLoading(true);
+    setError(null);
     try {
       const analytics = deriveAnalytics({ days: 30 });
       const prefs = (() => {
@@ -221,7 +225,12 @@ export function NotificationsProvider({ children }) {
         catch { return {}; }
       })();
       setNotifications(generateNotifications(analytics, prefs));
-    } catch {}
+    } catch (err) {
+      setError('Failed to refresh notifications');
+      console.error('Notifications refresh error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => { refresh(); }, [refresh]);

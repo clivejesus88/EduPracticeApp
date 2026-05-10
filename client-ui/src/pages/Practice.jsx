@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '@iconify/react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { AiChat01Icon } from '@hugeicons/core-free-icons';
+import { AiChat01Icon, AiBrain05Icon } from '@hugeicons/core-free-icons';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { examLevels, physicsTopics, mathematicsTopics } from '../data/examStructure';
 import { pickScenarioForTopic } from '../data/practiceScenarios';
@@ -27,24 +27,42 @@ function savePracticeDraft(draft) {
   localStorage.setItem(PRACTICE_DRAFT_KEY, JSON.stringify(draft));
 }
 
-function getScenarioForSubject(subject) {
-  if (subject === 'physics') {
-    return {
-      title: 'Murchison Falls Energy & Power',
-      topic: 'Energy & Power',
-      maxMark: 10,
-      question:
-        'Murchison Falls drops water through a height of 43 m. If 200 kg of water passes over the falls each second, derive the expression for the power available and calculate the maximum power output assuming g = 10 m/s².',
-    };
-  }
+function ModelSearchingIndicator() {
+  const [currentModel, setCurrentModel] = useState(0);
+  const models = [
+    'Llama 3.2',
+    'WizardLM',
+    'Gemma 7B',
+    'Mistral',
+    'Zephyr'
+  ];
 
-  return {
-    title: 'Applied Mathematics Modelling',
-    topic: 'Calculus Applications',
-    maxMark: 10,
-    question:
-      'A water tank in Mbarara is filled at a rate r(t) = 6t^2 + 2 litres per minute, where t is in minutes. Derive the expression for the total volume added in the first 5 minutes and compute the result.',
-  };
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentModel((prev) => (prev + 1) % models.length);
+    }, 800);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex items-center gap-3 p-4 bg-white/5 border border-white/10 rounded-2xl">
+      <div className="flex gap-1">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="w-1.5 h-1.5 bg-[#f99c00] rounded-full animate-pulse"
+            style={{ animationDelay: `${i * 0.2}s` }}
+          />
+        ))}
+      </div>
+      <span className="text-xs text-slate-300 font-medium">
+        Finding best AI model...
+      </span>
+      <span className="text-xs text-[#f99c00] font-mono">
+        {models[currentModel]}
+      </span>
+    </div>
+  );
 }
 
 export default function Practice() {
@@ -428,6 +446,7 @@ export default function Practice() {
               )}
 
               {/* Submit Action */}
+              {aiState === 'analyzing' && <ModelSearchingIndicator />}
               {aiState !== 'feedback' && (
                 <div className="flex justify-end">
                   <button
