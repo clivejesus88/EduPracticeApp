@@ -1,26 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle2, CircleAlert, GraduationCapIcon } from 'lucide-react';
+import { CheckCircle2, GraduationCapIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function VerifyEmail() {
   const navigate = useNavigate();
   const auth = useAuth();
-  const [searchParams] = useSearchParams();
   const [countdown, setCountdown] = useState(5);
-  const [verificationStatus, setVerificationStatus] = useState('pending'); // 'pending', 'verified', 'expired'
 
-  const isVerified = !!auth.user?.email_confirmed_at;
-  const hasToken = !!searchParams.get('token');
-  const hasType = searchParams.get('type') === 'signup';
-
-  // If user landed here from email link with token, Supabase automatically verifies them
-  // If they're already authenticated and verified, redirect to dashboard
+  // Auto-redirect based on auth state
   useEffect(() => {
-    if (!auth.isLoading && auth.isAuthenticated && isVerified) {
-      setVerificationStatus('verified');
-      
+    if (auth.isLoading) return;
+
+    // If user is authenticated (which means Google login succeeded), redirect to dashboard
+    if (auth.isAuthenticated) {
+      // Google OAuth auto-verifies, so just redirect
       const interval = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
@@ -33,25 +28,18 @@ export default function VerifyEmail() {
       }, 1000);
 
       return () => clearInterval(interval);
-    } else if (!auth.isLoading && auth.isAuthenticated && !isVerified) {
-      // User is authenticated but email not verified
-      // This is the normal signup flow waiting for email verification
-      setVerificationStatus('pending');
-    } else if (!auth.isLoading && !auth.isAuthenticated) {
-      // User not authenticated - check if token expired or they need to sign in
-      if (hasToken && hasType) {
-        // Token was in URL but verification failed - likely expired
-        setVerificationStatus('expired');
-      }
+    } else {
+      // Not authenticated - go back to login
+      navigate('/login', { replace: true });
     }
-  }, [auth.isLoading, auth.isAuthenticated, isVerified, hasToken, hasType, navigate]);
+  }, [auth.isLoading, auth.isAuthenticated, navigate]);
 
   if (auth.isLoading) {
     return (
       <div className="min-h-screen w-full bg-[#0B1120] flex items-center justify-center px-4">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400 mb-4"></div>
-          <p className="text-gray-400">Verifying your email session...</p>
+          <p className="text-gray-400">Verifying...</p>
         </div>
       </div>
     );
@@ -72,56 +60,20 @@ export default function VerifyEmail() {
           <span className="text-xl sm:text-2xl font-bold text-white">EduPractice</span>
         </Link>
 
-        {verificationStatus === 'verified' ? (
-          <div className="text-center space-y-4">
-            <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto" />
-            <h1 className="text-2xl font-bold text-white">Email verified</h1>
-            <p className="text-gray-400 text-sm">
-              Your email is confirmed. Redirecting to dashboard in {countdown}s...
-            </p>
-            <button
-              type="button"
-              onClick={() => navigate('/dashboard', { replace: true })}
-              className="w-full py-3 bg-amber-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-400 transition-colors"
-            >
-              Go to dashboard now
-            </button>
-          </div>
-        ) : verificationStatus === 'expired' ? (
-          <div className="text-center space-y-4">
-            <CircleAlert className="w-12 h-12 text-red-400 mx-auto" />
-            <h1 className="text-2xl font-bold text-white">Link Expired</h1>
-            <p className="text-gray-400 text-sm">
-              This verification link has expired. Please sign in and request a new verification email if needed.
-            </p>
-            <Link
-              to="/login"
-              className="block w-full py-3 bg-amber-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-400 transition-colors text-center"
-            >
-              Go to sign in
-            </Link>
-          </div>
-        ) : (
-          <div className="text-center space-y-4">
-            <div className="w-12 h-12 mx-auto flex items-center justify-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400"></div>
-            </div>
-            <h1 className="text-2xl font-bold text-white">Verification Pending</h1>
-            <p className="text-gray-400 text-sm">
-              Check your email for a verification link. Click it to confirm your account.
-            </p>
-            <p className="text-gray-500 text-xs">
-              Didn't receive an email? Check your spam folder or click below to request another.
-            </p>
-            <button
-              type="button"
-              onClick={() => navigate('/signup')}
-              className="block w-full py-3 bg-[#1a1f2e] border border-gray-700 text-gray-300 rounded-lg font-semibold hover:text-white hover:border-gray-500 transition-colors"
-            >
-              Request new verification email
-            </button>
-          </div>
-        )}
+        <div className="text-center space-y-4">
+          <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto" />
+          <h1 className="text-2xl font-bold text-white">Welcome to EduPractice!</h1>
+          <p className="text-gray-400 text-sm">
+            Your account is all set. Redirecting to dashboard in {countdown}s...
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard', { replace: true })}
+            className="w-full py-3 bg-amber-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-400 transition-colors mt-4"
+          >
+            Go to dashboard now
+          </button>
+        </div>
       </motion.div>
     </div>
   );

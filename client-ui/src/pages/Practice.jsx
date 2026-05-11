@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AiChat01Icon, AiBrain05Icon } from '@hugeicons/core-free-icons';
@@ -9,6 +10,7 @@ import ChatInterface from '../components/ChatInterface';
 import AudioOverview from '../components/AudioOverview';
 import MarkdownText from '../components/MarkdownText';
 import FocusAudio from '../components/FocusAudio';
+import NotFoundPage from './NotFoundPage';
 import { trackPracticeAttempt, trackTopicView } from '../utils/analyticsTracker';
 import { evaluatePracticeSolution } from '../services/practiceAiService';
 
@@ -118,7 +120,17 @@ export default function Practice() {
   };
 
   const topics = getTopics();
-  const currentScenario = useMemo(() => getScenarioForSubject(selectedSubject), [selectedSubject]);
+  
+  // Get scenario for the selected topic - with error handling
+  const currentScenario = useMemo(() => {
+    if (!selectedTopic || !selectedSubject) return null;
+    try {
+      return pickScenarioForTopic(selectedSubject);
+    } catch (err) {
+      console.error('Failed to load scenario:', err);
+      return null;
+    }
+  }, [selectedTopic, selectedSubject]);
 
   useEffect(() => {
     savePracticeDraft({
@@ -172,29 +184,55 @@ export default function Practice() {
 
   const handleSubmit = async () => {
     if (aiState !== 'idle') return;
+    
+    // Validate solution
     if (!solutionText.trim()) {
-      setError('Write your solution before sending it for evaluation.');
+      setError('Please write your solution before submitting for evaluation.');
       return;
     }
+    
+    // Validate scenario is loaded
+    if (!currentScenario) {
+      setError('Practice question failed to load. Please try again.');
+      return;
+    }
+
     setError('');
     setAiState('analyzing');
 
     try {
+      // Validate required fields
+      if (!selectedTopic?.name) {
+        throw new Error('Topic information is missing.');
+      }
+
       const result = await evaluatePracticeSolution({
-        subject: selectedTopic?.name || 'Practice',
+        subject: selectedTopic.name,
         level: selectedExamLevel?.toUpperCase().replace('-', ' ') || 'A-Level',
-        topic: currentScenario.topic,
+        topic: currentScenario.topic || selectedTopic.name,
         question: currentScenario.question,
-        studentAnswer: solutionText,
+        studentAnswer: solutionText.trim(),
         attachmentName: selectedFileName || null,
       });
 
+      // Validate response
+      if (!result) {
+        throw new Error('No evaluation response received.');
+      }
+
       setFeedback(result);
       setAiState('feedback');
+      
       const durationMinutes = Math.max(1, Math.round((Date.now() - workboardStartedAt.current) / 60000));
-      trackPracticeAttempt(selectedTopic?.name || 'Practice', result.score, durationMinutes);
+      try {
+        trackPracticeAttempt(selectedTopic.name, result.score || 0, durationMinutes);
+      } catch (trackErr) {
+        console.warn('Failed to track attempt:', trackErr);
+      }
     } catch (err) {
-      setError(err.message || 'AI evaluation failed.');
+      console.error('Evaluation error:', err);
+      const errorMsg = err?.message || 'AI evaluation failed. Please try again.';
+      setError(errorMsg);
       setAiState('idle');
     }
   };
@@ -365,6 +403,26 @@ export default function Practice() {
         </div>
       ) : (
         // WORKBOARD SCREEN
+        !currentScenario ? (
+          <div className="flex-1 flex items-center justify-center px-5 py-8">
+            <div className="text-center max-w-md">
+              <div className="mb-6 w-16 h-16 mx-auto rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+                <Icon icon="solar:danger-bold" width="32" className="text-red-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Practice Content Unavailable</h2>
+              <p className="text-slate-400 mb-6">
+                We couldn't load the practice question. Please try selecting a different topic or go back and try again.
+              </p>
+              <button
+                onClick={handleBackToTopics}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] font-semibold transition-all"
+              >
+                <Icon icon="solar:alt-arrow-left-linear" width="18" />
+                <span>Back to Topics</span>
+              </button>
+            </div>
+          </div>
+        ) : (
         <div className={`flex-1 overflow-y-auto w-full px-5 sm:px-8 md:px-10 py-8 sm:py-10 pb-32 lg:pb-10 ${workboardPaneClass} transition-[padding] duration-300`}>
           <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8">
 
@@ -386,21 +444,21 @@ export default function Practice() {
                 </div>
                 <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 shrink-0">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span className="text-xs font-semibold text-emerald-400">Easy</span>
+                  <span className="text-xs font-semibold text-emerald-400">Ready</span>
                 </div>
               </div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white break-words mb-2 leading-tight">
-                {selectedTopic?.name} Question
+                {selectedTopic?.name || 'Practice'} Question
               </h1>
               <p className="text-sm text-slate-400">
-                {t('practice.maximumMark')}: <span className="font-semibold text-white">{currentScenario.maxMark}</span>
+                {t('practice.maximumMark')}: <span className="font-semibold text-white">{currentScenario?.maxMark || '10'}</span>
               </p>
             </div>
 
             {/* Scenario Card */}
             <div className="bg-[#111827] border border-white/10 rounded-2xl p-5 sm:p-6 md:p-8 space-y-5">
               <p className="text-slate-300 leading-relaxed text-base sm:text-lg">
-                {currentScenario.question}
+                {currentScenario?.question || 'Loading question...'}
               </p>
             </div>
 
@@ -412,22 +470,32 @@ export default function Practice() {
                 value={solutionText}
                 onChange={(e) => setSolutionText(e.target.value)}
                 placeholder="Write your derivation, working, substitutions, and final answer here."
-                className="w-full min-h-48 rounded-2xl border border-white/10 bg-[#111827] px-5 py-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#f99c00]/40"
+                className="w-full min-h-48 rounded-2xl border border-white/10 bg-[#111827] px-5 py-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#f99c00]/40 disabled:opacity-50"
+                disabled={aiState === 'analyzing'}
               />
 
               {/* Upload Area */}
               <div
-                onClick={() => inputFileRef.current?.click()}
-                className="w-full h-40 rounded-2xl border-2 border-dashed border-white/15 hover:border-[#f99c00]/50 bg-[#111827]/50 flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group px-5"
+                onClick={() => !aiState === 'analyzing' && inputFileRef.current?.click()}
+                className={`w-full h-40 rounded-2xl border-2 border-dashed border-white/15 hover:border-[#f99c00]/50 bg-[#111827]/50 flex flex-col items-center justify-center text-center transition-all duration-200 ${aiState === 'analyzing' ? 'cursor-not-allowed opacity-50' : 'cursor-pointer group'} px-5`}
               >
                 <input
                   ref={inputFileRef}
                   type="file"
                   accept=".png,.jpg,.jpeg,.pdf"
                   className="hidden"
+                  disabled={aiState === 'analyzing'}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    setSelectedFileName(file?.name || '');
+                    if (file) {
+                      // Validate file size (max 5MB)
+                      if (file.size > 5 * 1024 * 1024) {
+                        setError('File size must be less than 5MB');
+                        return;
+                      }
+                      setSelectedFileName(file.name);
+                      setError('');
+                    }
                   }}
                 />
                 <div className="w-14 h-14 rounded-full bg-white/5 group-hover:bg-[#f99c00]/10 flex items-center justify-center text-slate-400 group-hover:text-[#f99c00] transition-all mb-3">
@@ -440,8 +508,9 @@ export default function Practice() {
               </div>
 
               {error && (
-                <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                  {error}
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300 flex items-start gap-3">
+                  <Icon icon="solar:danger-bold" width="18" className="shrink-0 mt-0.5" />
+                  <span>{error}</span>
                 </div>
               )}
 
@@ -451,7 +520,7 @@ export default function Practice() {
                 <div className="flex justify-end">
                   <button
                     onClick={handleSubmit}
-                    disabled={aiState !== 'idle'}
+                    disabled={aiState !== 'idle' || !currentScenario}
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] px-6 py-3.5 rounded-full text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] active:scale-95"
                   >
                     {aiState === 'analyzing' ? (
@@ -481,20 +550,20 @@ export default function Practice() {
                         {t('practice.solutionEvaluated')}
                       </h3>
                       <div className="text-slate-300 text-sm md:text-base leading-relaxed space-y-3">
-                        <p>{feedback.summary}</p>
-                        {feedback.strengths.length > 0 && (
+                        <p>{feedback.summary || 'Your solution has been evaluated.'}</p>
+                        {feedback.strengths && feedback.strengths.length > 0 && (
                           <div>
                             <p className="font-semibold text-white mb-1">What you did well</p>
                             <ul className="list-disc pl-5 space-y-1">
-                              {feedback.strengths.map((item) => <li key={item}>{item}</li>)}
+                              {feedback.strengths.map((item, idx) => <li key={idx}>{item}</li>)}
                             </ul>
                           </div>
                         )}
-                        {feedback.improvements.length > 0 && (
+                        {feedback.improvements && feedback.improvements.length > 0 && (
                           <div>
                             <p className="font-semibold text-white mb-1">Improve next time</p>
                             <ul className="list-disc pl-5 space-y-1">
-                              {feedback.improvements.map((item) => <li key={item}>{item}</li>)}
+                              {feedback.improvements.map((item, idx) => <li key={idx}>{item}</li>)}
                             </ul>
                           </div>
                         )}
@@ -508,16 +577,28 @@ export default function Practice() {
                     </div>
 
                     <div className="shrink-0 flex flex-col items-center justify-center p-5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 self-center sm:self-auto">
-                      <span className="text-4xl font-bold text-emerald-400 font-mono">{feedback.score}%</span>
+                      <span className="text-4xl font-bold text-emerald-400 font-mono">{feedback.score ?? 0}%</span>
                       <span className="text-[11px] font-bold text-emerald-500/80 uppercase tracking-widest mt-1">{t('practice.score')}</span>
                     </div>
                   </div>
 
                   <div className="mt-6 pt-5 border-t border-white/10 flex flex-col sm:flex-row gap-3">
-                    <button onClick={() => { setAiState('idle'); setFeedback(null); }} className="px-6 py-3 rounded-full border border-white/15 hover:border-white/25 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all w-full sm:w-auto active:scale-95">
+                    <button 
+                      onClick={() => { 
+                        setAiState('idle'); 
+                        setFeedback(null);
+                        setSolutionText('');
+                        setSelectedFileName('');
+                        setError('');
+                      }} 
+                      className="px-6 py-3 rounded-full border border-white/15 hover:border-white/25 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all w-full sm:w-auto active:scale-95"
+                    >
                       {t('practice.tryAgain')}
                     </button>
-                    <button onClick={() => setIsChatOpen(true)} className="px-6 py-3 rounded-full bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] text-sm font-bold transition-all flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95">
+                    <button 
+                      onClick={() => setIsChatOpen(true)} 
+                      className="px-6 py-3 rounded-full bg-[#f99c00] hover:bg-[#f88c00] text-[#0B1120] text-sm font-bold transition-all flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95"
+                    >
                       <HugeiconsIcon icon={AiBrain05Icon} size={20} strokeWidth={2} />
                       <span>{t('practice.askMaestro')}</span>
                     </button>
@@ -528,6 +609,7 @@ export default function Practice() {
 
           </div>
         </div>
+        )
       )}
 
       {/* Floating Chat Toggle Button */}
