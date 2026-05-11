@@ -21,7 +21,43 @@ export function AuthProvider({ children }) {
 
     const initAuth = async () => {
       try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        // First check localStorage for session data (from OAuth callback)
+        const storedSession = localStorage.getItem('eduPractice_session');
+        let initialSession = null;
+        
+        if (storedSession) {
+          try {
+            const sessionData = JSON.parse(storedSession);
+            // Check if session is still valid (not expired)
+            if (sessionData.timestamp && sessionData.isAuthenticated) {
+              const sessionAge = Date.now() - sessionData.timestamp;
+              const maxAge = 60 * 60 * 1000; // 1 hour
+              
+              if (sessionAge < maxAge) {
+                initialSession = {
+                  user: sessionData.user,
+                  access_token: sessionData.accessToken,
+                  expires_at: Math.floor((sessionData.timestamp + maxAge) / 1000)
+                };
+              } else {
+                // Clear expired session
+                localStorage.removeItem('eduPractice_session');
+                localStorage.removeItem('supabase.auth.token');
+              }
+            }
+          } catch (parseError) {
+            console.error('Failed to parse stored session:', parseError);
+            localStorage.removeItem('eduPractice_session');
+            localStorage.removeItem('supabase.auth.token');
+          }
+        }
+        
+        // If no valid stored session, check Supabase
+        if (!initialSession) {
+          const { data: { session: supabaseSession } } = await supabase.auth.getSession();
+          initialSession = supabaseSession;
+        }
+        
         setSession(initialSession);
         setUser(initialSession?.user || null);
 

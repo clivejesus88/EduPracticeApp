@@ -291,14 +291,6 @@ export default function Layout() {
             <div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
             <span className="text-sm">{t('subjects.mathematics')}</span>
           </Link>
-
-          <div className="pt-6 pb-2 px-3">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Admin</p>
-          </div>
-          <Link to="/admin" onClick={() => setIsMobileSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all group font-medium">
-            <Icon icon="solar:shield-linear" width="20" height="20" className="text-slate-500 group-hover:text-amber-400 transition-colors" style={{ strokeWidth: 1 }} />
-            <span className="text-sm">Admin Panel</span>
-          </Link>
         </nav>
 
         <div className="p-4 border-t border-white/5 sticky bottom-0 bg-[#0B1120]/95 backdrop-blur">

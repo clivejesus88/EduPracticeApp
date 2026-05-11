@@ -149,7 +149,12 @@ function generateSecureState() {
 export const signInWithGoogle = async () => {
   try {
     const state = generateSecureState();
-    sessionStorage.setItem('oauth_state', state);
+    // Enhanced state with timestamp for better validation
+    const stateWithTimestamp = btoa(JSON.stringify({
+      token: state,
+      timestamp: Date.now()
+    }));
+    sessionStorage.setItem('oauth_state', stateWithTimestamp);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -158,7 +163,7 @@ export const signInWithGoogle = async () => {
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
-          state,
+          state: stateWithTimestamp,
         },
         scopes: 'openid profile email',
       },
@@ -191,6 +196,30 @@ export const validateOAuthCallback = (returnedState) => {
 
   if (!returnedState || returnedState !== storedState) {
     return { valid: false, error: 'OAuth state mismatch. Request rejected.' };
+  }
+
+  // Additional validation: check if state is recent (within 5 minutes)
+  try {
+    const stateData = JSON.parse(atob(storedState));
+    const now = Date.now();
+    const stateAge = now - stateData.timestamp;
+    const maxAge = 5 * 60 * 1000; // 5 minutes
+    
+    if (stateAge > maxAge) {
+      return { valid: false, error: 'OAuth state expired. Please try again.' };
+    }
+    
+    // For enhanced format, we need to validate the returned state matches the stored token
+    if (stateData.token && returnedState === storedState) {
+      return { valid: true, error: null };
+    }
+  } catch (parseError) {
+    // If we can't parse the state, it's likely not our enhanced format
+    console.warn('Using legacy OAuth state format');
+    // For legacy format, just do direct comparison
+    if (returnedState === storedState) {
+      return { valid: true, error: null };
+    }
   }
 
   return { valid: true, error: null };

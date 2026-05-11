@@ -799,7 +799,132 @@ The company wants to define this distribution fully so it can staff the call cen
     ],
   },
 
-  // ── Item 7: Pure Maths — Complex Numbers ──────────────────────────────────
+  // ── Item 7: Applied Mathematics — Trigonometry & Vectors (UACE 2025) ───────────────────────────────
+  {
+    id: 'mat-trig-001',
+    subject: 'mathematics',
+    topic: 'Applied Mathematics',
+    topics: ['Applied Mathematics', 'Pure Mathematics'],
+    level: 'UACE',
+    difficulty: 2,
+    source: 'UACE 2025 Mathematics Paper 2 - Question 4',
+    totalMarks: 18,
+    stem: `A surveyor is mapping the boundary of a piece of land in Jinja. From point A, the angle of elevation to the top of a radio mast is 25°. From point B, 200 m horizontally from A, the angle of elevation to the same point is 18°. The mast stands on level ground.
+
+In a separate vector problem, two forces F₁ = 3i + 4j N and F₂ = -2i + 5j N act on a particle. The particle has a mass of 2 kg.`,
+    parts: [
+      {
+        label: 'a(i)',
+        text: 'Draw a diagram showing the two observation points A and B, the mast, and the angles of elevation.',
+        marks: 2,
+      },
+      {
+        label: 'a(ii)',
+        text: 'Let h be the height of the mast and x be the horizontal distance from A to the mast. Write two equations involving h and x using the tangent function.',
+        marks: 3,
+      },
+      {
+        label: 'a(iii)',
+        text: 'Solve the equations to find the height h of the radio mast.',
+        marks: 4,
+      },
+      {
+        label: 'b(i)',
+        text: 'Find the resultant force R = F₁ + F₂ in the form ai + bj.',
+        marks: 2,
+      },
+      {
+        label: 'b(ii)',
+        text: 'Calculate the magnitude of the resultant force and the angle it makes with the positive x-axis.',
+        marks: 3,
+      },
+      {
+        label: 'b(iii)',
+        text: 'If the particle starts from rest and the resultant force acts for 3 seconds, find the final velocity of the particle.',
+        marks: 4,
+      },
+    ],
+    markScheme: [
+      { criterion: 'a(i): Clear diagram with mast, points A and B, angles 25° and 18°, horizontal distances', marks: 2, max: 2 },
+      { criterion: 'a(ii): tan 25° = h/x and tan 18° = h/(x+200)', marks: 3, max: 3 },
+      { criterion: 'a(iii): h = x tan 25°; substitute into second equation: x tan 25° = (x+200) tan 18°', marks: 1, max: 1 },
+      { criterion: 'a(iii): x(tan 25° - tan 18°) = 200 tan 18°; x = 200 tan 18°/(tan 25° - tan 18°)', marks: 1, max: 1 },
+      { criterion: 'a(iii): x ≈ 200 × 0.3249/(0.4663 - 0.3249) ≈ 459.6 m', marks: 1, max: 1 },
+      { criterion: 'a(iii): h = 459.6 × tan 25° ≈ 214.3 m', marks: 1, max: 1 },
+      { criterion: 'b(i): R = (3-2)i + (4+5)j = i + 9j', marks: 2, max: 2 },
+      { criterion: 'b(ii): |R| = √(1² + 9²) = √82 ≈ 9.06 N', marks: 1, max: 1 },
+      { criterion: 'b(ii): θ = tan⁻¹(9/1) ≈ 83.7°', marks: 2, max: 2 },
+      { criterion: 'b(iii): F = ma → a = 9.06/2 = 4.53 m s⁻²', marks: 1, max: 1 },
+      { criterion: 'b(iii): v = u + at = 0 + 4.53 × 3 = 13.6 m s⁻¹', marks: 3, max: 3 },
+    ],
+  },
+
+  // ── Item 8: Pure Mathematics — Calculus (UACE 2025) ─────────────────────────────────────────────
+  {
+    id: 'mat-calc-001',
+    subject: 'mathematics',
+    topic: 'Pure Mathematics',
+    topics: ['Pure Mathematics'],
+    level: 'UACE',
+    difficulty: 3,
+    source: 'UACE 2025 Mathematics Paper 1 - Question 6',
+    totalMarks: 20,
+    stem: `The profit function of a small business in Kampala is given by P(x) = -2x³ + 15x² - 24x + 10, where x is the number of units sold (in hundreds) and P is the profit (in millions of Ugandan shillings).
+
+The cost function for producing x units is C(x) = x² + 8x + 5, where C is in millions of shillings.`,
+    parts: [
+      {
+        label: 'a(i)',
+        text: 'Find the derivative P′(x) and determine the critical points of the profit function.',
+        marks: 3,
+      },
+      {
+        label: 'a(ii)',
+        text: 'Use the second derivative test to classify each critical point as a maximum, minimum, or point of inflection.',
+        marks: 4,
+      },
+      {
+        label: 'a(iii)',
+        text: 'What is the maximum profit and how many units must be sold to achieve this maximum?',
+        marks: 3,
+      },
+      {
+        label: 'b(i)',
+        text: 'Find the marginal cost function C′(x) and evaluate it when x = 3.',
+        marks: 2,
+      },
+      {
+        label: 'b(ii)',
+        text: 'Calculate the average cost per unit when 400 units are produced (x = 4).',
+        marks: 3,
+      },
+      {
+        label: 'b(iii)',
+        text: 'Find the value of x where the average cost is minimized.',
+        marks: 5,
+      },
+    ],
+    markScheme: [
+      { criterion: 'a(i): P′(x) = -6x² + 30x - 24', marks: 1, max: 1 },
+      { criterion: 'a(i): Set P′(x) = 0: -6x² + 30x - 24 = 0 → 6x² - 30x + 24 = 0', marks: 1, max: 1 },
+      { criterion: 'a(i): Critical points: x = 1 and x = 4', marks: 1, max: 1 },
+      { criterion: 'a(ii): P′′(x) = -12x + 30', marks: 1, max: 1 },
+      { criterion: 'a(ii): At x = 1: P′′(1) = 18 > 0 → local minimum', marks: 1, max: 1 },
+      { criterion: 'a(ii): At x = 4: P′′(4) = -18 < 0 → local maximum', marks: 1, max: 1 },
+      { criterion: 'a(ii): Classification clearly stated', marks: 1, max: 1 },
+      { criterion: 'a(iii): Maximum occurs at x = 4 (400 units)', marks: 1, max: 1 },
+      { criterion: 'a(iii): P(4) = -2(64) + 15(16) - 24(4) + 10 = -128 + 240 - 96 + 10 = 26', marks: 1, max: 1 },
+      { criterion: 'a(iii): Maximum profit = 26 million UGX', marks: 1, max: 1 },
+      { criterion: 'b(i): C′(x) = 2x + 8; C′(3) = 2(3) + 8 = 14 million UGX per hundred units', marks: 2, max: 2 },
+      { criterion: 'b(ii): Average cost = C(x)/x = (x² + 8x + 5)/x', marks: 1, max: 1 },
+      { criterion: 'b(ii): At x = 4: AC = (16 + 32 + 5)/4 = 53/4 = 13.25 million UGX per hundred units', marks: 2, max: 2 },
+      { criterion: 'b(iii): AC = x + 8 + 5/x; d(AC)/dx = 1 - 5/x²', marks: 2, max: 2 },
+      { criterion: 'b(iii): Set d(AC)/dx = 0: 1 - 5/x² = 0 → x² = 5 → x = √5', marks: 2, max: 2 },
+      { criterion: 'b(iii): Second derivative positive → minimum at x = √5 ≈ 2.24 (224 units)', marks: 1, max: 1 },
+    ],
+  },
+
+  // ── Item 9: Pure Maths — Complex Numbers ──────────────────────────────────
   {
     id: 'mat-complex-001',
     subject: 'mathematics',
@@ -843,6 +968,188 @@ The company wants to define this distribution fully so it can staff the call cen
       { criterion: 'c: z₁ = 2+3i and z₂ = 2−3i stated', marks: 1, max: 1 },
       { criterion: 'd: Sum = (2+3i)+(2−3i) = 4 ✓; Product = (2+3i)(2−3i) = 4+9 = 13 ✓', marks: 2, max: 2 },
       { criterion: 'd: Vieta\'s: sum of roots = −b/a; product of roots = c/a', marks: 2, max: 2 },
+    ],
+  },
+
+  // ── Q8: Electricity & Circuits (UACE 2025 Paper 1) ───────────────────────────
+  {
+    id: 'phy-electric-002',
+    subject: 'physics',
+    topic: 'Electricity & Magnetism',
+    topics: ['Electricity & Magnetism'],
+    level: 'A-Level',
+    difficulty: 3,
+    source: 'UACE 2025 Physics Paper 1 - Question 3',
+    totalMarks: 20,
+    stem: `A student sets up an electrical circuit to investigate the relationship between current and potential difference for a filament lamp. The circuit consists of a 12V battery, a variable resistor, the filament lamp, an ammeter, and a voltmeter connected across the lamp. The student records the following data:
+
+| Current (A) | 0.10 | 0.20 | 0.30 | 0.40 | 0.50 |
+|-------------|------|------|------|------|------|
+| Voltage (V) | 1.2  | 2.8  | 4.5  | 6.0  | 7.2  |
+
+The filament lamp has a resistance of 40 Ω when it is not operating (cold).`,
+    parts: [
+      {
+        label: 'a(i)',
+        text: 'Draw a circuit diagram for this experiment, showing the correct placement of all components.',
+        marks: 3,
+      },
+      {
+        label: 'a(ii)',
+        text: 'Explain why the resistance of the filament lamp increases as the current increases.',
+        marks: 3,
+      },
+      {
+        label: 'b',
+        text: 'Plot a graph of voltage against current using the given data. Use your graph to determine the resistance of the lamp when the current is 0.35 A.',
+        marks: 6,
+      },
+      {
+        label: 'c(i)',
+        text: 'Calculate the electrical power dissipated by the lamp when the current is 0.40 A.',
+        marks: 2,
+      },
+      {
+        label: 'c(ii)',
+        text: 'If the lamp operates at this power for 2 hours, calculate the electrical energy consumed in kWh.',
+        marks: 3,
+      },
+      {
+        label: 'd',
+        text: 'Explain why the I-V characteristic of a filament lamp is non-linear, unlike that of a metallic conductor at constant temperature.',
+        marks: 3,
+      },
+    ],
+    markScheme: [
+      { criterion: 'a(i): Complete circuit with battery, variable resistor, lamp, ammeter in series, voltmeter parallel to lamp', marks: 3, max: 3 },
+      { criterion: 'a(ii): Temperature increases with current; resistance of metal filament increases with temperature', marks: 2, max: 2 },
+      { criterion: 'a(ii): Increased atomic vibrations impede electron flow more at higher temperatures', marks: 1, max: 1 },
+      { criterion: 'b: Correct axes labels and scales; points plotted accurately; smooth curve through points', marks: 3, max: 3 },
+      { criterion: 'b: Tangent drawn at I = 0.35 A; gradient calculated correctly', marks: 2, max: 2 },
+      { criterion: 'b: Resistance = V/I from graph ≈ 18 Ω (accept 16-20 Ω)', marks: 1, max: 1 },
+      { criterion: 'c(i): P = VI = 6.0 × 0.40 = 2.4 W', marks: 2, max: 2 },
+      { criterion: 'c(ii): Energy = Pt = 2.4 × 2 = 4.8 Wh = 0.0048 kWh', marks: 3, max: 3 },
+      { criterion: 'd: Filament temperature changes significantly with current; resistance not constant', marks: 2, max: 2 },
+      { criterion: 'd: Metallic conductor at constant temperature has constant resistance (Ohm\'s law applies)', marks: 1, max: 1 },
+    ],
+  },
+
+  // ── Q9: Waves & Sound (UACE 2025 Paper 2) ────────────────────────────────────
+  {
+    id: 'phy-waves-001',
+    subject: 'physics',
+    topic: 'Waves & Oscillations',
+    topics: ['Waves & Oscillations'],
+    level: 'A-Level',
+    difficulty: 2,
+    source: 'UACE 2025 Physics Paper 2 - Question 5',
+    totalMarks: 18,
+    stem: `A stationary wave is formed on a stretched string fixed at both ends. The string has a length of 1.20 m and a linear mass density of 2.5 × 10⁻³ kg m⁻¹. When the string vibrates in its second harmonic mode, the frequency is 80 Hz.
+
+In a separate experiment, a pipe organ at Kampala Cathedral produces a fundamental frequency of 256 Hz when the temperature is 20°C. The speed of sound in air varies with temperature according to v = 331 + 0.6T, where T is the temperature in °C.`,
+    parts: [
+      {
+        label: 'a(i)',
+        text: 'Define the term node and antinode as applied to stationary waves.',
+        marks: 2,
+      },
+      {
+        label: 'a(ii)',
+        text: 'Calculate the wavelength of the stationary wave on the string when it vibrates in the second harmonic.',
+        marks: 3,
+      },
+      {
+        label: 'a(iii)',
+        text: 'Calculate the tension in the string.',
+        marks: 4,
+      },
+      {
+        label: 'b(i)',
+        text: 'Calculate the speed of sound in air at 20°C.',
+        marks: 2,
+      },
+      {
+        label: 'b(ii)',
+        text: 'If the pipe organ is open at both ends, calculate the length of the pipe that produces the fundamental frequency of 256 Hz.',
+        marks: 3,
+      },
+      {
+        label: 'b(iii)',
+        text: 'What would be the frequency of the third harmonic of this pipe?',
+        marks: 2,
+      },
+      {
+        label: 'c',
+        text: 'Explain why the quality of sound from a pipe organ differs from that of a tuning fork, even when they have the same fundamental frequency.',
+        marks: 2,
+      },
+    ],
+    markScheme: [
+      { criterion: 'a(i): Node - point of zero amplitude; Antinode - point of maximum amplitude', marks: 2, max: 2 },
+      { criterion: 'a(ii): Second harmonic has 2 loops; L = λ → λ = 1.20 m', marks: 3, max: 3 },
+      { criterion: 'a(iii): v = fλ = 80 × 1.20 = 96 m s⁻¹; T = μv² = 2.5×10⁻³ × 96² = 23.0 N', marks: 4, max: 4 },
+      { criterion: 'b(i): v = 331 + 0.6×20 = 331 + 12 = 343 m s⁻¹', marks: 2, max: 2 },
+      { criterion: 'b(ii): For open pipe, L = λ/2; λ = v/f = 343/256 = 1.34 m; L = 0.67 m', marks: 3, max: 3 },
+      { criterion: 'b(iii): Third harmonic frequency = 3f₁ = 3 × 256 = 768 Hz', marks: 2, max: 2 },
+      { criterion: 'c: Different harmonics present (overtones); different waveforms produce different timbre/quality', marks: 2, max: 2 },
+    ],
+  },
+
+  // ── Q10: Modern Physics (UACE 2025 Paper 1) ───────────────────────────────────
+  {
+    id: 'phy-modern-001',
+    subject: 'physics',
+    topic: 'Modern Physics',
+    topics: ['Modern Physics', 'Nuclear Physics'],
+    level: 'A-Level',
+    difficulty: 3,
+    source: 'UACE 2025 Physics Paper 1 - Question 8',
+    totalMarks: 17,
+    stem: `A radioactive isotope used in medical imaging has a half-life of 6.0 hours. A hospital in Entebbe receives a sample containing 8.0 × 10¹⁰ atoms of this isotope for use in patient diagnostics.
+
+In a separate experiment, electrons are accelerated through a potential difference of 2.0 kV and directed at a crystal to demonstrate electron diffraction. The spacing between atomic planes in the crystal is 2.5 × 10⁻¹⁰ m. (Planck\'s constant h = 6.63 × 10⁻³⁴ J s; mass of electron mₑ = 9.11 × 10⁻³¹ kg; electronic charge e = 1.60 × 10⁻¹⁹ C)`,
+    parts: [
+      {
+        label: 'a(i)',
+        text: 'Define half-life and explain why it is independent of external conditions like temperature and pressure.',
+        marks: 3,
+      },
+      {
+        label: 'a(ii)',
+        text: 'Calculate the decay constant of this isotope.',
+        marks: 2,
+      },
+      {
+        label: 'a(iii)',
+        text: 'How many atoms of the isotope will remain after 24 hours?',
+        marks: 3,
+      },
+      {
+        label: 'b(i)',
+        text: 'Calculate the wavelength of the accelerated electrons using the de Broglie equation.',
+        marks: 3,
+      },
+      {
+        label: 'b(ii)',
+        text: 'If these electrons are diffracted by the crystal, calculate the first-order diffraction angle using Bragg\'s law.',
+        marks: 3,
+      },
+      {
+        label: 'c',
+        text: 'Explain how electron diffraction provides evidence for the wave nature of electrons.',
+        marks: 3,
+      },
+    ],
+    markScheme: [
+      { criterion: 'a(i): Time for half the nuclei to decay; nuclear process unaffected by external conditions', marks: 2, max: 2 },
+      { criterion: 'a(i): Depends on nuclear stability, not electron arrangements', marks: 1, max: 1 },
+      { criterion: 'a(ii): λ = ln 2 / t₁/₂ = 0.693 / (6×3600) = 3.21 × 10⁻⁵ s⁻¹', marks: 2, max: 2 },
+      { criterion: 'a(iii): N = N₀e⁻λt; t = 24h = 4 half-lives; N = 8.0×10¹⁰ × (1/2)⁴ = 5.0×10⁹ atoms', marks: 3, max: 3 },
+      { criterion: 'b(i): λ = h / √(2mₑeV) = 6.63×10⁻³⁴ / √(2×9.11×10⁻³¹×1.60×10⁻¹⁹×2000)', marks: 2, max: 2 },
+      { criterion: 'b(i): λ = 2.74 × 10⁻¹¹ m', marks: 1, max: 1 },
+      { criterion: 'b(ii): 2d sin θ = nλ; sin θ = λ/(2d) = 2.74×10⁻¹¹/(2×2.5×10⁻¹⁰) = 0.0548', marks: 2, max: 2 },
+      { criterion: 'b(ii): θ = 3.14° (first order)', marks: 1, max: 1 },
+      { criterion: 'c: Diffraction is wave phenomenon; electrons produce interference patterns; wavelength comparable to atomic spacing', marks: 3, max: 3 },
     ],
   },
 
