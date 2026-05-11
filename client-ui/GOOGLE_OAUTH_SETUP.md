@@ -45,6 +45,7 @@ This guide will help you configure Google OAuth authentication in Supabase for t
      http://localhost:5003/auth/callback
      http://localhost:3000/auth/callback
      https://appedupractice.vercel.app/auth/callback
+     https://uwleuknnerwyvfhxgqbx.supabase.co/auth/v1/callback
      ```
 5. Click **Create**
 6. **Copy your Client ID and Client Secret** - you'll need these for Supabase
