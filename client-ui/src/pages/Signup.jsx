@@ -127,247 +127,247 @@ export default function Signup() {
       </motion.div>
     </div>
   );
-}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    placeholder="John"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    className="w-full bg-[#1a1f2e] border border-gray-700 p-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors text-sm"
-                    required
-                    disabled={loading}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    placeholder="Doe"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    className="w-full bg-[#1a1f2e] border border-gray-700 p-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors text-sm"
-                    required
-                    disabled={loading}
-                  />
-                </div>
-              </div>
+ }
+//               <div className="grid grid-cols-2 gap-4">
+//                 <div>
+//                   <label className="block text-sm font-medium text-gray-300 mb-2">
+//                     First Name
+//                   </label>
+//                   <input
+//                     type="text"
+//                     name="firstName"
+//                     placeholder="John"
+//                     value={formData.firstName}
+//                     onChange={handleInputChange}
+//                     className="w-full bg-[#1a1f2e] border border-gray-700 p-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors text-sm"
+//                     required
+//                     disabled={loading}
+//                   />
+//                 </div>
+//                 <div>
+//                   <label className="block text-sm font-medium text-gray-300 mb-2">
+//                     Last Name
+//                   </label>
+//                   <input
+//                     type="text"
+//                     name="lastName"
+//                     placeholder="Doe"
+//                     value={formData.lastName}
+//                     onChange={handleInputChange}
+//                     className="w-full bg-[#1a1f2e] border border-gray-700 p-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors text-sm"
+//                     required
+//                     disabled={loading}
+//                   />
+//                 </div>
+//               </div>
 
-              {/* Email */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <MailIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <input
-                    id="email"
-                    type="email"
-                    name="email"
-                    placeholder="you@example.com"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full pl-11 pr-4 py-3 bg-[#1a1f2e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors text-sm"
-                    required
-                    disabled={loading}
-                  />
-                </div>
-              </div>
+//               {/* Email */}
+//               <div>
+//                 <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+//                   Email Address
+//                 </label>
+//                 <div className="relative">
+//                   <MailIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+//                   <input
+//                     id="email"
+//                     type="email"
+//                     name="email"
+//                     placeholder="you@example.com"
+//                     value={formData.email}
+//                     onChange={handleInputChange}
+//                     className="w-full pl-11 pr-4 py-3 bg-[#1a1f2e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors text-sm"
+//                     required
+//                     disabled={loading}
+//                   />
+//                 </div>
+//               </div>
 
-              {/* Password */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <input
-                    id="password"
-                    type="password"
-                    name="password"
-                    placeholder="••••••••"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="w-full pl-11 pr-4 py-3 bg-[#1a1f2e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors text-sm"
-                    required
-                    disabled={loading}
-                  />
-                </div>
+//               {/* Password */}
+//               <div>
+//                 <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+//                   Password
+//                 </label>
+//                 <div className="relative">
+//                   <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+//                   <input
+//                     id="password"
+//                     type="password"
+//                     name="password"
+//                     placeholder="••••••••"
+//                     value={formData.password}
+//                     onChange={handleInputChange}
+//                     className="w-full pl-11 pr-4 py-3 bg-[#1a1f2e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors text-sm"
+//                     required
+//                     disabled={loading}
+//                   />
+//                 </div>
 
-                {/* Password Strength Indicator */}
-                {formData.password && passwordStrength && (
-                  <div className="mt-2 space-y-2">
-                    <div className="flex gap-1">
-                      {[...Array(4)].map((_, i) => (
-                        <div
-                          key={i}
-                          className={`flex-1 h-1 rounded-full transition-colors ${
-                            i < passwordStrength.score
-                              ? passwordStrength.score <= 1
-                                ? 'bg-red-500'
-                                : passwordStrength.score <= 2
-                                ? 'bg-yellow-500'
-                                : 'bg-green-500'
-                              : 'bg-gray-700'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <div className="text-xs text-gray-400 space-y-1">
-                      <div className={passwordStrength.length ? 'text-green-400' : 'text-gray-400'}>
-                        ✓ At least 8 characters
-                      </div>
-                      <div className={passwordStrength.uppercase ? 'text-green-400' : 'text-gray-400'}>
-                        ✓ Uppercase letter
-                      </div>
-                      <div className={passwordStrength.lowercase ? 'text-green-400' : 'text-gray-400'}>
-                        ✓ Lowercase letter
-                      </div>
-                      <div className={passwordStrength.numbers || passwordStrength.specialChars ? 'text-green-400' : 'text-gray-400'}>
-                        ✓ Number or special character
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+//                 {/* Password Strength Indicator */}
+//                 {formData.password && passwordStrength && (
+//                   <div className="mt-2 space-y-2">
+//                     <div className="flex gap-1">
+//                       {[...Array(4)].map((_, i) => (
+//                         <div
+//                           key={i}
+//                           className={`flex-1 h-1 rounded-full transition-colors ${
+//                             i < passwordStrength.score
+//                               ? passwordStrength.score <= 1
+//                                 ? 'bg-red-500'
+//                                 : passwordStrength.score <= 2
+//                                 ? 'bg-yellow-500'
+//                                 : 'bg-green-500'
+//                               : 'bg-gray-700'
+//                           }`}
+//                         />
+//                       ))}
+//                     </div>
+//                     <div className="text-xs text-gray-400 space-y-1">
+//                       <div className={passwordStrength.length ? 'text-green-400' : 'text-gray-400'}>
+//                         ✓ At least 8 characters
+//                       </div>
+//                       <div className={passwordStrength.uppercase ? 'text-green-400' : 'text-gray-400'}>
+//                         ✓ Uppercase letter
+//                       </div>
+//                       <div className={passwordStrength.lowercase ? 'text-green-400' : 'text-gray-400'}>
+//                         ✓ Lowercase letter
+//                       </div>
+//                       <div className={passwordStrength.numbers || passwordStrength.specialChars ? 'text-green-400' : 'text-gray-400'}>
+//                         ✓ Number or special character
+//                       </div>
+//                     </div>
+//                   </div>
+//                 )}
+//               </div>
 
-              {/* Confirm Password */}
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    name="confirmPassword"
-                    placeholder="••••••••"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className="w-full pl-11 pr-4 py-3 bg-[#1a1f2e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors text-sm"
-                    required
-                    disabled={loading}
-                  />
-                  {formData.confirmPassword && formData.password === formData.confirmPassword && (
-                    <CheckIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
-                  )}
-                </div>
-              </div>
+//               {/* Confirm Password */}
+//               <div>
+//                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
+//                   Confirm Password
+//                 </label>
+//                 <div className="relative">
+//                   <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+//                   <input
+//                     id="confirmPassword"
+//                     type="password"
+//                     name="confirmPassword"
+//                     placeholder="••••••••"
+//                     value={formData.confirmPassword}
+//                     onChange={handleInputChange}
+//                     className="w-full pl-11 pr-4 py-3 bg-[#1a1f2e] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors text-sm"
+//                     required
+//                     disabled={loading}
+//                   />
+//                   {formData.confirmPassword && formData.password === formData.confirmPassword && (
+//                     <CheckIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+//                   )}
+//                 </div>
+//               </div>
 
-              {/* School Info (Optional) */}
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    School (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    name="schoolName"
-                    placeholder="Your school"
-                    value={formData.schoolName}
-                    onChange={handleInputChange}
-                    className="w-full bg-[#1a1f2e] border border-gray-700 p-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors text-sm"
-                    disabled={loading}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Exam Level (Optional)
-                  </label>
-                  <select
-                    name="examLevel"
-                    value={formData.examLevel}
-                    onChange={handleInputChange}
-                    className="w-full bg-[#1a1f2e] border border-gray-700 p-3 rounded-lg text-white focus:outline-none focus:border-amber-400 transition-colors text-sm"
-                    disabled={loading}
-                  >
-                    <option value="">Select level</option>
-                    <option value="A-Level">A-Level</option>
-                    <option value="UACE">UACE</option>
-                  </select>
-                </div>
-              </div>
+//               {/* School Info (Optional) */}
+//               <div className="grid grid-cols-2 gap-4 pt-2">
+//                 <div>
+//                   <label className="block text-sm font-medium text-gray-300 mb-2">
+//                     School (Optional)
+//                   </label>
+//                   <input
+//                     type="text"
+//                     name="schoolName"
+//                     placeholder="Your school"
+//                     value={formData.schoolName}
+//                     onChange={handleInputChange}
+//                     className="w-full bg-[#1a1f2e] border border-gray-700 p-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors text-sm"
+//                     disabled={loading}
+//                   />
+//                 </div>
+//                 <div>
+//                   <label className="block text-sm font-medium text-gray-300 mb-2">
+//                     Exam Level (Optional)
+//                   </label>
+//                   <select
+//                     name="examLevel"
+//                     value={formData.examLevel}
+//                     onChange={handleInputChange}
+//                     className="w-full bg-[#1a1f2e] border border-gray-700 p-3 rounded-lg text-white focus:outline-none focus:border-amber-400 transition-colors text-sm"
+//                     disabled={loading}
+//                   >
+//                     <option value="">Select level</option>
+//                     <option value="A-Level">A-Level</option>
+//                     <option value="UACE">UACE</option>
+//                   </select>
+//                 </div>
+//               </div>
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading || !passwordStrength?.isValid}
-                className="w-full py-3 bg-amber-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
-              >
-                {loading ? 'Creating Account...' : 'Create Account'}
-              </button>
-            </form>
+//               {/* Submit Button */}
+//               <button
+//                 type="submit"
+//                 disabled={loading || !passwordStrength?.isValid}
+//                 className="w-full py-3 bg-amber-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+//               >
+//                 {loading ? 'Creating Account...' : 'Create Account'}
+//               </button>
+//             </form>
 
-            {/* Login Link */}
-            <p className="text-center text-gray-400 text-sm mt-4">
-              Already have an account?{' '}
-              <Link to="/login" className="text-amber-400 hover:text-amber-300 font-medium transition-colors">
-                Sign in
-              </Link>
-            </p>
-          </>
-        ) : (
-          <>
-            {/* Verification Form */}
-            {verificationError && (
-              <div className="mb-4 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-start gap-2">
-                <CircleAlert className="w-5 h-5 shrink-0 mt-0.5" />
-                <span>{verificationError}</span>
-              </div>
-            )}
-            {verificationMessage && (
-              <div className="mb-4 px-4 py-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 text-sm">
-                {verificationMessage}
-              </div>
-            )}
+//             {/* Login Link */}
+//             <p className="text-center text-gray-400 text-sm mt-4">
+//               Already have an account?{' '}
+//               <Link to="/login" className="text-amber-400 hover:text-amber-300 font-medium transition-colors">
+//                 Sign in
+//               </Link>
+//             </p>
+//           </>
+//         ) : (
+//           <>
+//             {/* Verification Form */}
+//             {verificationError && (
+//               <div className="mb-4 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-start gap-2">
+//                 <CircleAlert className="w-5 h-5 shrink-0 mt-0.5" />
+//                 <span>{verificationError}</span>
+//               </div>
+//             )}
+//             {verificationMessage && (
+//               <div className="mb-4 px-4 py-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 text-sm">
+//                 {verificationMessage}
+//               </div>
+//             )}
 
-            <div className="space-y-4">
-              <p className="text-center text-gray-400 text-sm">
-                We sent a verification link to <span className="text-gray-200">{formData.email}</span>.
-                Open your email and click the link to activate your account.
-              </p>
+//             <div className="space-y-4">
+//               <p className="text-center text-gray-400 text-sm">
+//                 We sent a verification link to <span className="text-gray-200">{formData.email}</span>.
+//                 Open your email and click the link to activate your account.
+//               </p>
 
-              <Link
-                to="/login"
-                className="block w-full text-center py-3 bg-amber-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-400 transition-colors"
-              >
-                Continue to sign in
-              </Link>
+//               <Link
+//                 to="/login"
+//                 className="block w-full text-center py-3 bg-amber-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-400 transition-colors"
+//               >
+//                 Continue to sign in
+//               </Link>
 
-              <button
-                type="button"
-                onClick={handleResendVerification}
-                className="w-full py-3 bg-[#1a1f2e] border border-gray-700 rounded-lg text-gray-300 hover:text-white hover:border-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={loading}
-              >
-                {loading ? 'Sending...' : 'Resend verification email'}
-              </button>
+//               <button
+//                 type="button"
+//                 onClick={handleResendVerification}
+//                 className="w-full py-3 bg-[#1a1f2e] border border-gray-700 rounded-lg text-gray-300 hover:text-white hover:border-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+//                 disabled={loading}
+//               >
+//                 {loading ? 'Sending...' : 'Resend verification email'}
+//               </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setVerifying(false);
-                  setVerificationError('');
-                  setVerificationMessage('');
-                }}
-                className="w-full text-gray-400 text-sm hover:text-gray-300 transition-colors"
-                disabled={loading}
-              >
-                ← Back to signup form
-              </button>
-            </div>
-          </>
-        )}
-      </motion.div>
-    </div>
-  );
-}
+//               <button
+//                 type="button"
+//                 onClick={() => {
+//                   setVerifying(false);
+//                   setVerificationError('');
+//                   setVerificationMessage('');
+//                 }}
+//                 className="w-full text-gray-400 text-sm hover:text-gray-300 transition-colors"
+//                 disabled={loading}
+//               >
+//                 ← Back to signup form
+//               </button>
+//             </div>
+//           </>
+//         )}
+//       </motion.div>
+//     </div>
+//   );
+// }
